@@ -148,12 +148,16 @@
             <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="bi bi-house"></i> Dashboard
             </a>
+            
+            @if(auth()->user()->role === 'super_admin')
             <a href="{{ route('companies.index') }}" class="{{ request()->routeIs('companies.*') ? 'active' : '' }}">
                 <i class="bi bi-building"></i> Companies
             </a>
             <a href="{{ route('admins.index') }}" class="{{ request()->routeIs('admins.*') ? 'active' : '' }}">
                 <i class="bi bi-person-badge"></i> Admins
             </a>
+            @endif
+            
             <a href="{{ route('staff.index') }}" class="{{ request()->routeIs('staff.*') ? 'active' : '' }}">
                 <i class="bi bi-people"></i> Staff
             </a>
@@ -167,9 +171,13 @@
             <a href="{{ route('analytics.index') }}" class="{{ request()->routeIs('analytics.*') ? 'active' : '' }}">
                 <i class="bi bi-graph-up"></i> Analytics
             </a>
+            
+            @if(auth()->user()->role === 'super_admin')
             <a href="{{ route('storage.metrics') }}" class="{{ request()->routeIs('storage.*') ? 'active' : '' }}">
                 <i class="bi bi-hdd"></i> Storage
             </a>
+            @endif
+            
             <a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
                 <i class="bi bi-person-circle"></i> Profile
             </a>

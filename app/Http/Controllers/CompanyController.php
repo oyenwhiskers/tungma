@@ -9,7 +9,13 @@ class CompanyController extends Controller
 {
     public function index()
     {
-        $companies = Company::query()->paginate(20);
+        $user = auth()->user();
+        if ($user->role === 'admin') {
+            // Admin only sees their assigned company
+            $companies = Company::where('id', $user->company_id)->paginate(20);
+        } else {
+            $companies = Company::query()->paginate(20);
+        }
         return view('companies.index', compact('companies'));
     }
 
@@ -32,6 +38,10 @@ class CompanyController extends Controller
 
     public function show(Company $company)
     {
+        $user = auth()->user();
+        if ($user->role === 'admin' && $user->company_id !== $company->id) {
+            abort(403, 'You can only view your assigned company');
+        }
         return view('companies.show', compact('company'));
     }
 

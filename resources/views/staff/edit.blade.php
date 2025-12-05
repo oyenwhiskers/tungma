@@ -98,6 +98,7 @@
                         </div>
                     </div>
                     
+                    @if(auth()->user()->role === 'super_admin')
                     <div class="mb-4">
                         <label class="form-label">Company</label>
                         <select class="form-select @error('company_id') is-invalid @enderror" name="company_id">
@@ -110,6 +111,15 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+                    @else
+                    <div class="mb-4">
+                        <label class="form-label">Company</label>
+                        <div class="form-control" style="background-color: #f8f9fa; display: flex; align-items: center;">
+                            <strong>{{ $company->name ?? 'N/A' }}</strong>
+                        </div>
+                        <input type="hidden" name="company_id" value="{{ $company->id ?? '' }}">
+                    </div>
+                    @endif
                     
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
