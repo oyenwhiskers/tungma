@@ -103,9 +103,10 @@
                         </div>
                     </div>
                     
+                    @if(auth()->user()->role === 'super_admin')
                     <div class="mb-3">
                         <label class="form-label">Company</label>
-                        <select class="form-select @error('company_id') is-invalid @enderror" name="company_id">
+                        <select class="form-select @error('company_id') is-invalid @enderror" name="company_id" required>
                             <option value="">Select company</option>
                             @foreach(\App\Models\Company::all() as $company)
                                 <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
@@ -116,6 +117,16 @@
                         @enderror
                         <div class="form-text">Assign to a company</div>
                     </div>
+                    @else
+                    <div class="mb-3">
+                        <label class="form-label">Company</label>
+                        <div class="form-control" style="background-color: #f8f9fa; display: flex; align-items: center;">
+                            <strong>{{ $company->name ?? 'N/A' }}</strong>
+                        </div>
+                        <div class="form-text">Staff will be assigned to your company</div>
+                        <input type="hidden" name="company_id" value="{{ $company->id ?? '' }}">
+                    </div>
+                    @endif
                     
                     <div class="mb-4">
                         <label class="form-label">Password (Default) <span class="text-danger">*</span></label>

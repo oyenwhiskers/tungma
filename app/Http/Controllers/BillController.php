@@ -10,7 +10,12 @@ class BillController extends Controller
 {
     public function index()
     {
-        $bills = Bill::query()->latest()->paginate(20);
+        $user = auth()->user();
+        if ($user->role === 'admin') {
+            $bills = Bill::where('company_id', $user->company_id)->latest()->paginate(20);
+        } else {
+            $bills = Bill::query()->latest()->paginate(20);
+        }
         return view('bills.index', compact('bills'));
     }
 
@@ -98,6 +103,10 @@ class BillController extends Controller
 
     public function show(Bill $bill)
     {
+        $user = auth()->user();
+        if ($user->role === 'admin' && $user->company_id !== $bill->company_id) {
+            abort(403, 'You can only view bills from your company');
+        }
         return view('bills.show', compact('bill'));
     }
 
@@ -193,13 +202,22 @@ class BillController extends Controller
 
     public function destroy(Bill $bill)
     {
+        $user = auth()->user();
+        if ($user->role === 'admin' && $user->company_id !== $bill->company_id) {
+            abort(403, 'You can only delete bills from your company');
+        }
         $bill->delete();
         return redirect()->route('bills.index');
     }
 
     public function deleted()
     {
-        $bills = Bill::onlyTrashed()->paginate(20);
+        $user = auth()->user();
+        if ($user->role === 'admin') {
+            $bills = Bill::onlyTrashed()->where('company_id', $user->company_id)->paginate(20);
+        } else {
+            $bills = Bill::onlyTrashed()->paginate(20);
+        }
         return view('bills.deleted', compact('bills'));
     }
 
