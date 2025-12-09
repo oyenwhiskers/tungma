@@ -95,7 +95,7 @@
                     <div class="info-value">
                       @if($bill->payment_details)
                         @php $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details; @endphp
-                        {{ isset($payment['date']) ? \\Carbon\\Carbon::parse($payment['date'])->format('M d, Y') : '—' }}
+                        {{ isset($payment['date']) ? \Carbon\Carbon::parse($payment['date'])->format('M d, Y') : '—' }}
                       @else
                         —
                       @endif
@@ -211,7 +211,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-4">
         <div class="tm-card">
             <div class="tm-card-header">
@@ -232,7 +232,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="tm-card mt-3">
             <div class="tm-card-header">
                 <i class="bi bi-lightning-charge-fill me-2"></i> Quick Actions
@@ -323,7 +323,7 @@
         gap: 8px;
         padding: 16px 20px;
     }
-    
+
     .info-label {
         font-weight: 600;
     }

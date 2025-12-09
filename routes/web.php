@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
 // Root -> dashboard
-Route::get('/', function () { return redirect()->route('dashboard'); });
+Route::get('/', function () { return redirect()->route('login'); });
 
 // Authentication routes assumed provided by Laravel auth starter (login required)
 Route::middleware(['web'])->group(function () {
