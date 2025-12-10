@@ -51,4 +51,79 @@ class DashboardController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Get daily analytics.
+     *
+     * Retrieve daily counts of bills created (active) and voided bills for the specified month and year.
+     * Use this data to generate a stacked bar chart.
+     *
+     * @group Dashboard
+     * @authenticated
+     * @header Authorization Bearer {token}
+     * 
+     * @urlParam month integer required The month number (1-12). Example: 12
+     * @urlParam year integer required The year. Example: 2025
+     *
+     * @response 200 {
+     *     "success": true,
+     *     "data": [
+     *         {
+     *             "date": "2025-12-01",
+     *             "void_bills": 1,
+     *             "bills_created": 5
+     *         }
+     *     ]
+     * }
+     */
+    public function dailyAnalytic($month, $year)
+    {
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfDay();
+        $endDate = $startDate->copy()->endOfMonth()->endOfDay();
+
+        $dailyStats = [];
+        $currentDate = $startDate->copy();
+
+        // Initialize all dates in the month with 0 values
+        while ($currentDate->lte($endDate)) {
+            $dateString = $currentDate->format('Y-m-d');
+            $dailyStats[$dateString] = [
+                'date' => $dateString,
+                'void_bills' => 0,
+                'bills_created' => 0,
+            ];
+            $currentDate->addDay();
+        }
+
+        // Fetch active bills created per day
+        $createdBills = Bill::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, count(*) as count')
+            ->groupByRaw('DATE(created_at)')
+            ->pluck('count', 'date');
+
+        // Fetch voided bills per day (based on deleted_at)
+        $voidedBills = Bill::onlyTrashed()
+            ->whereBetween('deleted_at', [$startDate, $endDate])
+            ->selectRaw('DATE(deleted_at) as date, count(*) as count')
+            ->groupByRaw('DATE(deleted_at)')
+            ->pluck('count', 'date');
+
+        // Populate the stats
+        foreach ($createdBills as $date => $count) {
+            if (isset($dailyStats[$date])) {
+                $dailyStats[$date]['bills_created'] = $count;
+            }
+        }
+
+        foreach ($voidedBills as $date => $count) {
+            if (isset($dailyStats[$date])) {
+                $dailyStats[$date]['void_bills'] = $count;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => array_values($dailyStats),
+        ]);
+    }
 }
