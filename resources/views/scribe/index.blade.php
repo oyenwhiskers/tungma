@@ -804,7 +804,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "eta=architecto"\
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
-    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\php9F1F.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\php7CC.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1114,7 +1114,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\php9F1F.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\php7CC.tmp</code></p>
         </div>
         </form>
 
@@ -1958,7 +1958,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\User\AppData\Local\Temp\php9F7F.tmp" </code></pre></div>
+    --form "image=@C:\Users\User\AppData\Local\Temp\php80C.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -2146,7 +2146,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\User\AppData\Local\Temp\php9F7F.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\User\AppData\Local\Temp\php80C.tmp</code></p>
         </div>
         </form>
 
