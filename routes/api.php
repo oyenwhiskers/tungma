@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('bills/{id}', [BillController::class, 'show']);
     Route::post('bills', [BillController::class, 'store']);
     Route::delete('bills/{id}', [BillController::class, 'destroy']);
+    Route::get('dashboard', [DashboardController::class,'index']);
     Route::get('dashboard/daily', [DashboardController::class, 'dailyAnalytic']);
     Route::get('dashboard/monthly', [DashboardController::class, 'monthlyAnalytic']);
 });
