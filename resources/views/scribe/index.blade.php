@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>TungMa API Documentation</title>
+    <title>Laravel API Documentation</title>
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
 
@@ -92,6 +92,16 @@
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="bills-DELETEapi-bills--id-">
                                 <a href="#bills-DELETEapi-bills--id-">Void (soft delete) the specified bill.</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
+                    <ul id="tocify-header-dashboard" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="dashboard">
+                    <a href="#dashboard">Dashboard</a>
+                </li>
+                                    <ul id="tocify-subheader-dashboard" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="dashboard-GETapi-dashboard">
+                                <a href="#dashboard-GETapi-dashboard">Get dashboard metrics.</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -739,7 +749,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "eta=architecto"\
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
-    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\php6686.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php380E.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1049,7 +1059,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\php6686.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\tiber\AppData\Local\Temp\php380E.tmp</code></p>
         </div>
         </form>
 
@@ -1227,6 +1237,151 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>The ID of the bill. Example: <code>architecto</code></p>
             </div>
                     </form>
+
+                <h1 id="dashboard">Dashboard</h1>
+
+    
+
+                                <h2 id="dashboard-GETapi-dashboard">Get dashboard metrics.</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Retrieve summary statistics for bills, including daily and monthly counts for active and voided bills.</p>
+
+<span id="example-requests-GETapi-dashboard">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://localhost:8000/api/dashboard" \
+    --header "Authorization: Bearer {token}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://localhost:8000/api/dashboard"
+);
+
+const headers = {
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-dashboard">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: true,
+    &quot;data&quot;: {
+        &quot;total_bills&quot;: 100,
+        &quot;void_bills_today&quot;: 2,
+        &quot;bills_created_today&quot;: 5,
+        &quot;total_void_bills_this_month&quot;: 10,
+        &quot;total_bills_this_month&quot;: 50
+    }
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-dashboard" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-dashboard"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-dashboard"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-dashboard" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-dashboard">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-dashboard" data-method="GET"
+      data-path="api/dashboard"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-dashboard', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-dashboard"
+                    onclick="tryItOut('GETapi-dashboard');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-dashboard"
+                    onclick="cancelTryOut('GETapi-dashboard');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-dashboard"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/dashboard</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-dashboard"
+               value="Bearer {token}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {token}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-dashboard"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-dashboard"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        </form>
 
                 <h1 id="endpoints">Endpoints</h1>
 
