@@ -31,7 +31,7 @@ class PasswordController extends Controller
     public function resetToDefault(Request $request, User $user)
     {
         // In a real implementation, fetch default password policy; here use a placeholder
-        $defaultPassword = 'Default123!';
+        $defaultPassword = 'TungMa@123';
         $user->password = Hash::make($defaultPassword);
         $user->save();
 

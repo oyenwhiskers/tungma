@@ -12,11 +12,13 @@
         <h2 class="mb-1">Companies</h2>
         <div class="text-muted">Manage your company records and partnerships</div>
     </div>
+    @if(auth()->user()->role === 'super_admin')
     <div>
         <a href="{{ route('companies.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> New Company
         </a>
     </div>
+    @endif
 </div>
 
 <div class="tm-card tm-table">
