@@ -19,15 +19,7 @@
                     <td><a href="{{ route('policies.show', $policy) }}">{{ $policy->name }}</a></td>
                     <td>{{ $policy->company?->name }}</td>
                     <td class="text-end">
-                        <div class="d-inline-flex gap-1">
-                            <a href="{{ route('policies.show', $policy) }}" class="btn btn-sm btn-outline-primary">View</a>
-                            <a href="{{ route('policies.edit', $policy) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                            <form action="{{ route('policies.destroy', $policy) }}" method="POST" onsubmit="return confirm('Delete this policy?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
-                        </div>
+                        <a href="{{ route('policies.edit', $policy) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                     </td>
                 </tr>
             @endforeach

@@ -57,18 +57,10 @@ Route::middleware(['web', 'auth', 'super.admin'])->group(function () {
     // Companies management (Super Admin only)
     Route::post('/companies', [App\Http\Controllers\CompanyController::class, 'store'])->name('companies.store');
     Route::get('/companies/create', [App\Http\Controllers\CompanyController::class, 'create'])->name('companies.create');
-    Route::get('/companies/{company}/edit', [App\Http\Controllers\CompanyController::class, 'edit'])
-        ->whereNumber('company')
-        ->name('companies.edit');
-    Route::put('/companies/{company}', [App\Http\Controllers\CompanyController::class, 'update'])
-        ->whereNumber('company')
-        ->name('companies.update');
-    Route::delete('/companies/{company}', [App\Http\Controllers\CompanyController::class, 'destroy'])
-        ->whereNumber('company')
-        ->name('companies.destroy');
-    Route::post('/deleted/companies/{id}/restore', [App\Http\Controllers\CompanyController::class, 'restore'])
-        ->whereNumber('id')
-        ->name('companies.restore');
+    Route::get('/companies/{company}/edit', [App\Http\Controllers\CompanyController::class, 'edit'])->name('companies.edit');
+    Route::put('/companies/{company}', [App\Http\Controllers\CompanyController::class, 'update'])->name('companies.update');
+    Route::delete('/companies/{company}', [App\Http\Controllers\CompanyController::class, 'destroy'])->name('companies.destroy');
+    Route::post('/deleted/companies/{id}/restore', [App\Http\Controllers\CompanyController::class, 'restore'])->name('companies.restore');
 
     // Admins management (Super Admin only)
     Route::resource('admins', App\Http\Controllers\AdminUserController::class);
@@ -78,15 +70,4 @@ Route::middleware(['web', 'auth', 'super.admin'])->group(function () {
     // Storage management (Super Admin)
     Route::get('/storage/metrics', [App\Http\Controllers\StorageController::class, 'metrics'])->name('storage.metrics');
     Route::post('/storage/clear', [App\Http\Controllers\StorageController::class, 'clear'])->name('storage.clear');
-
-    // Backup & Restore Management (Super Admin)
-    Route::get('/backup', [App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
-    Route::post('/backup/export-all', [App\Http\Controllers\BackupController::class, 'exportAll'])->name('backup.export.all');
-    Route::post('/backup/import-all', [App\Http\Controllers\BackupController::class, 'importAll'])->name('backup.import.all');
-    Route::post('/backup/export-data', [App\Http\Controllers\BackupController::class, 'exportData'])->name('backup.export.data');
-    Route::post('/backup/export-media', [App\Http\Controllers\BackupController::class, 'exportMedia'])->name('backup.export.media');
-    Route::post('/backup/import-data', [App\Http\Controllers\BackupController::class, 'importData'])->name('backup.import.data');
-    Route::post('/backup/import-media', [App\Http\Controllers\BackupController::class, 'importMedia'])->name('backup.import.media');
-    Route::delete('/backup/delete', [App\Http\Controllers\BackupController::class, 'deleteBackup'])->name('backup.delete');
-    Route::post('/backup/clear-storage', [App\Http\Controllers\BackupController::class, 'clearStorage'])->name('backup.clear.storage');
 });
