@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Optional: Artisan command for automated backups
- * 
+ *
  * Usage:
  *   php artisan backup:data        # Backup data only
  *   php artisan backup:data --media # Backup data + media
  *   php artisan backup:data --all   # Backup everything
- * 
+ *
  * To schedule:
  *   Add to app/Console/Kernel.php:
  *   $schedule->command('backup:data --all')->daily();
@@ -26,7 +26,7 @@ class BackupData extends Command
      *
      * @var string
      */
-    protected $signature = 'backup:data 
+    protected $signature = 'backup:data
                             {--media : Also backup media files}
                             {--all : Backup both data and media}
                             {--clean : Clean old backups after backup}';
@@ -123,7 +123,7 @@ class BackupData extends Command
 
         // Fetch bills with relationships
         $query = $modelClass::with($relationships);
-        
+
         if ($includeTrashed) {
             $query->withTrashed();
         }
@@ -133,20 +133,20 @@ class BackupData extends Command
         // Convert to array
         $exportData = $bills->map(function ($bill) {
             $data = $bill->toArray();
-            
+
             // Format dates
             if (isset($data['date']) && $data['date']) {
                 $data['date'] = date('Y-m-d', strtotime($data['date']));
             }
-            
+
             return $data;
         });
 
         $jsonData = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        
+
         $filename = 'bills_backup_' . date('Y-m-d_His') . '.json';
         $filepath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $filename);
-        
+
         file_put_contents($filepath, $jsonData);
 
         $this->line("   📄 Saved: {$filename}");
@@ -158,24 +158,24 @@ class BackupData extends Command
      */
     protected function backupMediaFiles()
     {
-        $sourceFolder = storage_path('app' . DIRECTORY_SEPARATOR . config('backup.paths.media_folder', 'public/bills'));
-        
+        $sourceFolder = storage_path('app' . DIRECTORY_SEPARATOR . config('backup.paths.media_folder', 'public'));
+
         if (!file_exists($sourceFolder)) {
             $this->warn("   ⚠️  Media folder does not exist: {$sourceFolder}");
             return;
         }
 
-        $zipFilename = 'bills_media_' . date('Y-m-d_His') . '.zip';
+        $zipFilename = 'public_media_' . date('Y-m-d_His') . '.zip';
         $zipPath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $zipFilename);
 
         $zip = new \ZipArchive();
-        
+
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
             throw new \Exception('Failed to create ZIP file');
         }
 
         $files = $this->backupService->getFilesRecursive($sourceFolder);
-        
+
         foreach ($files as $file) {
             $relativePath = str_replace($sourceFolder . DIRECTORY_SEPARATOR, '', $file);
             $zip->addFile($file, $relativePath);
