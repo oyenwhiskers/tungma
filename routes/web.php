@@ -68,4 +68,12 @@ Route::middleware(['web', 'auth', 'super.admin'])->group(function () {
     // Storage management (Super Admin)
     Route::get('/storage/metrics', [App\Http\Controllers\StorageController::class, 'metrics'])->name('storage.metrics');
     Route::post('/storage/clear', [App\Http\Controllers\StorageController::class, 'clear'])->name('storage.clear');
+
+    // Backup & Restore Management (Super Admin)
+    Route::get('/backup', [App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
+    Route::post('/backup/export-data', [App\Http\Controllers\BackupController::class, 'exportData'])->name('backup.export.data');
+    Route::post('/backup/export-media', [App\Http\Controllers\BackupController::class, 'exportMedia'])->name('backup.export.media');
+    Route::post('/backup/import-data', [App\Http\Controllers\BackupController::class, 'importData'])->name('backup.import.data');
+    Route::post('/backup/import-media', [App\Http\Controllers\BackupController::class, 'importMedia'])->name('backup.import.media');
+    Route::delete('/backup/delete', [App\Http\Controllers\BackupController::class, 'deleteBackup'])->name('backup.delete');
 });
