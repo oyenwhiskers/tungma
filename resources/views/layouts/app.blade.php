@@ -173,9 +173,6 @@
             </a>
 
             @if(auth()->user()->role === 'super_admin')
-            <a href="{{ route('storage.metrics') }}" class="{{ request()->routeIs('storage.*') ? 'active' : '' }}">
-                <i class="bi bi-hdd"></i> Storage
-            </a>
             <a href="{{ route('backup.index') }}" class="{{ request()->routeIs('backup.*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-text"></i> Backup & Restore
             </a>

@@ -77,7 +77,9 @@ class BackupService
      */
     protected function getBackupType($filename)
     {
-        if (strpos($filename, 'media') !== false) {
+        if (strpos($filename, 'complete_backup') !== false) {
+            return 'Complete';
+        } elseif (strpos($filename, 'media') !== false || strpos($filename, 'public') !== false) {
             return 'Media';
         } elseif (strpos($filename, 'bills') !== false || strpos($filename, 'backup') !== false) {
             return 'Data';
@@ -110,7 +112,7 @@ class BackupService
             return false;
         }
 
-        $zipFilename = 'bills_media_pre_restore_' . date('Y-m-d_His') . '.zip';
+        $zipFilename = 'public_media_pre_restore_' . date('Y-m-d_His') . '.zip';
         $zipPath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $zipFilename);
 
         $zip = new \ZipArchive();

@@ -33,7 +33,7 @@ return [
     */
     'paths' => [
         'backup_storage' => 'backups',      // Relative to storage/app/
-        'media_folder' => 'public/bills',   // Relative to storage/app/
+        'media_folder' => 'public',         // Relative to storage/app/ (includes bills, profile pics, etc.)
     ],
 
     /*
