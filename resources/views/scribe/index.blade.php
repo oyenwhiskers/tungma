@@ -564,11 +564,32 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-  &quot;data&quot;: {
-    &quot;id&quot;: 1,
-    &quot;bill_code&quot;: &quot;BILL000001&quot;,
-    ...
-  }
+    &quot;data&quot;: {
+        &quot;id&quot;: 1,
+        &quot;bill_code&quot;: &quot;BILL000001&quot;,
+        &quot;date&quot;: &quot;2025-12-10&quot;,
+        &quot;amount&quot;: 3000,
+        &quot;description&quot;: null,
+        &quot;payment_details&quot;: {
+            &quot;method&quot;: &quot;cash&quot;,
+            &quot;date&quot;: &quot;2025-12-10&quot;
+        },
+        &quot;customer_info&quot;: {
+            &quot;name&quot;: &quot;John Doe&quot;,
+            &quot;phone&quot;: &quot;+60123456789&quot;,
+            &quot;address&quot;: &quot;123 Main St&quot;
+        },
+        &quot;eta&quot;: &quot;3&quot;,
+        &quot;sst_details&quot;: null,
+        &quot;media_attachment_url&quot;: &quot;http://example.com/storage/bills/image.png&quot;,
+        &quot;company&quot;: {
+            &quot;id&quot;: 1,
+            &quot;name&quot;: &quot;Company Name&quot;
+        },
+        &quot;courier_policy&quot;: null,
+        &quot;created_at&quot;: &quot;2025-12-10T02:06:54.000000Z&quot;,
+        &quot;updated_at&quot;: &quot;2025-12-10T03:01:06.000000Z&quot;
+    }
 }</code>
  </pre>
             <blockquote>
@@ -718,7 +739,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "eta=architecto"\
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
-    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\phpC042.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\php6686.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1028,7 +1049,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\phpC042.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\php6686.tmp</code></p>
         </div>
         </form>
 

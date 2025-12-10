@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 /**
  * @group Bills API
@@ -343,7 +344,28 @@ class BillController extends Controller
      *   "data": {
      *     "id": 1,
      *     "bill_code": "BILL000001",
-     *     ...
+     *     "date": "2025-12-10",
+     *     "amount": 3000.00,
+     *     "description": null,
+     *     "payment_details": {
+     *       "method": "cash",
+     *       "date": "2025-12-10"
+     *     },
+     *     "customer_info": {
+     *       "name": "John Doe",
+     *       "phone": "+60123456789",
+     *       "address": "123 Main St"
+     *     },
+     *     "eta": "3",
+     *     "sst_details": null,
+     *     "media_attachment_url": "http://example.com/storage/bills/image.png",
+     *     "company": {
+     *       "id": 1,
+     *       "name": "Company Name"
+     *     },
+     *     "courier_policy": null,
+     *     "created_at": "2025-12-10T02:06:54.000000Z",
+     *     "updated_at": "2025-12-10T03:01:06.000000Z"
      *   }
      * }
      * @response 403 {
@@ -375,13 +397,56 @@ class BillController extends Controller
 
         $bill->load('company', 'courierPolicy');
 
-        // Add full URL for media attachment if exists
-        if ($bill->media_attachment) {
-            $bill->media_attachment_url = Storage::url($bill->media_attachment);
+        // Parse JSON fields for cleaner response
+        $paymentDetails = null;
+        if ($bill->payment_details) {
+            $paymentDetails = is_string($bill->payment_details)
+                ? json_decode($bill->payment_details, true)
+                : $bill->payment_details;
         }
 
+        $customerInfo = null;
+        if ($bill->customer_info) {
+            $customerInfo = is_string($bill->customer_info)
+                ? json_decode($bill->customer_info, true)
+                : $bill->customer_info;
+        }
+
+        $sstDetails = null;
+        if ($bill->sst_details) {
+            $sstDetails = is_string($bill->sst_details)
+                ? json_decode($bill->sst_details, true)
+                : $bill->sst_details;
+        }
+
+        // Build refined response
+        $response = [
+            'id' => $bill->id,
+            'bill_code' => $bill->bill_code,
+            'date' => $bill->date ? ($bill->date instanceof \Carbon\Carbon ? $bill->date->format('Y-m-d') : $bill->date) : null,
+            'amount' => (float) $bill->amount,
+            'description' => $bill->description,
+            'payment_details' => $paymentDetails,
+            'customer_info' => $customerInfo,
+            'eta' => $bill->eta,
+            'sst_details' => $sstDetails,
+            'media_attachment_url' => $bill->media_attachment
+                ? URL::to(Storage::url($bill->media_attachment))
+                : null,
+            'company' => $bill->company ? [
+                'id' => $bill->company->id,
+                'name' => $bill->company->name,
+            ] : null,
+            'courier_policy' => $bill->courierPolicy ? [
+                'id' => $bill->courierPolicy->id,
+                'name' => $bill->courierPolicy->name,
+            ] : null,
+            'created_at' => $bill->created_at ? $bill->created_at->toISOString() : null,
+            'updated_at' => $bill->updated_at ? $bill->updated_at->toISOString() : null,
+        ];
+
         return response()->json([
-            'data' => $bill
+            'data' => $response
         ]);
     }
 
