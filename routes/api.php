@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillController;
+use App\Http\Controllers\Api\DashboardController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -21,4 +22,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('bills/{id}', [BillController::class, 'show']);
     Route::post('bills', [BillController::class, 'store']);
     Route::delete('bills/{id}', [BillController::class, 'destroy']);
+    Route::get('dashboard/daily', [DashboardController::class, 'dailyAnalytic']);
+    Route::get('dashboard/monthly', [DashboardController::class, 'monthlyAnalytic']);
 });
