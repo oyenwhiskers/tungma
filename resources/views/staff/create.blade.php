@@ -130,7 +130,7 @@
                     
                     <div class="mb-4">
                         <label class="form-label">Password (Default) <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control @error('password') is-invalid @enderror" name="password" required placeholder="Enter default password">
+                        <input type="password" class="form-control @error('password') is-invalid @enderror" name="password" required placeholder="Enter default password" value="{{ old('password', 'TungMa@123') }}">
                         @error('password')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
