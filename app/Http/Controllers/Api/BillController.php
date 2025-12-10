@@ -8,6 +8,7 @@ use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @group Bills API
@@ -182,6 +183,7 @@ class BillController extends Controller
      * @bodyParam eta string Optional estimated time of arrival.
      * @bodyParam sst_rate number Optional SST rate percentage.
      * @bodyParam sst_amount number Optional SST amount.
+     * @bodyParam media_attachment file Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp.
      *
      * @response 201 {
      *   "message": "Bill created successfully",
@@ -227,6 +229,7 @@ class BillController extends Controller
             'eta' => 'nullable|string',
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
+            'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
         ]);
 
         // Automatically set company_id from authenticated user
@@ -311,6 +314,14 @@ class BillController extends Controller
             }
         }
 
+        // Handle media attachment upload
+        if ($request->hasFile('media_attachment')) {
+            $file = $request->file('media_attachment');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('bills', $filename, 'public');
+            $data['media_attachment'] = $path;
+        }
+
         $bill = Bill::create($data);
 
         return response()->json([
@@ -362,8 +373,15 @@ class BillController extends Controller
             ], 404);
         }
 
+        $bill->load('company', 'courierPolicy');
+
+        // Add full URL for media attachment if exists
+        if ($bill->media_attachment) {
+            $bill->media_attachment_url = Storage::url($bill->media_attachment);
+        }
+
         return response()->json([
-            'data' => $bill->load('company', 'courierPolicy')
+            'data' => $bill
         ]);
     }
 

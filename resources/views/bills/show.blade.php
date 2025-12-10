@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 @section('content')
 <div class="tm-breadcrumb">
     <a href="{{ route('dashboard') }}">Dashboard</a>
@@ -190,6 +194,32 @@
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-image"></i>
+                      <span>Media Attachment</span>
+                    </div>
+                    <div class="info-value">
+                      @if($bill->media_attachment)
+                        <div>
+                          <a href="{{ Storage::url($bill->media_attachment) }}" target="_blank" class="d-inline-block">
+                            <img src="{{ Storage::url($bill->media_attachment) }}"
+                                 alt="Bill attachment"
+                                 class="img-thumbnail"
+                                 style="max-width: 200px; max-height: 200px; cursor: pointer;">
+                          </a>
+                          <div class="small mt-2">
+                            <a href="{{ Storage::url($bill->media_attachment) }}" target="_blank" class="text-primary">
+                              <i class="bi bi-box-arrow-up-right"></i> View Full Size
+                            </a>
+                          </div>
+                        </div>
+                      @else
+                        —
+                      @endif
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-calendar-plus"></i>
                       <span>Created At</span>
                     </div>
@@ -227,8 +257,24 @@
                     <div class="h4 mb-0 text-primary">RM {{ number_format($bill->amount, 2) }}</div>
                 </div>
                 <div>
-                    <div class="text-muted small mb-1">Attachments</div>
-                    <div class="small">No attachments</div>
+                    <div class="text-muted small mb-1">Media Attachment</div>
+                    @if($bill->media_attachment)
+                        <div class="mt-2">
+                            <a href="{{ Storage::url($bill->media_attachment) }}" target="_blank" class="d-inline-block">
+                                <img src="{{ Storage::url($bill->media_attachment) }}"
+                                     alt="Bill attachment"
+                                     class="img-thumbnail"
+                                     style="max-width: 200px; max-height: 200px; cursor: pointer;">
+                            </a>
+                            <div class="small text-muted mt-2">
+                                <a href="{{ Storage::url($bill->media_attachment) }}" target="_blank" class="text-primary">
+                                    <i class="bi bi-box-arrow-up-right"></i> View Full Size
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <div class="small text-muted">No attachment</div>
+                    @endif
                 </div>
             </div>
         </div>

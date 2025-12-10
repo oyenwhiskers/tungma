@@ -189,7 +189,7 @@ endpoints:
       deprecated: false
     headers:
       Authorization: 'Bearer {token}'
-      Content-Type: application/json
+      Content-Type: multipart/form-data
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
@@ -328,6 +328,17 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         deprecated: false
+      media_attachment:
+        custom: []
+        name: media_attachment
+        description: 'Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
     cleanBodyParameters:
       date: '2025-12-10'
       amount: 100.5
@@ -341,7 +352,8 @@ endpoints:
       eta: architecto
       sst_rate: 4326.41688
       sst_amount: 4326.41688
-    fileParameters: []
+    fileParameters:
+      media_attachment: null
     responses:
       -
         custom: []

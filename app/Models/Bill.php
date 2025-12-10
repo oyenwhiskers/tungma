@@ -12,7 +12,7 @@ class Bill extends Model
 
     protected $fillable = [
         'bill_code', 'date', 'amount', 'description', 'payment_details',
-        'customer_info', 'courier_policy_id', 'company_id', 'eta', 'sst_details', 'policy_snapshot'
+        'customer_info', 'courier_policy_id', 'company_id', 'eta', 'sst_details', 'policy_snapshot', 'media_attachment'
     ];
 
     protected $casts = [
