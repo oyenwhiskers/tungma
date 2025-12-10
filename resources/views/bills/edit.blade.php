@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 @section('content')
 <div class="tm-breadcrumb">
     <a href="{{ route('dashboard') }}">Dashboard</a>
@@ -216,16 +220,24 @@
           </div>
 
           <hr class="my-4">
-          <h5 class="mb-3"><i class="bi bi-paperclip me-2"></i>Attachments</h5>
+          <h5 class="mb-3"><i class="bi bi-paperclip me-2"></i>Media Attachment</h5>
 
           <div class="row g-3">
             <div class="col-12">
               <label class="form-label">
-                <i class="bi bi-file-earmark-arrow-up"></i> Upload Additional Files
+                <i class="bi bi-image"></i> Upload Image
               </label>
-              <input type="file" name="attachments[]" multiple class="form-control @error('attachments') is-invalid @enderror">
-              <div class="form-text">Upload supporting documents (invoices, receipts, etc.)</div>
-              @error('attachments')
+              <input type="file" name="media_attachment" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" class="form-control @error('media_attachment') is-invalid @enderror">
+              <div class="form-text">Upload a single image file (max 5MB). Accepted formats: JPG, PNG, GIF, WEBP</div>
+              @if($bill->media_attachment)
+                <div class="mt-2">
+                  <small class="text-muted">Current attachment: </small>
+                  <a href="{{ Storage::url($bill->media_attachment) }}" target="_blank" class="text-primary">
+                    <i class="bi bi-image"></i> View Current Image
+                  </a>
+                </div>
+              @endif
+              @error('media_attachment')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>

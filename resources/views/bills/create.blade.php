@@ -195,16 +195,16 @@
           </div>
 
           <hr class="my-4">
-          <h5 class="mb-3"><i class="bi bi-paperclip me-2"></i>Attachments</h5>
+          <h5 class="mb-3"><i class="bi bi-paperclip me-2"></i>Media Attachment</h5>
 
           <div class="row g-3">
             <div class="col-12">
               <label class="form-label">
-                <i class="bi bi-file-earmark-arrow-up"></i> Upload Files
+                <i class="bi bi-image"></i> Upload Image
               </label>
-              <input type="file" name="attachments[]" multiple class="form-control @error('attachments') is-invalid @enderror">
-              <div class="form-text">Upload supporting documents (invoices, receipts, etc.)</div>
-              @error('attachments')
+              <input type="file" name="media_attachment" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" class="form-control @error('media_attachment') is-invalid @enderror">
+              <div class="form-text">Upload a single image file (max 5MB). Accepted formats: JPG, PNG, GIF, WEBP</div>
+              @error('media_attachment')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>

@@ -704,23 +704,21 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <pre><code class="language-bash">curl --request POST \
     "http://localhost:8000/api/bills" \
     --header "Authorization: Bearer {token}" \
-    --header "Content-Type: application/json" \
+    --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
-    --data "{
-    \"date\": \"2025-12-10\",
-    \"amount\": 100.5,
-    \"description\": \"Eius et animi quos velit et.\",
-    \"payment_method\": \"architecto\",
-    \"payment_date\": \"architecto\",
-    \"customer_name\": \"architecto\",
-    \"customer_phone\": \"architecto\",
-    \"customer_address\": \"architecto\",
-    \"courier_policy_id\": 16,
-    \"eta\": \"architecto\",
-    \"sst_rate\": 4326.41688,
-    \"sst_amount\": 4326.41688
-}"
-</code></pre></div>
+    --form "date=2025-12-10"\
+    --form "amount=100.5"\
+    --form "description=Eius et animi quos velit et."\
+    --form "payment_method=architecto"\
+    --form "payment_date=architecto"\
+    --form "customer_name=architecto"\
+    --form "customer_phone=architecto"\
+    --form "customer_address=architecto"\
+    --form "courier_policy_id=16"\
+    --form "eta=architecto"\
+    --form "sst_rate=4326.41688"\
+    --form "sst_amount=4326.41688"\
+    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\phpC042.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -730,29 +728,29 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 const headers = {
     "Authorization": "Bearer {token}",
-    "Content-Type": "application/json",
+    "Content-Type": "multipart/form-data",
     "Accept": "application/json",
 };
 
-let body = {
-    "date": "2025-12-10",
-    "amount": 100.5,
-    "description": "Eius et animi quos velit et.",
-    "payment_method": "architecto",
-    "payment_date": "architecto",
-    "customer_name": "architecto",
-    "customer_phone": "architecto",
-    "customer_address": "architecto",
-    "courier_policy_id": 16,
-    "eta": "architecto",
-    "sst_rate": 4326.41688,
-    "sst_amount": 4326.41688
-};
+const body = new FormData();
+body.append('date', '2025-12-10');
+body.append('amount', '100.5');
+body.append('description', 'Eius et animi quos velit et.');
+body.append('payment_method', 'architecto');
+body.append('payment_date', 'architecto');
+body.append('customer_name', 'architecto');
+body.append('customer_phone', 'architecto');
+body.append('customer_address', 'architecto');
+body.append('courier_policy_id', '16');
+body.append('eta', 'architecto');
+body.append('sst_rate', '4326.41688');
+body.append('sst_amount', '4326.41688');
+body.append('media_attachment', document.querySelector('input[name="media_attachment"]').files[0]);
 
 fetch(url, {
     method: "POST",
     headers,
-    body: JSON.stringify(body),
+    body,
 }).then(response =&gt; response.json());</code></pre></div>
 
 </span>
@@ -810,7 +808,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <form id="form-POSTapi-bills" data-method="POST"
       data-path="api/bills"
       data-authed="1"
-      data-hasfiles="0"
+      data-hasfiles="1"
       data-isarraybody="0"
       autocomplete="off"
       onsubmit="event.preventDefault(); executeTryOut('POSTapi-bills', this);">
@@ -858,10 +856,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="Content-Type"                data-endpoint="POSTapi-bills"
-               value="application/json"
+               value="multipart/form-data"
                data-component="header">
     <br>
-<p>Example: <code>application/json</code></p>
+<p>Example: <code>multipart/form-data</code></p>
             </div>
                                 <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
@@ -1019,6 +1017,18 @@ You can check the Dev Tools console for debugging information.</code></pre>
                data-component="body">
     <br>
 <p>Optional SST amount. Example: <code>4326.41688</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>media_attachment</code></b>&nbsp;&nbsp;
+<small>file</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="file" style="display: none"
+                              name="media_attachment"                data-endpoint="POSTapi-bills"
+               value=""
+               data-component="body">
+    <br>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\phpC042.tmp</code></p>
         </div>
         </form>
 

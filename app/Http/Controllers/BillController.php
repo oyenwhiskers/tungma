@@ -6,6 +6,7 @@ use App\Models\Bill;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class BillController extends Controller
 {
@@ -18,7 +19,7 @@ class BillController extends Controller
     private function generateNextBillCode($companyId)
     {
         $company = Company::findOrFail($companyId);
-        
+
         if (empty($company->bill_id_prefix)) {
             throw new \Exception('Company does not have a bill ID prefix set. Please set a prefix in company settings.');
         }
@@ -34,7 +35,7 @@ class BillController extends Controller
             // Extract the number part from the latest bill code
             $prefix = $company->bill_id_prefix;
             $latestCode = $latestBill->bill_code;
-            
+
             // Remove the prefix from the beginning of the code
             if (str_starts_with($latestCode, $prefix)) {
                 $numberPart = substr($latestCode, strlen($prefix));
@@ -47,7 +48,7 @@ class BillController extends Controller
 
         // Pad to minimum 6 digits
         $paddedNumber = str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
-        
+
         return $company->bill_id_prefix . $paddedNumber;
     }
     public function index()
@@ -89,6 +90,7 @@ class BillController extends Controller
             'eta' => 'nullable|string',
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
+            'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
         ]);
 
         // Auto-generate bill code using company prefix and running number
@@ -107,7 +109,7 @@ class BillController extends Controller
             $latestBill = Bill::where('company_id', $data['company_id'])
                 ->orderBy('id', 'desc')
                 ->first();
-            
+
             $prefix = $company->bill_id_prefix;
             $numberPart = substr($latestBill->bill_code, strlen($prefix));
             if (preg_match('/^(\d+)/', $numberPart, $matches)) {
@@ -166,6 +168,15 @@ class BillController extends Controller
             }
         }
 
+        // Handle media attachment upload
+        if ($request->hasFile('media_attachment')) {
+            $file = $request->file('media_attachment');
+            // Sanitize filename
+            $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bills', $filename, 'public');
+            $data['media_attachment'] = $path;
+        }
+
         Bill::create($data);
         return redirect()->route('bills.index')->with('success', 'Bill created successfully');
     }
@@ -208,6 +219,7 @@ class BillController extends Controller
             'eta' => 'nullable|string',
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
+            'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
         ]);
 
         // Build payment_details JSON
@@ -263,6 +275,20 @@ class BillController extends Controller
             }
         } else {
             $data['policy_snapshot'] = null;
+        }
+
+        // Handle media attachment upload
+        if ($request->hasFile('media_attachment')) {
+            // Delete old attachment if exists
+            if ($bill->media_attachment && Storage::disk('public')->exists($bill->media_attachment)) {
+                Storage::disk('public')->delete($bill->media_attachment);
+            }
+
+            $file = $request->file('media_attachment');
+            // Sanitize filename
+            $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bills', $filename, 'public');
+            $data['media_attachment'] = $path;
         }
 
         $bill->update($data);
