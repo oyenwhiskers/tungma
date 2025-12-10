@@ -26,6 +26,7 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
 
     // Companies (Super Admin only for create/edit/delete, all can view assigned)
     Route::get('/companies', [App\Http\Controllers\CompanyController::class, 'index'])->name('companies.index');
+    Route::get('/companies/create', [App\Http\Controllers\CompanyController::class, 'create'])->name('companies.create');
     Route::get('/companies/{company}', [App\Http\Controllers\CompanyController::class, 'show'])->name('companies.show');
     Route::get('/deleted/companies', [App\Http\Controllers\CompanyController::class, 'deleted'])->name('companies.deleted');
 

@@ -47,12 +47,20 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label class="form-label">Email</label>
                         <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email', $company->email) }}">
                         @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Bill ID Prefix</label>
+                        <input class="form-control @error('bill_id_prefix') is-invalid @enderror" name="bill_id_prefix" value="{{ old('bill_id_prefix', $company->bill_id_prefix) }}" placeholder="e.g. BILL, INV, ABC">
+                        @error('bill_id_prefix')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">Prefix used when creating new bills for this company (alphabets only, e.g., BILL, INV)</div>
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
