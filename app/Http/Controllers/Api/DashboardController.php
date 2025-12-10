@@ -62,8 +62,8 @@ class DashboardController extends Controller
      * @authenticated
      * @header Authorization Bearer {token}
      * 
-     * @urlParam month integer required The month number (1-12). Example: 12
-     * @urlParam year integer required The year. Example: 2025
+     * @urlParam month integer The month number (1-12). Defaults to current month. Example: 12
+     * @urlParam year integer The year. Defaults to current year. Example: 2025
      *
      * @response 200 {
      *     "success": true,
@@ -76,8 +76,10 @@ class DashboardController extends Controller
      *     ]
      * }
      */
-    public function dailyAnalytic($month, $year)
+    public function dailyAnalytic($month = null, $year = null)
     {
+        $month = $month ?: Carbon::now()->month;
+        $year = $year ?: Carbon::now()->year;
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfDay();
         $endDate = $startDate->copy()->endOfMonth()->endOfDay();
 
@@ -124,6 +126,49 @@ class DashboardController extends Controller
         return response()->json([
             'success' => true,
             'data' => array_values($dailyStats),
+        ]);
+    }
+
+    /**
+     * Get monthly analytics.
+     *
+     * Retrieve total counts of valid bills (created and active) and voided bills for the specified month and year.
+     * Use this data to generate a pie chart.
+     *
+     * @group Dashboard
+     * @authenticated
+     * @header Authorization Bearer {token}
+     * 
+     * @urlParam month integer The month number (1-12). Defaults to current month. Example: 12
+     * @urlParam year integer The year. Defaults to current year. Example: 2025
+     *
+     * @response 200 {
+     *     "success": true,
+     *     "data": {
+     *         "total_bills": 50,
+     *         "total_void_bills": 10
+     *     }
+     * }
+     */
+    public function monthlyAnalytic($month = null, $year = null)
+    {
+        $month = $month ?: Carbon::now()->month;
+        $year = $year ?: Carbon::now()->year;
+        $totalBills = Bill::whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->count();
+
+        $totalVoidBills = Bill::onlyTrashed()
+            ->whereMonth('deleted_at', $month)
+            ->whereYear('deleted_at', $year)
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total_bills' => $totalBills,
+                'total_void_bills' => $totalVoidBills,
+            ],
         ]);
     }
 }
