@@ -103,6 +103,9 @@
                                                     <li class="tocify-item level-2" data-unique="dashboard-GETapi-dashboard">
                                 <a href="#dashboard-GETapi-dashboard">Get dashboard metrics.</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="dashboard-GETapi-dashboard-daily--month---year-">
+                                <a href="#dashboard-GETapi-dashboard-daily--month---year-">Get daily analytics.</a>
+                            </li>
                                                                         </ul>
                             </ul>
                     <ul id="tocify-header-endpoints" class="tocify-header">
@@ -749,7 +752,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "eta=architecto"\
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
-    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php380E.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\phpC001.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1059,7 +1062,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\tiber\AppData\Local\Temp\php380E.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpC001.tmp</code></p>
         </div>
         </form>
 
@@ -1382,6 +1385,173 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Example: <code>application/json</code></p>
             </div>
                         </form>
+
+                    <h2 id="dashboard-GETapi-dashboard-daily--month---year-">Get daily analytics.</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Retrieve daily counts of bills created (active) and voided bills for the specified month and year.
+Use this data to generate a stacked bar chart.</p>
+
+<span id="example-requests-GETapi-dashboard-daily--month---year-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://localhost:8000/api/dashboard/daily/12/2025" \
+    --header "Authorization: Bearer {token}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://localhost:8000/api/dashboard/daily/12/2025"
+);
+
+const headers = {
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-dashboard-daily--month---year-">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: true,
+    &quot;data&quot;: [
+        {
+            &quot;date&quot;: &quot;2025-12-01&quot;,
+            &quot;void_bills&quot;: 1,
+            &quot;bills_created&quot;: 5
+        }
+    ]
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-dashboard-daily--month---year-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-dashboard-daily--month---year-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-dashboard-daily--month---year-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-dashboard-daily--month---year-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-dashboard-daily--month---year-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-dashboard-daily--month---year-" data-method="GET"
+      data-path="api/dashboard/daily/{month}/{year}"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-dashboard-daily--month---year-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-dashboard-daily--month---year-"
+                    onclick="tryItOut('GETapi-dashboard-daily--month---year-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-dashboard-daily--month---year-"
+                    onclick="cancelTryOut('GETapi-dashboard-daily--month---year-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-dashboard-daily--month---year-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/dashboard/daily/{month}/{year}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-dashboard-daily--month---year-"
+               value="Bearer {token}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {token}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-dashboard-daily--month---year-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-dashboard-daily--month---year-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>month</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="month"                data-endpoint="GETapi-dashboard-daily--month---year-"
+               value="12"
+               data-component="url">
+    <br>
+<p>The month number (1-12). Example: <code>12</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>year</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="year"                data-endpoint="GETapi-dashboard-daily--month---year-"
+               value="2025"
+               data-component="url">
+    <br>
+<p>The year. Example: <code>2025</code></p>
+            </div>
+                    </form>
 
                 <h1 id="endpoints">Endpoints</h1>
 
