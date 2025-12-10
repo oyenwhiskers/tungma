@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\Bill;
 use Carbon\Carbon;
 
@@ -62,8 +63,8 @@ class DashboardController extends Controller
      * @authenticated
      * @header Authorization Bearer {token}
      * 
-     * @urlParam month integer The month number (1-12). Defaults to current month. Example: 12
-     * @urlParam year integer The year. Defaults to current year. Example: 2025
+     * @queryParam month integer The month number (1-12). Defaults to current month. Example: 12
+     * @queryParam year integer The year. Defaults to current year. Example: 2025
      *
      * @response 200 {
      *     "success": true,
@@ -76,10 +77,10 @@ class DashboardController extends Controller
      *     ]
      * }
      */
-    public function dailyAnalytic($month = null, $year = null)
+    public function dailyAnalytic(Request $request)
     {
-        $month = $month ?: Carbon::now()->month;
-        $year = $year ?: Carbon::now()->year;
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfDay();
         $endDate = $startDate->copy()->endOfMonth()->endOfDay();
 
@@ -139,8 +140,8 @@ class DashboardController extends Controller
      * @authenticated
      * @header Authorization Bearer {token}
      * 
-     * @urlParam month integer The month number (1-12). Defaults to current month. Example: 12
-     * @urlParam year integer The year. Defaults to current year. Example: 2025
+     * @queryParam month integer The month number (1-12). Defaults to current month. Example: 12
+     * @queryParam year integer The year. Defaults to current year. Example: 2025
      *
      * @response 200 {
      *     "success": true,
@@ -150,10 +151,10 @@ class DashboardController extends Controller
      *     }
      * }
      */
-    public function monthlyAnalytic($month = null, $year = null)
+    public function monthlyAnalytic(Request $request)
     {
-        $month = $month ?: Carbon::now()->month;
-        $year = $year ?: Carbon::now()->year;
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
         $totalBills = Bill::whereMonth('created_at', $month)
             ->whereYear('created_at', $year)
             ->count();

@@ -5,7 +5,7 @@ endpoints:
     custom: []
     httpMethods:
       - GET
-    uri: 'api/dashboard/daily/{month?}/{year?}'
+    uri: api/dashboard/daily
     metadata:
       custom: []
       groupName: Dashboard
@@ -22,7 +22,9 @@ endpoints:
       Authorization: 'Bearer {token}'
       Content-Type: application/json
       Accept: application/json
-    urlParameters:
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
       month:
         custom: []
         name: month
@@ -45,11 +47,9 @@ endpoints:
         exampleWasSpecified: true
         nullable: false
         deprecated: false
-    cleanUrlParameters:
+    cleanQueryParameters:
       month: 12
       year: 2025
-    queryParameters: []
-    cleanQueryParameters: []
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -79,7 +79,7 @@ endpoints:
     custom: []
     httpMethods:
       - GET
-    uri: 'api/dashboard/monthly/{month?}/{year?}'
+    uri: api/dashboard/monthly
     metadata:
       custom: []
       groupName: Dashboard
@@ -96,7 +96,9 @@ endpoints:
       Authorization: 'Bearer {token}'
       Content-Type: application/json
       Accept: application/json
-    urlParameters:
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
       month:
         custom: []
         name: month
@@ -119,11 +121,9 @@ endpoints:
         exampleWasSpecified: true
         nullable: false
         deprecated: false
-    cleanUrlParameters:
+    cleanQueryParameters:
       month: 12
       year: 2025
-    queryParameters: []
-    cleanQueryParameters: []
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []

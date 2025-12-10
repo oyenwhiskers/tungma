@@ -100,11 +100,11 @@
                     <a href="#dashboard">Dashboard</a>
                 </li>
                                     <ul id="tocify-subheader-dashboard" class="tocify-subheader">
-                                                    <li class="tocify-item level-2" data-unique="dashboard-GETapi-dashboard-daily--month----year--">
-                                <a href="#dashboard-GETapi-dashboard-daily--month----year--">Get daily analytics.</a>
+                                                    <li class="tocify-item level-2" data-unique="dashboard-GETapi-dashboard-daily">
+                                <a href="#dashboard-GETapi-dashboard-daily">Get daily analytics.</a>
                             </li>
-                                                                                <li class="tocify-item level-2" data-unique="dashboard-GETapi-dashboard-monthly--month----year--">
-                                <a href="#dashboard-GETapi-dashboard-monthly--month----year--">Get monthly analytics.</a>
+                                                                                <li class="tocify-item level-2" data-unique="dashboard-GETapi-dashboard-monthly">
+                                <a href="#dashboard-GETapi-dashboard-monthly">Get monthly analytics.</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -752,7 +752,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "eta=architecto"\
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
-    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php66E8.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\phpDD2C.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1062,7 +1062,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\tiber\AppData\Local\Temp\php66E8.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpDD2C.tmp</code></p>
         </div>
         </form>
 
@@ -1245,7 +1245,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
     
 
-                                <h2 id="dashboard-GETapi-dashboard-daily--month----year--">Get daily analytics.</h2>
+                                <h2 id="dashboard-GETapi-dashboard-daily">Get daily analytics.</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
@@ -1254,13 +1254,13 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Retrieve daily counts of bills created (active) and voided bills for the specified month and year.
 Use this data to generate a stacked bar chart.</p>
 
-<span id="example-requests-GETapi-dashboard-daily--month----year--">
+<span id="example-requests-GETapi-dashboard-daily">
 <blockquote>Example request:</blockquote>
 
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/dashboard/daily/12/2025" \
+    --get "http://localhost:8000/api/dashboard/daily?month=12&amp;year=2025" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1268,8 +1268,15 @@ Use this data to generate a stacked bar chart.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost:8000/api/dashboard/daily/12/2025"
+    "http://localhost:8000/api/dashboard/daily"
 );
+
+const params = {
+    "month": "12",
+    "year": "2025",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
 
 const headers = {
     "Authorization": "Bearer {token}",
@@ -1284,7 +1291,7 @@ fetch(url, {
 
 </span>
 
-<span id="example-responses-GETapi-dashboard-daily--month----year--">
+<span id="example-responses-GETapi-dashboard-daily">
             <blockquote>
             <p>Example response (200):</p>
         </blockquote>
@@ -1302,43 +1309,43 @@ fetch(url, {
 }</code>
  </pre>
     </span>
-<span id="execution-results-GETapi-dashboard-daily--month----year--" hidden>
+<span id="execution-results-GETapi-dashboard-daily" hidden>
     <blockquote>Received response<span
-                id="execution-response-status-GETapi-dashboard-daily--month----year--"></span>:
+                id="execution-response-status-GETapi-dashboard-daily"></span>:
     </blockquote>
-    <pre class="json"><code id="execution-response-content-GETapi-dashboard-daily--month----year--"
+    <pre class="json"><code id="execution-response-content-GETapi-dashboard-daily"
       data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
 </span>
-<span id="execution-error-GETapi-dashboard-daily--month----year--" hidden>
+<span id="execution-error-GETapi-dashboard-daily" hidden>
     <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-GETapi-dashboard-daily--month----year--">
+    <pre><code id="execution-error-message-GETapi-dashboard-daily">
 
 Tip: Check that you&#039;re properly connected to the network.
 If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
 You can check the Dev Tools console for debugging information.</code></pre>
 </span>
-<form id="form-GETapi-dashboard-daily--month----year--" data-method="GET"
-      data-path="api/dashboard/daily/{month?}/{year?}"
+<form id="form-GETapi-dashboard-daily" data-method="GET"
+      data-path="api/dashboard/daily"
       data-authed="1"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('GETapi-dashboard-daily--month----year--', this);">
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-dashboard-daily', this);">
     <h3>
         Request&nbsp;&nbsp;&nbsp;
                     <button type="button"
                     style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-GETapi-dashboard-daily--month----year--"
-                    onclick="tryItOut('GETapi-dashboard-daily--month----year--');">Try it out ⚡
+                    id="btn-tryout-GETapi-dashboard-daily"
+                    onclick="tryItOut('GETapi-dashboard-daily');">Try it out ⚡
             </button>
             <button type="button"
                     style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-GETapi-dashboard-daily--month----year--"
-                    onclick="cancelTryOut('GETapi-dashboard-daily--month----year--');" hidden>Cancel 🛑
+                    id="btn-canceltryout-GETapi-dashboard-daily"
+                    onclick="cancelTryOut('GETapi-dashboard-daily');" hidden>Cancel 🛑
             </button>&nbsp;&nbsp;
             <button type="submit"
                     style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-GETapi-dashboard-daily--month----year--"
+                    id="btn-executetryout-GETapi-dashboard-daily"
                     data-initial-text="Send Request 💥"
                     data-loading-text="⏱ Sending..."
                     hidden>Send Request 💥
@@ -1346,7 +1353,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </h3>
             <p>
             <small class="badge badge-green">GET</small>
-            <b><code>api/dashboard/daily/{month?}/{year?}</code></b>
+            <b><code>api/dashboard/daily</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
                                 <div style="padding-left: 28px; clear: unset;">
@@ -1355,7 +1362,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="GETapi-dashboard-daily--month----year--"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-dashboard-daily"
                value="Bearer {token}"
                data-component="header">
     <br>
@@ -1367,7 +1374,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="GETapi-dashboard-daily--month----year--"
+                              name="Content-Type"                data-endpoint="GETapi-dashboard-daily"
                value="application/json"
                data-component="header">
     <br>
@@ -1379,40 +1386,40 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="GETapi-dashboard-daily--month----year--"
+                              name="Accept"                data-endpoint="GETapi-dashboard-daily"
                value="application/json"
                data-component="header">
     <br>
 <p>Example: <code>application/json</code></p>
             </div>
-                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
-                    <div style="padding-left: 28px; clear: unset;">
+                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>month</code></b>&nbsp;&nbsp;
 <small>integer</small>&nbsp;
 <i>optional</i> &nbsp;
  &nbsp;
                 <input type="number" style="display: none"
-               step="any"               name="month"                data-endpoint="GETapi-dashboard-daily--month----year--"
+               step="any"               name="month"                data-endpoint="GETapi-dashboard-daily"
                value="12"
-               data-component="url">
+               data-component="query">
     <br>
 <p>The month number (1-12). Defaults to current month. Example: <code>12</code></p>
             </div>
-                    <div style="padding-left: 28px; clear: unset;">
+                                    <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>year</code></b>&nbsp;&nbsp;
 <small>integer</small>&nbsp;
 <i>optional</i> &nbsp;
  &nbsp;
                 <input type="number" style="display: none"
-               step="any"               name="year"                data-endpoint="GETapi-dashboard-daily--month----year--"
+               step="any"               name="year"                data-endpoint="GETapi-dashboard-daily"
                value="2025"
-               data-component="url">
+               data-component="query">
     <br>
 <p>The year. Defaults to current year. Example: <code>2025</code></p>
             </div>
-                    </form>
+                </form>
 
-                    <h2 id="dashboard-GETapi-dashboard-monthly--month----year--">Get monthly analytics.</h2>
+                    <h2 id="dashboard-GETapi-dashboard-monthly">Get monthly analytics.</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
@@ -1421,13 +1428,13 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Retrieve total counts of valid bills (created and active) and voided bills for the specified month and year.
 Use this data to generate a pie chart.</p>
 
-<span id="example-requests-GETapi-dashboard-monthly--month----year--">
+<span id="example-requests-GETapi-dashboard-monthly">
 <blockquote>Example request:</blockquote>
 
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/dashboard/monthly/12/2025" \
+    --get "http://localhost:8000/api/dashboard/monthly?month=12&amp;year=2025" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1435,8 +1442,15 @@ Use this data to generate a pie chart.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost:8000/api/dashboard/monthly/12/2025"
+    "http://localhost:8000/api/dashboard/monthly"
 );
+
+const params = {
+    "month": "12",
+    "year": "2025",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
 
 const headers = {
     "Authorization": "Bearer {token}",
@@ -1451,7 +1465,7 @@ fetch(url, {
 
 </span>
 
-<span id="example-responses-GETapi-dashboard-monthly--month----year--">
+<span id="example-responses-GETapi-dashboard-monthly">
             <blockquote>
             <p>Example response (200):</p>
         </blockquote>
@@ -1466,43 +1480,43 @@ fetch(url, {
 }</code>
  </pre>
     </span>
-<span id="execution-results-GETapi-dashboard-monthly--month----year--" hidden>
+<span id="execution-results-GETapi-dashboard-monthly" hidden>
     <blockquote>Received response<span
-                id="execution-response-status-GETapi-dashboard-monthly--month----year--"></span>:
+                id="execution-response-status-GETapi-dashboard-monthly"></span>:
     </blockquote>
-    <pre class="json"><code id="execution-response-content-GETapi-dashboard-monthly--month----year--"
+    <pre class="json"><code id="execution-response-content-GETapi-dashboard-monthly"
       data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
 </span>
-<span id="execution-error-GETapi-dashboard-monthly--month----year--" hidden>
+<span id="execution-error-GETapi-dashboard-monthly" hidden>
     <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-GETapi-dashboard-monthly--month----year--">
+    <pre><code id="execution-error-message-GETapi-dashboard-monthly">
 
 Tip: Check that you&#039;re properly connected to the network.
 If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
 You can check the Dev Tools console for debugging information.</code></pre>
 </span>
-<form id="form-GETapi-dashboard-monthly--month----year--" data-method="GET"
-      data-path="api/dashboard/monthly/{month?}/{year?}"
+<form id="form-GETapi-dashboard-monthly" data-method="GET"
+      data-path="api/dashboard/monthly"
       data-authed="1"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('GETapi-dashboard-monthly--month----year--', this);">
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-dashboard-monthly', this);">
     <h3>
         Request&nbsp;&nbsp;&nbsp;
                     <button type="button"
                     style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-GETapi-dashboard-monthly--month----year--"
-                    onclick="tryItOut('GETapi-dashboard-monthly--month----year--');">Try it out ⚡
+                    id="btn-tryout-GETapi-dashboard-monthly"
+                    onclick="tryItOut('GETapi-dashboard-monthly');">Try it out ⚡
             </button>
             <button type="button"
                     style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-GETapi-dashboard-monthly--month----year--"
-                    onclick="cancelTryOut('GETapi-dashboard-monthly--month----year--');" hidden>Cancel 🛑
+                    id="btn-canceltryout-GETapi-dashboard-monthly"
+                    onclick="cancelTryOut('GETapi-dashboard-monthly');" hidden>Cancel 🛑
             </button>&nbsp;&nbsp;
             <button type="submit"
                     style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-GETapi-dashboard-monthly--month----year--"
+                    id="btn-executetryout-GETapi-dashboard-monthly"
                     data-initial-text="Send Request 💥"
                     data-loading-text="⏱ Sending..."
                     hidden>Send Request 💥
@@ -1510,7 +1524,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </h3>
             <p>
             <small class="badge badge-green">GET</small>
-            <b><code>api/dashboard/monthly/{month?}/{year?}</code></b>
+            <b><code>api/dashboard/monthly</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
                                 <div style="padding-left: 28px; clear: unset;">
@@ -1519,7 +1533,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="GETapi-dashboard-monthly--month----year--"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-dashboard-monthly"
                value="Bearer {token}"
                data-component="header">
     <br>
@@ -1531,7 +1545,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="GETapi-dashboard-monthly--month----year--"
+                              name="Content-Type"                data-endpoint="GETapi-dashboard-monthly"
                value="application/json"
                data-component="header">
     <br>
@@ -1543,38 +1557,38 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="GETapi-dashboard-monthly--month----year--"
+                              name="Accept"                data-endpoint="GETapi-dashboard-monthly"
                value="application/json"
                data-component="header">
     <br>
 <p>Example: <code>application/json</code></p>
             </div>
-                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
-                    <div style="padding-left: 28px; clear: unset;">
+                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>month</code></b>&nbsp;&nbsp;
 <small>integer</small>&nbsp;
 <i>optional</i> &nbsp;
  &nbsp;
                 <input type="number" style="display: none"
-               step="any"               name="month"                data-endpoint="GETapi-dashboard-monthly--month----year--"
+               step="any"               name="month"                data-endpoint="GETapi-dashboard-monthly"
                value="12"
-               data-component="url">
+               data-component="query">
     <br>
 <p>The month number (1-12). Defaults to current month. Example: <code>12</code></p>
             </div>
-                    <div style="padding-left: 28px; clear: unset;">
+                                    <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>year</code></b>&nbsp;&nbsp;
 <small>integer</small>&nbsp;
 <i>optional</i> &nbsp;
  &nbsp;
                 <input type="number" style="display: none"
-               step="any"               name="year"                data-endpoint="GETapi-dashboard-monthly--month----year--"
+               step="any"               name="year"                data-endpoint="GETapi-dashboard-monthly"
                value="2025"
-               data-component="url">
+               data-component="query">
     <br>
 <p>The year. Defaults to current year. Example: <code>2025</code></p>
             </div>
-                    </form>
+                </form>
 
                 <h1 id="endpoints">Endpoints</h1>
 
