@@ -78,6 +78,16 @@
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-hash"></i>
+                      <span>Bill ID Prefix</span>
+                    </div>
+                    <div class="info-value">
+                      <code>{{ $company->bill_id_prefix ?? '—' }}</code>
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-calendar-plus"></i>
                       <span>Created At</span>
                     </div>

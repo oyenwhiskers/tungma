@@ -29,18 +29,6 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">
-                <i class="bi bi-hash"></i> Bill Code <span class="text-danger">*</span>
-              </label>
-              <input type="text" name="bill_code" class="form-control @error('bill_code') is-invalid @enderror" 
-                     value="{{ old('bill_code') }}" required>
-              <div class="form-text">Unique identifier for this bill</div>
-              @error('bill_code')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">
                 <i class="bi bi-calendar"></i> Bill Date <span class="text-danger">*</span>
               </label>
               <input type="date" name="date" class="form-control @error('date') is-invalid @enderror" 
@@ -242,7 +230,8 @@
       </div>
       <div class="tm-card-body">
         <ul class="small mb-0 ps-3">
-          <li class="mb-2">Bill code must be unique across all bills</li>
+          <li class="mb-2">Bill code will be automatically generated based on company prefix</li>
+          <li class="mb-2">Ensure the selected company has a bill ID prefix configured</li>
           <li class="mb-2">Amount should reflect the total bill value</li>
           <li class="mb-2">Payment details are optional but recommended for record keeping</li>
           <li class="mb-2">Customer information helps with delivery tracking</li>
