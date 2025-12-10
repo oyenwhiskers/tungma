@@ -12,45 +12,21 @@ class AuthController extends Controller
     /**
      * User login with contact number
      *
-     * Authenticate a user using contact number and password. Returns a Sanctum bearer token
-     * that should be included in subsequent API requests in the Authorization header as:
-     * `Authorization: Bearer {token}`
+     * Authenticate a user using `contact_number` and password and return a Sanctum bearer token.
      *
-     * @group Authentication
+     * @group Auth
      *
-     * @bodyParam contact_number string required The user's contact number. Example: +60123456789
-     * @bodyParam password string required The user's password. Example: password123
+     * @bodyParam contact_number string required The user's contact number.
+     * @bodyParam password string required The user's password.
      *
-     * @response 200 {
-     *   "token": "1|abcdefghijklmnopqrstuvwxyz1234567890",
+     * @response status=200 {
+     *   "token": "1|abc...",
      *   "token_type": "Bearer",
      *   "user": {
      *     "id": 1,
      *     "name": "John Doe",
-     *     "username": "johndoe",
-     *     "email": "john@example.com",
-     *     "contact_number": "+60123456789",
-     *     "date_of_birth": "1990-01-15",
-     *     "gender": "male",
-     *     "ic_number": "900115-01-1234",
-     *     "position": "Software Engineer",
-     *     "company_id": 1,
-     *     "role": "staff",
-     *     "created_at": "2025-01-01T00:00:00.000000Z",
-     *     "updated_at": "2025-01-10T12:00:00.000000Z"
-     *   }
-     * }
-     * 
-     * @response 401 {
-     *   "message": "Invalid credentials"
-     * }
-     * 
-     * @response 422 {
-     *   "message": "The contact number field is required.",
-     *   "errors": {
-     *     "contact_number": [
-     *       "The contact number field is required."
-     *     ]
+     *     "contact_number": "0123456789",
+     *     "...": "..."
      *   }
      * }
      * @response status=401 {"message": "Invalid credentials"}
