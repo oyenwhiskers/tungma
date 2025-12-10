@@ -28,7 +28,6 @@ class User extends Authenticatable
         'gender',
         'ic_number',
         'position',
-        'image',
         'company_id',
         'role',
         'password',

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 name: Auth
-=======
-name: Authentication
->>>>>>> origin/backend-profile
 description: ''
 endpoints:
   -
@@ -12,23 +8,12 @@ endpoints:
     uri: api/login
     metadata:
       custom: []
-<<<<<<< HEAD
       groupName: Auth
-=======
-      groupName: Authentication
->>>>>>> origin/backend-profile
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'User login with contact number'
-<<<<<<< HEAD
       description: 'Authenticate a user using `contact_number` and password and return a Sanctum bearer token.'
-=======
-      description: |-
-        Authenticate a user using contact number and password. Returns a Sanctum bearer token
-        that should be included in subsequent API requests in the Authorization header as:
-        `Authorization: Bearer {token}`
->>>>>>> origin/backend-profile
       authenticated: false
       deprecated: false
     headers:
@@ -44,17 +29,10 @@ endpoints:
         name: contact_number
         description: "The user's contact number."
         required: true
-<<<<<<< HEAD
         example: architecto
         type: string
         enumValues: []
         exampleWasSpecified: false
-=======
-        example: '+60123456789'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
->>>>>>> origin/backend-profile
         nullable: false
         deprecated: false
       password:
@@ -62,7 +40,6 @@ endpoints:
         name: password
         description: "The user's password."
         required: true
-<<<<<<< HEAD
         example: '|]|{+-'
         type: string
         enumValues: []
@@ -72,17 +49,6 @@ endpoints:
     cleanBodyParameters:
       contact_number: architecto
       password: '|]|{+-'
-=======
-        example: password123
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-    cleanBodyParameters:
-      contact_number: '+60123456789'
-      password: password123
->>>>>>> origin/backend-profile
     fileParameters: []
     responses:
       -
@@ -90,46 +56,14 @@ endpoints:
         status: 200
         content: |-
           {
-<<<<<<< HEAD
             "token": "1|abc...",
-=======
-            "token": "1|abcdefghijklmnopqrstuvwxyz1234567890",
->>>>>>> origin/backend-profile
             "token_type": "Bearer",
             "user": {
               "id": 1,
               "name": "John Doe",
-<<<<<<< HEAD
               "contact_number": "0123456789",
               "...": "..."
-=======
-              "username": "johndoe",
-              "email": "john@example.com",
-              "contact_number": "+60123456789",
-              "date_of_birth": "1990-01-15",
-              "gender": "male",
-              "ic_number": "900115-01-1234",
-              "position": "Software Engineer",
-              "company_id": 1,
-              "role": "staff",
-              "created_at": "2025-01-01T00:00:00.000000Z",
-              "updated_at": "2025-01-10T12:00:00.000000Z"
->>>>>>> origin/backend-profile
             }
-          }
-        headers: []
-        description: ''
-      -
-        custom: []
-        status: 401
-<<<<<<< HEAD
-        content: '{"message": "Invalid credentials"}'
-        headers: []
-        description: ''
-=======
-        content: |-
-          {
-            "message": "Invalid credentials"
           }
         headers: []
         description: ''
@@ -139,21 +73,6 @@ endpoints:
         content: '{"message": "Invalid credentials"}'
         headers: []
         description: ''
-      -
-        custom: []
-        status: 422
-        content: |-
-          {
-            "message": "The contact number field is required.",
-            "errors": {
-              "contact_number": [
-                "The contact number field is required."
-              ]
-            }
-          }
-        headers: []
-        description: ''
->>>>>>> origin/backend-profile
     responseFields: []
     auth: []
     controller: null
