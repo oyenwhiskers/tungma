@@ -57,10 +57,18 @@ Route::middleware(['web', 'auth', 'super.admin'])->group(function () {
     // Companies management (Super Admin only)
     Route::post('/companies', [App\Http\Controllers\CompanyController::class, 'store'])->name('companies.store');
     Route::get('/companies/create', [App\Http\Controllers\CompanyController::class, 'create'])->name('companies.create');
-    Route::get('/companies/{company}/edit', [App\Http\Controllers\CompanyController::class, 'edit'])->name('companies.edit');
-    Route::put('/companies/{company}', [App\Http\Controllers\CompanyController::class, 'update'])->name('companies.update');
-    Route::delete('/companies/{company}', [App\Http\Controllers\CompanyController::class, 'destroy'])->name('companies.destroy');
-    Route::post('/deleted/companies/{id}/restore', [App\Http\Controllers\CompanyController::class, 'restore'])->name('companies.restore');
+    Route::get('/companies/{company}/edit', [App\Http\Controllers\CompanyController::class, 'edit'])
+        ->whereNumber('company')
+        ->name('companies.edit');
+    Route::put('/companies/{company}', [App\Http\Controllers\CompanyController::class, 'update'])
+        ->whereNumber('company')
+        ->name('companies.update');
+    Route::delete('/companies/{company}', [App\Http\Controllers\CompanyController::class, 'destroy'])
+        ->whereNumber('company')
+        ->name('companies.destroy');
+    Route::post('/deleted/companies/{id}/restore', [App\Http\Controllers\CompanyController::class, 'restore'])
+        ->whereNumber('id')
+        ->name('companies.restore');
 
     // Admins management (Super Admin only)
     Route::resource('admins', App\Http\Controllers\AdminUserController::class);
