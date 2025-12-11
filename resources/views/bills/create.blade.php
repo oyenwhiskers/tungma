@@ -144,7 +144,7 @@
           </div>
 
           <hr class="my-4">
-          <h5 class="mb-3"><i class="bi bi-building me-2"></i>Company</h5>
+          <h5 class="mb-3"><i class="bi bi-building me-2"></i>Courier Policy</h5>
 
           <div class="row g-3">
             @if(auth()->user()->role === 'admin')
