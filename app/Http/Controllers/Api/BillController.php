@@ -212,6 +212,19 @@ class BillController extends Controller
             ], 403);
         }
 
+        // Pre-validate courier_policy_id: if provided but invalid, set to null for auto-selection
+        $courierPolicyId = $request->input('courier_policy_id');
+        if (!empty($courierPolicyId)) {
+            $policyExists = \App\Models\CourierPolicy::where('id', $courierPolicyId)
+                ->where('company_id', $user->company_id)
+                ->exists();
+
+            if (!$policyExists) {
+                // Invalid policy ID provided - set to null so auto-selection can work
+                $request->merge(['courier_policy_id' => null]);
+            }
+        }
+
         $data = $request->validate([
             'date' => 'required|date',
             'amount' => 'required|numeric',
