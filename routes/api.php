@@ -13,9 +13,9 @@ Route::post('/login', [AuthController::class, 'login']);
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
     // User info
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    // Route::get('/user', function (Request $request) {
+    //     return $request->user();
+    // });
 
     // Bills API - automatically uses authenticated user's company_id
     // Only 4 endpoints: index, show, store, destroy (void)
