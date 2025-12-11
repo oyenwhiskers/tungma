@@ -147,19 +147,52 @@
           <h5 class="mb-3"><i class="bi bi-building me-2"></i>Company</h5>
 
           <div class="row g-3">
+            @if(auth()->user()->role === 'admin')
+              {{-- Admin: Hide company field, use hidden input with their company_id --}}
+              <input type="hidden" name="company_id" id="company_id" value="{{ auth()->user()->company_id }}">
+              <div class="col-md-6">
+                <label class="form-label">
+                  <i class="bi bi-building"></i> Company
+                </label>
+                <input type="text" class="form-control" value="{{ auth()->user()->company->name ?? 'N/A' }}" disabled>
+                <div class="form-text">Your assigned company</div>
+              </div>
+            @else
+              {{-- Super Admin: Show company selection --}}
+              <div class="col-md-6">
+                <label class="form-label">
+                  <i class="bi bi-building"></i> Company <span class="text-danger">*</span>
+                </label>
+                <select name="company_id" id="company_id" class="form-select @error('company_id') is-invalid @enderror" required>
+                  <option value="">Select company</option>
+                  @foreach($companies as $company)
+                    <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>
+                      {{ $company->name }}
+                    </option>
+                  @endforeach
+                </select>
+                @error('company_id')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+            @endif
+
             <div class="col-md-6">
               <label class="form-label">
-                <i class="bi bi-building"></i> Company <span class="text-danger">*</span>
+                <i class="bi bi-shield-check"></i> Courier Policy
               </label>
-              <select name="company_id" id="company_id" class="form-select @error('company_id') is-invalid @enderror" required>
-                <option value="">Select company</option>
-                @foreach($companies as $company)
-                  <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>
-                    {{ $company->name }}
+              <select name="courier_policy_id" id="courier_policy_id" class="form-select @error('courier_policy_id') is-invalid @enderror">
+                <option value="">Select courier policy</option>
+                @foreach($policies as $policy)
+                  <option value="{{ $policy->id }}" 
+                          data-company-id="{{ $policy->company_id }}"
+                          {{ old('courier_policy_id') == $policy->id ? 'selected' : '' }}>
+                    {{ $policy->name }}
                   </option>
                 @endforeach
               </select>
-              @error('company_id')
+              <div class="form-text">Select a courier policy for this company</div>
+              @error('courier_policy_id')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
@@ -250,8 +283,14 @@
   (function(){
     const companySelect = document.getElementById('company_id');
     const policySelect = document.getElementById('courier_policy_id');
+    
+    if (!companySelect || !policySelect) return;
+    
     function filterPolicies() {
-      const companyId = companySelect.value;
+      // Get company ID - works for both select and hidden input
+      const companyId = companySelect.value || companySelect.getAttribute('value');
+      if (!companyId) return;
+      
       [...policySelect.options].forEach((opt) => {
         if (!opt.value) return; // skip placeholder
         const cid = opt.getAttribute('data-company-id');
@@ -263,11 +302,14 @@
         policySelect.value = '';
       }
     }
-    if (companySelect && policySelect) {
+    
+    // Only add change listener if it's a select element (super admin)
+    if (companySelect.tagName === 'SELECT') {
       companySelect.addEventListener('change', filterPolicies);
-      // initial filter
-      filterPolicies();
     }
+    
+    // Initial filter (works for both admin and super admin)
+    filterPolicies();
   })();
   </script>
 @endpush

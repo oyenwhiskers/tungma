@@ -64,8 +64,18 @@ class BillController extends Controller
 
     public function create()
     {
-        $companies = \App\Models\Company::all();
-        $policies = \App\Models\CourierPolicy::all();
+        $user = auth()->user();
+        
+        if ($user->role === 'admin') {
+            // Admin can only see their own company and its policies
+            $companies = \App\Models\Company::where('id', $user->company_id)->get();
+            $policies = \App\Models\CourierPolicy::where('company_id', $user->company_id)->get();
+        } else {
+            // Super admin can see all companies and policies
+            $companies = \App\Models\Company::all();
+            $policies = \App\Models\CourierPolicy::all();
+        }
+        
         return view('bills.create', compact('companies', 'policies'));
     }
 
@@ -192,8 +202,18 @@ class BillController extends Controller
 
     public function edit(Bill $bill)
     {
-        $companies = \App\Models\Company::all();
-        $policies = \App\Models\CourierPolicy::all();
+        $user = auth()->user();
+        
+        if ($user->role === 'admin') {
+            // Admin can only see their own company and its policies
+            $companies = \App\Models\Company::where('id', $user->company_id)->get();
+            $policies = \App\Models\CourierPolicy::where('company_id', $user->company_id)->get();
+        } else {
+            // Super admin can see all companies and policies
+            $companies = \App\Models\Company::all();
+            $policies = \App\Models\CourierPolicy::all();
+        }
+        
         return view('bills.edit', compact('bill', 'companies', 'policies'));
     }
 
