@@ -31,6 +31,7 @@ class User extends Authenticatable
         'image',
         'company_id',
         'role',
+        'start_date',
         'password',
     ];
 
@@ -53,6 +54,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'start_date' => 'datetime',
             'password' => 'hashed',
         ];
     }
