@@ -110,8 +110,8 @@ use Illuminate\Support\Facades\Storage;
                 <option value="">Select payment method</option>
                 <option value="cash" {{ old('payment_method', $payment['method'] ?? '') == 'cash' ? 'selected' : '' }}>Cash</option>
                 <option value="bank_transfer" {{ old('payment_method', $payment['method'] ?? '') == 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                <option value="credit_card" {{ old('payment_method', $payment['method'] ?? '') == 'credit_card' ? 'selected' : '' }}>Credit Card</option>
-                <option value="e_wallet" {{ old('payment_method', $payment['method'] ?? '') == 'e_wallet' ? 'selected' : '' }}>E-Wallet</option>
+                <option value="e_wallet_qr" {{ old('payment_method', $payment['method'] ?? '') == 'e_wallet_qr' ? 'selected' : '' }}>E-wallet/QR</option>
+                <option value="cod" {{ old('payment_method', $payment['method'] ?? '') == 'cod' ? 'selected' : '' }}>COD</option>
               </select>
               @error('payment_method')
                 <div class="invalid-feedback">{{ $message }}</div>
