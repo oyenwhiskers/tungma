@@ -106,11 +106,16 @@ class BillController extends Controller
      *       "id": 1,
      *       "bill_code": "BILL000001",
      *       "date": "2025-12-10",
+     *       "bus_datetime": "2025-12-10T04:30:00Z",
+     *       "amount": 100.50,
+     *       "is_paid": false,
      *       "customer_info": {
      *         "name": "John Doe",
      *         "phone": "0123456789",
      *         "address": "123 Main St"
-     *       }
+     *       },
+     *       "media_attachment_url": "https://example.com/storage/bills/img.png",
+     *       "payment_proof_attachment_url": "https://example.com/storage/bills/proof.pdf"
      *     }
      *   ],
      *   "current_page": 1,
@@ -150,7 +155,15 @@ class BillController extends Controller
                 'bill_code' => $bill->bill_code,
                 'date' => $bill->date,
                 'bus_datetime' => $bill->bus_datetime ? ($bill->bus_datetime instanceof \Carbon\Carbon ? $bill->bus_datetime->toISOString() : $bill->bus_datetime) : null,
+                'amount' => (float) $bill->amount,
+                'is_paid' => (bool) $bill->is_paid,
                 'customer_info' => $bill->customer_info ? (is_string($bill->customer_info) ? json_decode($bill->customer_info, true) : $bill->customer_info) : null,
+                'media_attachment_url' => $bill->media_attachment
+                    ? URL::to(Storage::url($bill->media_attachment))
+                    : null,
+                'payment_proof_attachment_url' => $bill->payment_proof_attachment
+                    ? URL::to(Storage::url($bill->payment_proof_attachment))
+                    : null,
             ];
         });
 
@@ -186,13 +199,16 @@ class BillController extends Controller
      * @bodyParam eta string Optional estimated time of arrival.
      * @bodyParam sst_rate number Optional SST rate percentage.
      * @bodyParam sst_amount number Optional SST amount.
+     * @bodyParam is_paid boolean Optional flag to mark bill as paid. Defaults to false. Example: true
      * @bodyParam media_attachment file Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp.
+     * @bodyParam payment_proof_attachment file Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf.
      *
      * @response 201 {
      *   "message": "Bill created successfully",
      *   "data": {
      *     "id": 1,
      *     "bill_code": "BILL000001",
+     *     "is_paid": false,
      *     ...
      *   }
      * }
@@ -233,12 +249,15 @@ class BillController extends Controller
             'eta' => 'nullable|string',
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
+            'is_paid' => 'sometimes|boolean',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
             'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
         ]);
 
         // Automatically set company_id from authenticated user
         $data['company_id'] = $user->company_id;
+        $data['created_by'] = $user->id;
+        $data['is_paid'] = $request->boolean('is_paid', false);
 
         // Auto-generate bill code using company prefix and running number
         try {
@@ -368,14 +387,24 @@ class BillController extends Controller
      *       "phone": "+60123456789",
      *       "address": "123 Main St"
      *     },
+     *     "is_paid": false,
      *     "eta": "3",
      *     "sst_details": null,
      *     "media_attachment_url": "http://example.com/storage/bills/image.png",
+     *     "payment_proof_attachment_url": "http://example.com/storage/bills/proof.pdf",
      *     "company": {
      *       "id": 1,
      *       "name": "Company Name"
      *     },
      *     "courier_policy": null,
+     *     "creator": {
+     *       "id": 2,
+     *       "name": "Alice"
+     *     },
+     *     "checker": {
+     *       "id": 3,
+     *       "name": "Bob"
+     *     },
      *     "created_at": "2025-12-10T02:06:54.000000Z",
      *     "updated_at": "2025-12-10T03:01:06.000000Z"
      *   }
@@ -407,7 +436,7 @@ class BillController extends Controller
             ], 404);
         }
 
-        $bill->load('company', 'courierPolicy');
+        $bill->load('company', 'courierPolicy', 'creator', 'checker');
 
         // Parse JSON fields for cleaner response
         $paymentDetails = null;
@@ -441,6 +470,7 @@ class BillController extends Controller
             'description' => $bill->description,
             'payment_details' => $paymentDetails,
             'customer_info' => $customerInfo,
+            'is_paid' => (bool) $bill->is_paid,
             'eta' => $bill->eta,
             'sst_details' => $sstDetails,
             'media_attachment_url' => $bill->media_attachment
@@ -456,6 +486,14 @@ class BillController extends Controller
             'courier_policy' => $bill->courierPolicy ? [
                 'id' => $bill->courierPolicy->id,
                 'name' => $bill->courierPolicy->name,
+            ] : null,
+            'creator' => $bill->creator ? [
+                'id' => $bill->creator->id,
+                'name' => $bill->creator->name,
+            ] : null,
+            'checker' => $bill->checker ? [
+                'id' => $bill->checker->id,
+                'name' => $bill->checker->name,
             ] : null,
             'created_at' => $bill->created_at ? $bill->created_at->toISOString() : null,
             'updated_at' => $bill->updated_at ? $bill->updated_at->toISOString() : null,
