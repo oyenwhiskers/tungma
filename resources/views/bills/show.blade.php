@@ -68,6 +68,16 @@ use Illuminate\Support\Facades\Storage;
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-bus-front"></i>
+                      <span>Bus Departure DateTime</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $bill->bus_datetime ? $bill->bus_datetime->format('M d, Y h:i A') : '—' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-cash-stack"></i>
                       <span>Bill Amount</span>
                     </div>

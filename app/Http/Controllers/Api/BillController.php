@@ -149,6 +149,7 @@ class BillController extends Controller
                 'id' => $bill->id,
                 'bill_code' => $bill->bill_code,
                 'date' => $bill->date,
+                'bus_datetime' => $bill->bus_datetime ? ($bill->bus_datetime instanceof \Carbon\Carbon ? $bill->bus_datetime->toISOString() : $bill->bus_datetime) : null,
                 'customer_info' => $bill->customer_info ? (is_string($bill->customer_info) ? json_decode($bill->customer_info, true) : $bill->customer_info) : null,
             ];
         });
@@ -181,6 +182,7 @@ class BillController extends Controller
      * @bodyParam customer_phone string Optional customer phone.
      * @bodyParam customer_address string Optional customer address.
      * @bodyParam courier_policy_id integer Optional courier policy ID.
+     * @bodyParam bus_datetime string Optional bus departure datetime (Y-m-d H:i:s format). Used for grouping bills by vehicle departure.
      * @bodyParam eta string Optional estimated time of arrival.
      * @bodyParam sst_rate number Optional SST rate percentage.
      * @bodyParam sst_amount number Optional SST amount.
@@ -214,6 +216,7 @@ class BillController extends Controller
 
         $data = $request->validate([
             'date' => 'required|date',
+            'bus_datetime' => 'nullable|date',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
@@ -424,6 +427,7 @@ class BillController extends Controller
             'id' => $bill->id,
             'bill_code' => $bill->bill_code,
             'date' => $bill->date ? ($bill->date instanceof \Carbon\Carbon ? $bill->date->format('Y-m-d') : $bill->date) : null,
+            'bus_datetime' => $bill->bus_datetime ? ($bill->bus_datetime instanceof \Carbon\Carbon ? $bill->bus_datetime->toISOString() : $bill->bus_datetime) : null,
             'amount' => (float) $bill->amount,
             'description' => $bill->description,
             'payment_details' => $paymentDetails,

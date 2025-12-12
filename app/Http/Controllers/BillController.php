@@ -137,6 +137,7 @@ class BillController extends Controller
     {
         $data = $request->validate([
             'date' => 'required|date',
+            'bus_datetime' => 'nullable|date',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
@@ -253,6 +254,11 @@ class BillController extends Controller
             $data['is_paid'] = false;
         }
 
+        // Handle bus_datetime - allow null (empty string becomes null)
+        if (isset($data['bus_datetime']) && $data['bus_datetime'] === '') {
+            $data['bus_datetime'] = null;
+        }
+
         Bill::create($data);
         return redirect()->route('bills.index')->with('success', 'Bill created successfully');
     }
@@ -290,6 +296,7 @@ class BillController extends Controller
         $data = $request->validate([
             'bill_code' => 'required|string|max:255|unique:bills,bill_code,' . $bill->id,
             'date' => 'required|date',
+            'bus_datetime' => 'nullable|date',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
@@ -389,6 +396,11 @@ class BillController extends Controller
         // Handle checked_by - allow null (empty string becomes null)
         if (isset($data['checked_by']) && $data['checked_by'] === '') {
             $data['checked_by'] = null;
+        }
+
+        // Handle bus_datetime - allow null (empty string becomes null)
+        if (isset($data['bus_datetime']) && $data['bus_datetime'] === '') {
+            $data['bus_datetime'] = null;
         }
 
         $bill->update($data);

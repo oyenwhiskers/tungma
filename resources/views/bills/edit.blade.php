@@ -65,6 +65,18 @@ use Illuminate\Support\Facades\Storage;
 
             <div class="col-md-6">
               <label class="form-label">
+                <i class="bi bi-bus-front"></i> Bus Departure DateTime
+              </label>
+              <input type="datetime-local" name="bus_datetime" class="form-control @error('bus_datetime') is-invalid @enderror" 
+                     value="{{ old('bus_datetime', $bill->bus_datetime ? $bill->bus_datetime->format('Y-m-d\TH:i') : '') }}">
+              <div class="form-text">Vehicle departure datetime for grouping bills</div>
+              @error('bus_datetime')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
                 <i class="bi bi-cash-stack"></i> Amount (RM) <span class="text-danger">*</span>
               </label>
               <input type="number" step="0.01" name="amount" class="form-control @error('amount') is-invalid @enderror" 
