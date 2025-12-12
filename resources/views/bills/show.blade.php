@@ -93,8 +93,19 @@ use Illuminate\Support\Facades\Storage;
                     </div>
                     <div class="info-value">
                       @if($bill->payment_details)
-                        @php $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details; @endphp
-                        {{ $payment['method'] ?? '—' }}
+                        @php 
+                          $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details;
+                          $method = $payment['method'] ?? null;
+                          $methodLabels = [
+                            'cash' => 'Cash',
+                            'bank_transfer' => 'Bank Transfer',
+                            'e_wallet_qr' => 'E-wallet/QR',
+                            'cod' => 'COD',
+                            'credit_card' => 'Credit Card',
+                            'e_wallet' => 'E-Wallet'
+                          ];
+                        @endphp
+                        {{ $methodLabels[$method] ?? ucfirst(str_replace('_', ' ', $method ?? '')) }}
                       @else
                         —
                       @endif

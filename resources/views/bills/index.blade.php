@@ -67,8 +67,8 @@
                     <option value="">All Methods</option>
                     <option value="cash" {{ request('payment_method') == 'cash' ? 'selected' : '' }}>Cash</option>
                     <option value="bank_transfer" {{ request('payment_method') == 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                    <option value="credit_card" {{ request('payment_method') == 'credit_card' ? 'selected' : '' }}>Credit Card</option>
-                    <option value="e_wallet" {{ request('payment_method') == 'e_wallet' ? 'selected' : '' }}>E-Wallet</option>
+                    <option value="e_wallet_qr" {{ request('payment_method') == 'e_wallet_qr' ? 'selected' : '' }}>E-wallet/QR</option>
+                    <option value="cod" {{ request('payment_method') == 'cod' ? 'selected' : '' }}>COD</option>
                 </select>
             </div>
             
@@ -85,7 +85,7 @@
                     <a href="{{ route('bills.index') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-x-circle"></i> Clear
                     </a>
-                    @if(request()->hasAny(['search', 'payment_status', 'company_id', 'payment_method', 'date_from', 'date_to']))
+                    @if(request()->hasAny(['search', 'payment_status', 'company_id', 'payment_method', 'date']))
                         <span class="align-self-center text-muted small ms-2">
                             <i class="bi bi-info-circle"></i> {{ $bills->total() }} result(s) found
                         </span>
@@ -128,8 +128,17 @@
                     <td>
                         @php
                             $payment = $bill->payment_details ? json_decode($bill->payment_details, true) : null;
+                            $method = $payment['method'] ?? null;
+                            $methodLabels = [
+                                'cash' => 'Cash',
+                                'bank_transfer' => 'Bank Transfer',
+                                'e_wallet_qr' => 'E-wallet/QR',
+                                'cod' => 'COD',
+                                'credit_card' => 'Credit Card',
+                                'e_wallet' => 'E-Wallet'
+                            ];
                         @endphp
-                        {{ $payment['method'] ?? '—' }}
+                        {{ $methodLabels[$method] ?? ($method ? ucfirst(str_replace('_', ' ', $method)) : '—') }}
                     </td>
                     <td>{{ $bill->is_paid ? 'Paid' : 'Unpaid' }}</td>
                     <td class="text-end">
