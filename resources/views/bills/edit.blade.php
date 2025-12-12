@@ -143,6 +143,22 @@ use Illuminate\Support\Facades\Storage;
           </div>
 
           <hr class="my-4">
+          <h5 class="mb-3"><i class="bi bi-receipt me-2"></i>Payment Proof (QR, Bank Transfer)</h5>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">
+                <i class="bi bi-paperclip"></i> Upload Payment Proof
+              </label>
+              <input type="file" name="payment_proof_attachment" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,application/pdf" class="form-control @error('payment_proof_attachment') is-invalid @enderror">
+              <div class="form-text">Upload receipt/transfer slip (JPG, PNG, GIF, WEBP, PDF; max 5MB)</div>
+              @error('payment_proof_attachment')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+
+          <hr class="my-4">
           <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Bill Status & Tracking</h5>
 
           <div class="row g-3">
@@ -159,7 +175,7 @@ use Illuminate\Support\Facades\Storage;
               @enderror
             </div>
 
-            <div class="col-md-6">
+            {{-- <div class="col-md-6">
               <label class="form-label">
                 <i class="bi bi-person-check"></i> Checked By
               </label>
@@ -175,7 +191,7 @@ use Illuminate\Support\Facades\Storage;
               @error('checked_by')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
-            </div>
+            </div> --}}
 
             <div class="col-md-6">
               <label class="form-label">

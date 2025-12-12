@@ -156,6 +156,7 @@ class BillController extends Controller
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
+            'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
             'is_paid' => 'nullable|boolean',
             'checked_by' => 'nullable|exists:users,id',
         ]);
@@ -244,6 +245,14 @@ class BillController extends Controller
             $data['media_attachment'] = $path;
         }
 
+        // Handle payment proof attachment upload
+        if ($request->hasFile('payment_proof_attachment')) {
+            $file = $request->file('payment_proof_attachment');
+            $filename = time() . '_proof_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bills', $filename, 'public');
+            $data['payment_proof_attachment'] = $path;
+        }
+
         // Set created_by to current authenticated user
         $data['created_by'] = auth()->id();
         
@@ -315,6 +324,7 @@ class BillController extends Controller
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
+            'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
             'is_paid' => 'nullable|boolean',
             'checked_by' => 'nullable|exists:users,id',
         ]);
@@ -386,6 +396,18 @@ class BillController extends Controller
             $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
             $path = $file->storeAs('bills', $filename, 'public');
             $data['media_attachment'] = $path;
+        }
+
+        // Handle payment proof attachment upload
+        if ($request->hasFile('payment_proof_attachment')) {
+            if ($bill->payment_proof_attachment && Storage::disk('public')->exists($bill->payment_proof_attachment)) {
+                Storage::disk('public')->delete($bill->payment_proof_attachment);
+            }
+
+            $file = $request->file('payment_proof_attachment');
+            $filename = time() . '_proof_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bills', $filename, 'public');
+            $data['payment_proof_attachment'] = $path;
         }
 
         // Handle is_paid (convert string to boolean if needed)
