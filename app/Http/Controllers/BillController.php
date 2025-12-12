@@ -51,15 +51,67 @@ class BillController extends Controller
 
         return $company->bill_id_prefix . $paddedNumber;
     }
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
+        
+        // Start building query
+        $query = Bill::query();
+        
+        // Apply company filter for admin
         if ($user->role === 'admin') {
-            $bills = Bill::where('company_id', $user->company_id)->latest()->paginate(20);
-        } else {
-            $bills = Bill::query()->latest()->paginate(20);
+            $query->where('company_id', $user->company_id);
         }
-        return view('bills.index', compact('bills'));
+        
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('bill_code', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('customer_info->name', 'like', "%{$search}%")
+                  ->orWhere('customer_info->phone', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filter by payment status
+        if ($request->filled('payment_status')) {
+            if ($request->payment_status === 'paid') {
+                $query->where('is_paid', true);
+            } elseif ($request->payment_status === 'unpaid') {
+                $query->where('is_paid', false);
+            }
+        }
+        
+        // Filter by company (for super admin)
+        if ($request->filled('company_id') && $user->role !== 'admin') {
+            $query->where('company_id', $request->company_id);
+        }
+        
+        // Filter by date 
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
+        }
+        
+        // Filter by payment method
+        if ($request->filled('payment_method')) {
+            $query->where('payment_details->method', $request->payment_method);
+        }
+        
+        // Get companies for filter dropdown (only for super admin)
+        if ($user->role === 'admin') {
+            $companies = \App\Models\Company::where('id', $user->company_id)->get();
+        } else {
+            $companies = \App\Models\Company::all();
+        }
+        
+        // Eager load relationships to avoid N+1 queries
+        $bills = $query->with(['company', 'checker', 'creator'])
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+        
+        return view('bills.index', compact('bills', 'companies'));
     }
 
     public function create()
