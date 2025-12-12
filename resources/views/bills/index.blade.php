@@ -33,6 +33,7 @@
                     <th>Amount</th>
                     <th>Company</th>
                     <th>ETA</th>
+                    <th>Payment Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -49,6 +50,7 @@
                     <td><strong>RM {{ number_format($bill->amount, 2) }}</strong></td>
                     <td>{{ $bill->company?->name ?? '—' }}</td>
                     <td>{{ $bill->eta ?? '—' }}</td>
+                    <td>{{ $bill->is_paid ? 'Paid' : 'Unpaid' }}</td>
                     <td class="text-end">
                         <div class="btn-group btn-group-sm">
                             <a href="{{ route('bills.show', $bill) }}" class="btn btn-outline-secondary">

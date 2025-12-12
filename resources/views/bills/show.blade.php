@@ -48,6 +48,16 @@ use Illuminate\Support\Facades\Storage;
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-check-circle"></i>
+                      <span>Payment Status</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $bill->is_paid ? 'Paid' : 'Unpaid' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-calendar"></i>
                       <span>Bill Date</span>
                     </div>
@@ -220,6 +230,16 @@ use Illuminate\Support\Facades\Storage;
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-person-check"></i>
+                      <span>Checked By</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $bill->checked_by ? $bill->checker->name : 'Not checked yet' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-calendar-plus"></i>
                       <span>Created At</span>
                     </div>
@@ -251,6 +271,10 @@ use Illuminate\Support\Facades\Storage;
                 <div class="mb-3 pb-3 border-bottom">
                     <div class="text-muted small mb-1">Status</div>
                     <span class="badge bg-success">Active</span>
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <div class="text-muted small mb-1">Payment Status</div>
+                    <span class="badge bg-info">{{ $bill->is_paid ? 'Paid' : 'Unpaid' }}</span>
                 </div>
                 <div class="mb-3 pb-3 border-bottom">
                     <div class="text-muted small mb-1">Total Amount</div>

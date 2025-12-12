@@ -70,13 +70,15 @@ class BillController extends Controller
             // Admin can only see their own company and its policies
             $companies = \App\Models\Company::where('id', $user->company_id)->get();
             $policies = \App\Models\CourierPolicy::where('company_id', $user->company_id)->get();
+            $users = \App\Models\User::where('company_id', $user->company_id)->get();
         } else {
             // Super admin can see all companies and policies
             $companies = \App\Models\Company::all();
             $policies = \App\Models\CourierPolicy::all();
+            $users = \App\Models\User::all();
         }
         
-        return view('bills.create', compact('companies', 'policies'));
+        return view('bills.create', compact('companies', 'policies', 'users'));
     }
 
     public function store(Request $request)
@@ -101,6 +103,8 @@ class BillController extends Controller
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
+            'is_paid' => 'nullable|boolean',
+            'checked_by' => 'nullable|exists:users,id',
         ]);
 
         // Auto-generate bill code using company prefix and running number
@@ -187,6 +191,16 @@ class BillController extends Controller
             $data['media_attachment'] = $path;
         }
 
+        // Set created_by to current authenticated user
+        $data['created_by'] = auth()->id();
+        
+        // Handle is_paid (convert string to boolean if needed)
+        if (isset($data['is_paid'])) {
+            $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN);
+        } else {
+            $data['is_paid'] = false;
+        }
+
         Bill::create($data);
         return redirect()->route('bills.index')->with('success', 'Bill created successfully');
     }
@@ -208,13 +222,15 @@ class BillController extends Controller
             // Admin can only see their own company and its policies
             $companies = \App\Models\Company::where('id', $user->company_id)->get();
             $policies = \App\Models\CourierPolicy::where('company_id', $user->company_id)->get();
+            $users = \App\Models\User::where('company_id', $user->company_id)->get();
         } else {
             // Super admin can see all companies and policies
             $companies = \App\Models\Company::all();
             $policies = \App\Models\CourierPolicy::all();
+            $users = \App\Models\User::all();
         }
         
-        return view('bills.edit', compact('bill', 'companies', 'policies'));
+        return view('bills.edit', compact('bill', 'companies', 'policies', 'users'));
     }
 
     public function update(Request $request, Bill $bill)
@@ -240,6 +256,8 @@ class BillController extends Controller
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
+            'is_paid' => 'nullable|boolean',
+            'checked_by' => 'nullable|exists:users,id',
         ]);
 
         // Build payment_details JSON
@@ -309,6 +327,16 @@ class BillController extends Controller
             $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
             $path = $file->storeAs('bills', $filename, 'public');
             $data['media_attachment'] = $path;
+        }
+
+        // Handle is_paid (convert string to boolean if needed)
+        if (isset($data['is_paid'])) {
+            $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // Handle checked_by - allow null (empty string becomes null)
+        if (isset($data['checked_by']) && $data['checked_by'] === '') {
+            $data['checked_by'] = null;
         }
 
         $bill->update($data);

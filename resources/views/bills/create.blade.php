@@ -106,6 +106,32 @@
           </div>
 
           <hr class="my-4">
+          <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Bill Status & Tracking</h5>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-check-circle"></i> Payment Status
+              </label>
+              <select name="is_paid" class="form-select @error('is_paid') is-invalid @enderror">
+                <option value="0" {{ old('is_paid', '0') == '0' ? 'selected' : '' }}>Unpaid</option>
+                <option value="1" {{ old('is_paid') == '1' ? 'selected' : '' }}>Paid</option>
+              </select>
+              @error('is_paid')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-person-plus"></i> Created By
+              </label>
+              <input type="text" class="form-control" value="{{ auth()->user()->name }} ({{ auth()->user()->role }})" disabled>
+              <div class="form-text">This bill will be created by you</div>
+            </div>
+          </div>
+
+          <hr class="my-4">
           <h5 class="mb-3"><i class="bi bi-person me-2"></i>Customer Information</h5>
 
           <div class="row g-3">
