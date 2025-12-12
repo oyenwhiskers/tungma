@@ -234,6 +234,7 @@ class BillController extends Controller
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
+            'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
         ]);
 
         // Automatically set company_id from authenticated user
@@ -324,6 +325,14 @@ class BillController extends Controller
             $filename = time() . '_' . $file->getClientOriginalName();
             $path = $file->storeAs('bills', $filename, 'public');
             $data['media_attachment'] = $path;
+        }
+
+        // Handle payment proof attachment upload
+        if ($request->hasFile('payment_proof_attachment')) {
+            $file = $request->file('payment_proof_attachment');
+            $filename = time() . '_proof_' . $file->getClientOriginalName();
+            $path = $file->storeAs('bills', $filename, 'public');
+            $data['payment_proof_attachment'] = $path;
         }
 
         $bill = Bill::create($data);
@@ -436,6 +445,9 @@ class BillController extends Controller
             'sst_details' => $sstDetails,
             'media_attachment_url' => $bill->media_attachment
                 ? URL::to(Storage::url($bill->media_attachment))
+                : null,
+            'payment_proof_attachment_url' => $bill->payment_proof_attachment
+                ? URL::to(Storage::url($bill->payment_proof_attachment))
                 : null,
             'company' => $bill->company ? [
                 'id' => $bill->company->id,

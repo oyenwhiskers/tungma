@@ -2,6 +2,7 @@
 
 @php
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 @endphp
 
 @section('content')
@@ -242,6 +243,34 @@ use Illuminate\Support\Facades\Storage;
                               <i class="bi bi-box-arrow-up-right"></i> View Full Size
                             </a>
                           </div>
+                        </div>
+                      @else
+                        —
+                      @endif
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
+                      <i class="bi bi-receipt"></i>
+                      <span>Payment Proof</span>
+                    </div>
+                    <div class="info-value">
+                      @if($bill->payment_proof_attachment)
+                        <div class="d-flex flex-column">
+                          <a href="{{ Storage::url($bill->payment_proof_attachment) }}" target="_blank" class="text-primary d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-box-arrow-up-right"></i> View Payment Proof
+                          </a>
+                          @if(Str::endsWith(strtolower($bill->payment_proof_attachment), ['.jpg','.jpeg','.png','.gif','.webp']))
+                            <div class="mt-2">
+                              <a href="{{ Storage::url($bill->payment_proof_attachment) }}" target="_blank" class="d-inline-block">
+                                <img src="{{ Storage::url($bill->payment_proof_attachment) }}"
+                                     alt="Payment proof"
+                                     class="img-thumbnail"
+                                     style="max-width: 200px; max-height: 200px; cursor: pointer;">
+                              </a>
+                            </div>
+                          @endif
                         </div>
                       @else
                         —

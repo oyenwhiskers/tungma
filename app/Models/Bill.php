@@ -13,7 +13,7 @@ class Bill extends Model
     protected $fillable = [
         'bill_code', 'date', 'bus_datetime', 'amount', 'description', 'payment_details',
         'customer_info', 'courier_policy_id', 'company_id', 'eta', 'sst_details', 'policy_snapshot', 'media_attachment',
-        'is_paid', 'created_by', 'checked_by'
+        'payment_proof_attachment', 'is_paid', 'created_by', 'checked_by'
     ];
 
     protected $casts = [
