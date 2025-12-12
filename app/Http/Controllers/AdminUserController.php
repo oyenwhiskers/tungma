@@ -30,6 +30,7 @@ class AdminUserController extends Controller
             'ic_number' => 'nullable|string',
             'position' => 'nullable|string',
             'company_id' => 'nullable|exists:companies,id',
+            'start_date' => 'nullable|date',
             'password' => 'required|string|min:8',
         ]);
         $data['role'] = 'admin';
@@ -63,6 +64,7 @@ class AdminUserController extends Controller
             'ic_number' => 'nullable|string',
             'position' => 'nullable|string',
             'company_id' => 'nullable|exists:companies,id',
+            'start_date' => 'nullable|date',
         ]);
         $admin->update($data);
         return redirect()->route('admins.show', $admin);
