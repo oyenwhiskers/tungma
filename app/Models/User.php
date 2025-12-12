@@ -62,6 +62,16 @@ class User extends Authenticatable
         return $this->belongsTo(Company::class);
     }
 
+    public function createdBills()
+    {
+        return $this->hasMany(Bill::class, 'created_by');
+    }
+
+    public function checkedBills()
+    {
+        return $this->hasMany(Bill::class, 'checked_by');
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role === 'super_admin';

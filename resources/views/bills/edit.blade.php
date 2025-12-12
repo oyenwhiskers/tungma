@@ -131,6 +131,50 @@ use Illuminate\Support\Facades\Storage;
           </div>
 
           <hr class="my-4">
+          <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Bill Status & Tracking</h5>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-check-circle"></i> Payment Status
+              </label>
+              <select name="is_paid" class="form-select @error('is_paid') is-invalid @enderror">
+                <option value="0" {{ old('is_paid', $bill->is_paid ? '1' : '0') == '0' ? 'selected' : '' }}>Unpaid</option>
+                <option value="1" {{ old('is_paid', $bill->is_paid ? '1' : '0') == '1' ? 'selected' : '' }}>Paid</option>
+              </select>
+              @error('is_paid')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-person-check"></i> Checked By
+              </label>
+              <select name="checked_by" class="form-select @error('checked_by') is-invalid @enderror">
+                <option value="">Not checked yet</option>
+                @foreach($users ?? [] as $user)
+                  <option value="{{ $user->id }}" {{ old('checked_by', $bill->checked_by) == $user->id ? 'selected' : '' }}>
+                    {{ $user->name }} ({{ $user->role }})
+                  </option>
+                @endforeach
+              </select>
+              <div class="form-text">Select who checked this bill (staff can update this)</div>
+              @error('checked_by')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-person-plus"></i> Created By
+              </label>
+              <input type="text" class="form-control" value="{{ $bill->creator->name ?? 'N/A' }} ({{ $bill->creator->role ?? 'N/A' }})" disabled>
+              <div class="form-text">Original creator of this bill</div>
+            </div>
+          </div>
+
+          <hr class="my-4">
           <h5 class="mb-3"><i class="bi bi-person me-2"></i>Customer Information</h5>
 
           <div class="row g-3">
