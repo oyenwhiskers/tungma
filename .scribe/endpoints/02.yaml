@@ -76,11 +76,16 @@ endpoints:
                 "id": 1,
                 "bill_code": "BILL000001",
                 "date": "2025-12-10",
+                "bus_datetime": "2025-12-10T04:30:00Z",
+                "amount": 100.50,
+                "is_paid": false,
                 "customer_info": {
                   "name": "John Doe",
                   "phone": "0123456789",
                   "address": "123 Main St"
-                }
+                },
+                "media_attachment_url": "https://example.com/storage/bills/img.png",
+                "payment_proof_attachment_url": "https://example.com/storage/bills/proof.pdf"
               }
             ],
             "current_page": 1,
@@ -159,14 +164,24 @@ endpoints:
                 "phone": "+60123456789",
                 "address": "123 Main St"
               },
+              "is_paid": false,
               "eta": "3",
               "sst_details": null,
               "media_attachment_url": "http://example.com/storage/bills/image.png",
+              "payment_proof_attachment_url": "http://example.com/storage/bills/proof.pdf",
               "company": {
                 "id": 1,
                 "name": "Company Name"
               },
               "courier_policy": null,
+              "creator": {
+                "id": 2,
+                "name": "Alice"
+              },
+              "checker": {
+                "id": 3,
+                "name": "Bob"
+              },
               "created_at": "2025-12-10T02:06:54.000000Z",
               "updated_at": "2025-12-10T03:01:06.000000Z"
             }
@@ -233,6 +248,17 @@ endpoints:
         enumValues: []
         exampleWasSpecified: true
         nullable: false
+        deprecated: false
+      bus_datetime:
+        custom: []
+        name: bus_datetime
+        description: 'Optional bus departure datetime (Y-m-d H:i:s format). Used for grouping bills by vehicle departure.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
         deprecated: false
       amount:
         custom: []
@@ -355,6 +381,17 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         deprecated: false
+      is_paid:
+        custom: []
+        name: is_paid
+        description: 'Optional flag to mark bill as paid. Defaults to false.'
+        required: false
+        example: true
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
       media_attachment:
         custom: []
         name: media_attachment
@@ -366,8 +403,20 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         deprecated: false
+      payment_proof_attachment:
+        custom: []
+        name: payment_proof_attachment
+        description: 'Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf.'
+        required: false
+        example: null
+        type: file
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
     cleanBodyParameters:
       date: '2025-12-10'
+      bus_datetime: architecto
       amount: 100.5
       description: 'Eius et animi quos velit et.'
       payment_method: architecto
@@ -379,8 +428,10 @@ endpoints:
       eta: architecto
       sst_rate: 4326.41688
       sst_amount: 4326.41688
+      is_paid: true
     fileParameters:
       media_attachment: null
+      payment_proof_attachment: null
     responses:
       -
         custom: []
@@ -391,6 +442,7 @@ endpoints:
             "data": {
               "id": 1,
               "bill_code": "BILL000001",
+              "is_paid": false,
               ...
             }
           }
