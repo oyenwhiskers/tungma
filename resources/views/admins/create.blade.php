@@ -104,6 +104,15 @@
                     </div>
                     
                     <div class="mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="datetime-local" class="form-control @error('start_date') is-invalid @enderror" name="start_date" value="{{ old('start_date') }}">
+                        @error('start_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">Start date using system application</div>
+                    </div>
+                    
+                    <div class="mb-3">
                         <label class="form-label">Company</label>
                         <select class="form-select @error('company_id') is-invalid @enderror" name="company_id">
                             <option value="">Select company</option>
