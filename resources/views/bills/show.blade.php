@@ -2,6 +2,7 @@
 
 @php
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 @endphp
 
 @section('content')
@@ -48,11 +49,31 @@ use Illuminate\Support\Facades\Storage;
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-check-circle"></i>
+                      <span>Payment Status</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $bill->is_paid ? 'Paid' : 'Unpaid' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-calendar"></i>
                       <span>Bill Date</span>
                     </div>
                     <div class="info-value">
                       {{ $bill->date?->format('M d, Y') ?? '—' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
+                      <i class="bi bi-bus-front"></i>
+                      <span>Bus Departure DateTime</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $bill->bus_datetime ? $bill->bus_datetime->format('M d, Y h:i A') : '—' }}
                     </div>
                   </div>
 
@@ -83,8 +104,19 @@ use Illuminate\Support\Facades\Storage;
                     </div>
                     <div class="info-value">
                       @if($bill->payment_details)
-                        @php $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details; @endphp
-                        {{ $payment['method'] ?? '—' }}
+                        @php 
+                          $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details;
+                          $method = $payment['method'] ?? null;
+                          $methodLabels = [
+                            'cash' => 'Cash',
+                            'bank_transfer' => 'Bank Transfer',
+                            'e_wallet_qr' => 'E-wallet/QR',
+                            'cod' => 'COD',
+                            'credit_card' => 'Credit Card',
+                            'e_wallet' => 'E-Wallet'
+                          ];
+                        @endphp
+                        {{ $methodLabels[$method] ?? ucfirst(str_replace('_', ' ', $method ?? '')) }}
                       @else
                         —
                       @endif
@@ -220,6 +252,44 @@ use Illuminate\Support\Facades\Storage;
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-receipt"></i>
+                      <span>Payment Proof</span>
+                    </div>
+                    <div class="info-value">
+                      @if($bill->payment_proof_attachment)
+                        <div class="d-flex flex-column">
+                          <a href="{{ Storage::url($bill->payment_proof_attachment) }}" target="_blank" class="text-primary d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-box-arrow-up-right"></i> View Payment Proof
+                          </a>
+                          @if(Str::endsWith(strtolower($bill->payment_proof_attachment), ['.jpg','.jpeg','.png','.gif','.webp']))
+                            <div class="mt-2">
+                              <a href="{{ Storage::url($bill->payment_proof_attachment) }}" target="_blank" class="d-inline-block">
+                                <img src="{{ Storage::url($bill->payment_proof_attachment) }}"
+                                     alt="Payment proof"
+                                     class="img-thumbnail"
+                                     style="max-width: 200px; max-height: 200px; cursor: pointer;">
+                              </a>
+                            </div>
+                          @endif
+                        </div>
+                      @else
+                        —
+                      @endif
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
+                      <i class="bi bi-person-check"></i>
+                      <span>Checked By</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $bill->checked_by ? $bill->checker->name : 'Not checked yet' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-calendar-plus"></i>
                       <span>Created At</span>
                     </div>
@@ -251,6 +321,10 @@ use Illuminate\Support\Facades\Storage;
                 <div class="mb-3 pb-3 border-bottom">
                     <div class="text-muted small mb-1">Status</div>
                     <span class="badge bg-success">Active</span>
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <div class="text-muted small mb-1">Payment Status</div>
+                    <span class="badge bg-info">{{ $bill->is_paid ? 'Paid' : 'Unpaid' }}</span>
                 </div>
                 <div class="mb-3 pb-3 border-bottom">
                     <div class="text-muted small mb-1">Total Amount</div>

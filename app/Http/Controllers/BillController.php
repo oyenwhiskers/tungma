@@ -51,28 +51,93 @@ class BillController extends Controller
 
         return $company->bill_id_prefix . $paddedNumber;
     }
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
+        
+        // Start building query
+        $query = Bill::query();
+        
+        // Apply company filter for admin
         if ($user->role === 'admin') {
-            $bills = Bill::where('company_id', $user->company_id)->latest()->paginate(20);
-        } else {
-            $bills = Bill::query()->latest()->paginate(20);
+            $query->where('company_id', $user->company_id);
         }
-        return view('bills.index', compact('bills'));
+        
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('bill_code', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('customer_info->name', 'like', "%{$search}%")
+                  ->orWhere('customer_info->phone', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filter by payment status
+        if ($request->filled('payment_status')) {
+            if ($request->payment_status === 'paid') {
+                $query->where('is_paid', true);
+            } elseif ($request->payment_status === 'unpaid') {
+                $query->where('is_paid', false);
+            }
+        }
+        
+        // Filter by company (for super admin)
+        if ($request->filled('company_id') && $user->role !== 'admin') {
+            $query->where('company_id', $request->company_id);
+        }
+        
+        // Filter by date 
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
+        }
+        
+        // Filter by payment method
+        if ($request->filled('payment_method')) {
+            $query->where('payment_details->method', $request->payment_method);
+        }
+        
+        // Get companies for filter dropdown (only for super admin)
+        if ($user->role === 'admin') {
+            $companies = \App\Models\Company::where('id', $user->company_id)->get();
+        } else {
+            $companies = \App\Models\Company::all();
+        }
+        
+        // Eager load relationships to avoid N+1 queries
+        $bills = $query->with(['company', 'checker', 'creator'])
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+        
+        return view('bills.index', compact('bills', 'companies'));
     }
 
     public function create()
     {
-        $companies = \App\Models\Company::all();
-        $policies = \App\Models\CourierPolicy::all();
-        return view('bills.create', compact('companies', 'policies'));
+        $user = auth()->user();
+        
+        if ($user->role === 'admin') {
+            // Admin can only see their own company and its policies
+            $companies = \App\Models\Company::where('id', $user->company_id)->get();
+            $policies = \App\Models\CourierPolicy::where('company_id', $user->company_id)->get();
+            $users = \App\Models\User::where('company_id', $user->company_id)->get();
+        } else {
+            // Super admin can see all companies and policies
+            $companies = \App\Models\Company::all();
+            $policies = \App\Models\CourierPolicy::all();
+            $users = \App\Models\User::all();
+        }
+        
+        return view('bills.create', compact('companies', 'policies', 'users'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'date' => 'required|date',
+            'bus_datetime' => 'nullable|date',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
@@ -91,6 +156,9 @@ class BillController extends Controller
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
+            'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
+            'is_paid' => 'nullable|boolean',
+            'checked_by' => 'nullable|exists:users,id',
         ]);
 
         // Auto-generate bill code using company prefix and running number
@@ -177,6 +245,29 @@ class BillController extends Controller
             $data['media_attachment'] = $path;
         }
 
+        // Handle payment proof attachment upload
+        if ($request->hasFile('payment_proof_attachment')) {
+            $file = $request->file('payment_proof_attachment');
+            $filename = time() . '_proof_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bills', $filename, 'public');
+            $data['payment_proof_attachment'] = $path;
+        }
+
+        // Set created_by to current authenticated user
+        $data['created_by'] = auth()->id();
+        
+        // Handle is_paid (convert string to boolean if needed)
+        if (isset($data['is_paid'])) {
+            $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN);
+        } else {
+            $data['is_paid'] = false;
+        }
+
+        // Handle bus_datetime - allow null (empty string becomes null)
+        if (isset($data['bus_datetime']) && $data['bus_datetime'] === '') {
+            $data['bus_datetime'] = null;
+        }
+
         Bill::create($data);
         return redirect()->route('bills.index')->with('success', 'Bill created successfully');
     }
@@ -192,9 +283,21 @@ class BillController extends Controller
 
     public function edit(Bill $bill)
     {
-        $companies = \App\Models\Company::all();
-        $policies = \App\Models\CourierPolicy::all();
-        return view('bills.edit', compact('bill', 'companies', 'policies'));
+        $user = auth()->user();
+        
+        if ($user->role === 'admin') {
+            // Admin can only see their own company and its policies
+            $companies = \App\Models\Company::where('id', $user->company_id)->get();
+            $policies = \App\Models\CourierPolicy::where('company_id', $user->company_id)->get();
+            $users = \App\Models\User::where('company_id', $user->company_id)->get();
+        } else {
+            // Super admin can see all companies and policies
+            $companies = \App\Models\Company::all();
+            $policies = \App\Models\CourierPolicy::all();
+            $users = \App\Models\User::all();
+        }
+        
+        return view('bills.edit', compact('bill', 'companies', 'policies', 'users'));
     }
 
     public function update(Request $request, Bill $bill)
@@ -202,6 +305,7 @@ class BillController extends Controller
         $data = $request->validate([
             'bill_code' => 'required|string|max:255|unique:bills,bill_code,' . $bill->id,
             'date' => 'required|date',
+            'bus_datetime' => 'nullable|date',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
@@ -220,6 +324,9 @@ class BillController extends Controller
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
+            'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
+            'is_paid' => 'nullable|boolean',
+            'checked_by' => 'nullable|exists:users,id',
         ]);
 
         // Build payment_details JSON
@@ -289,6 +396,33 @@ class BillController extends Controller
             $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
             $path = $file->storeAs('bills', $filename, 'public');
             $data['media_attachment'] = $path;
+        }
+
+        // Handle payment proof attachment upload
+        if ($request->hasFile('payment_proof_attachment')) {
+            if ($bill->payment_proof_attachment && Storage::disk('public')->exists($bill->payment_proof_attachment)) {
+                Storage::disk('public')->delete($bill->payment_proof_attachment);
+            }
+
+            $file = $request->file('payment_proof_attachment');
+            $filename = time() . '_proof_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bills', $filename, 'public');
+            $data['payment_proof_attachment'] = $path;
+        }
+
+        // Handle is_paid (convert string to boolean if needed)
+        if (isset($data['is_paid'])) {
+            $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // Handle checked_by - allow null (empty string becomes null)
+        if (isset($data['checked_by']) && $data['checked_by'] === '') {
+            $data['checked_by'] = null;
+        }
+
+        // Handle bus_datetime - allow null (empty string becomes null)
+        if (isset($data['bus_datetime']) && $data['bus_datetime'] === '') {
+            $data['bus_datetime'] = null;
         }
 
         $bill->update($data);

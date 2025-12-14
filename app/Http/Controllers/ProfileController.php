@@ -22,6 +22,7 @@ class ProfileController extends Controller
             'gender' => 'nullable|string',
             'ic_number' => 'nullable|string',
             'position' => 'nullable|string',
+            'start_date' => 'nullable|date',
             'email' => 'required|email',
         ]);
 
