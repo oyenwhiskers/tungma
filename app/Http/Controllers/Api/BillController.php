@@ -60,7 +60,7 @@ class BillController extends Controller
         }
 
         // Find the latest bill for this company
-        $latestBill = Bill::where('company_id', $companyId)
+        $latestBill = Bill::withTrashed()->where('company_id', $companyId)
             ->orderBy('id', 'desc')
             ->first();
 

@@ -25,7 +25,7 @@ class BillController extends Controller
         }
 
         // Find the latest bill for this company
-        $latestBill = Bill::where('company_id', $companyId)
+        $latestBill = Bill::withTrashed()->where('company_id', $companyId)
             ->orderBy('id', 'desc')
             ->first();
 
@@ -54,15 +54,15 @@ class BillController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        
+
         // Start building query
         $query = Bill::query();
-        
+
         // Apply company filter for admin
         if ($user->role === 'admin') {
             $query->where('company_id', $user->company_id);
         }
-        
+
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
@@ -73,7 +73,7 @@ class BillController extends Controller
                   ->orWhere('customer_info->phone', 'like', "%{$search}%");
             });
         }
-        
+
         // Filter by payment status
         if ($request->filled('payment_status')) {
             if ($request->payment_status === 'paid') {
@@ -82,42 +82,42 @@ class BillController extends Controller
                 $query->where('is_paid', false);
             }
         }
-        
+
         // Filter by company (for super admin)
         if ($request->filled('company_id') && $user->role !== 'admin') {
             $query->where('company_id', $request->company_id);
         }
-        
-        // Filter by date 
+
+        // Filter by date
         if ($request->filled('date')) {
             $query->whereDate('date', $request->date);
         }
-        
+
         // Filter by payment method
         if ($request->filled('payment_method')) {
             $query->where('payment_details->method', $request->payment_method);
         }
-        
+
         // Get companies for filter dropdown (only for super admin)
         if ($user->role === 'admin') {
             $companies = \App\Models\Company::where('id', $user->company_id)->get();
         } else {
             $companies = \App\Models\Company::all();
         }
-        
+
         // Eager load relationships to avoid N+1 queries
         $bills = $query->with(['company', 'checker', 'creator'])
             ->latest()
             ->paginate(20)
             ->withQueryString();
-        
+
         return view('bills.index', compact('bills', 'companies'));
     }
 
     public function create()
     {
         $user = auth()->user();
-        
+
         if ($user->role === 'admin') {
             // Admin can only see their own company and its policies
             $companies = \App\Models\Company::where('id', $user->company_id)->get();
@@ -129,7 +129,7 @@ class BillController extends Controller
             $policies = \App\Models\CourierPolicy::all();
             $users = \App\Models\User::all();
         }
-        
+
         return view('bills.create', compact('companies', 'policies', 'users'));
     }
 
@@ -255,7 +255,7 @@ class BillController extends Controller
 
         // Set created_by to current authenticated user
         $data['created_by'] = auth()->id();
-        
+
         // Handle is_paid (convert string to boolean if needed)
         if (isset($data['is_paid'])) {
             $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN);
@@ -284,7 +284,7 @@ class BillController extends Controller
     public function edit(Bill $bill)
     {
         $user = auth()->user();
-        
+
         if ($user->role === 'admin') {
             // Admin can only see their own company and its policies
             $companies = \App\Models\Company::where('id', $user->company_id)->get();
@@ -296,7 +296,7 @@ class BillController extends Controller
             $policies = \App\Models\CourierPolicy::all();
             $users = \App\Models\User::all();
         }
-        
+
         return view('bills.edit', compact('bill', 'companies', 'policies', 'users'));
     }
 
