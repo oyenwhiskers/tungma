@@ -515,6 +515,11 @@ class BillController extends Controller
             $paymentDetails = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details;
         }
 
-        return view('bills.template', compact('bill', 'customerInfo', 'sstDetails', 'paymentDetails'));
+        // Generate PDF
+        $pdf = \PDF::loadView('bills.template', compact('bill', 'customerInfo', 'sstDetails', 'paymentDetails'))
+            ->setPaper('a4', 'portrait');
+
+        // Return PDF download
+        return $pdf->download('bill-' . $bill->bill_code . '.pdf');
     }
 }

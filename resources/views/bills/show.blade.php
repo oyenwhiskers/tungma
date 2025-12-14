@@ -20,8 +20,8 @@ use Illuminate\Support\Str;
     <div class="text-muted">Complete bill details and information</div>
   </div>
   <div>
-    <a href="{{ route('bills.template', $bill) }}" class="btn btn-success me-2" target="_blank">
-        <i class="bi bi-file-earmark-text"></i> View Receipt
+    <a href="{{ route('bills.template', $bill) }}" class="btn btn-success me-2">
+        <i class="bi bi-file-earmark-text"></i> Download Receipt PDF
     </a>
     <a href="{{ route('bills.edit', $bill) }}" class="btn btn-primary me-2">
         <i class="bi bi-pencil"></i> Edit

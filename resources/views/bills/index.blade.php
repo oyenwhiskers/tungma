@@ -32,12 +32,12 @@
                 <label class="form-label small text-muted">Search</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="search" class="form-control" 
-                           value="{{ request('search') }}" 
+                    <input type="text" name="search" class="form-control"
+                           value="{{ request('search') }}"
                            placeholder="Bill code, description, customer...">
                 </div>
             </div>
-            
+
             <div class="col-md-2">
                 <label class="form-label small text-muted">Payment Status</label>
                 <select name="payment_status" class="form-select">
@@ -46,7 +46,7 @@
                     <option value="unpaid" {{ request('payment_status') == 'unpaid' ? 'selected' : '' }}>Unpaid</option>
                 </select>
             </div>
-            
+
             @if(auth()->user()->role !== 'admin')
             <div class="col-md-2">
                 <label class="form-label small text-muted">Company</label>
@@ -60,7 +60,7 @@
                 </select>
             </div>
             @endif
-            
+
             <div class="col-md-2">
                 <label class="form-label small text-muted">Payment Method</label>
                 <select name="payment_method" class="form-select">
@@ -71,12 +71,12 @@
                     <option value="cod" {{ request('payment_method') == 'cod' ? 'selected' : '' }}>COD</option>
                 </select>
             </div>
-            
+
             <div class="col-md-2">
                 <label class="form-label small text-muted">Date </label>
                 <input type="date" name="date" class="form-control" value="{{ request('date') }}">
             </div>
-            
+
             <div class="col-md-12">
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
@@ -148,8 +148,8 @@
                             <a href="{{ route('bills.show', $bill) }}" class="btn btn-outline-secondary" title="View">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{{ route('bills.template', $bill) }}" class="btn btn-outline-success" target="_blank" title="View Receipt">
-                                <i class="bi bi-file-earmark-text"></i>
+                            <a href="{{ route('bills.template', $bill) }}" class="btn btn-outline-success" title="Download PDF">
+                                <i class="bi bi-file-earmark-pdf"></i>
                             </a>
                             <a href="{{ route('bills.edit', $bill) }}" class="btn btn-outline-secondary" title="Edit">
                                 <i class="bi bi-pencil"></i>
