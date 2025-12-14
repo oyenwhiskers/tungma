@@ -106,7 +106,7 @@ class BillController extends Controller
         }
 
         // Eager load relationships to avoid N+1 queries
-        $bills = $query->with(['company', 'checker', 'creator'])
+        $bills = $query->with(['company', 'checker', 'creator', 'fromCompany', 'toCompany'])
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -135,6 +135,16 @@ class BillController extends Controller
 
     public function store(Request $request)
     {
+        $user = auth()->user();
+
+        // For regular admin, automatically use their company_id
+        // For super admin, allow company_id selection
+        $companyIdRule = 'required|exists:companies,id';
+        if ($user->role === 'admin') {
+            // Admin must use their own company
+            $request->merge(['company_id' => $user->company_id]);
+        }
+
         $data = $request->validate([
             'date' => 'required|date',
             'bus_datetime' => 'nullable|date',
@@ -145,13 +155,19 @@ class BillController extends Controller
             'customer_name' => 'nullable|string',
             'customer_phone' => 'nullable|string',
             'customer_address' => 'nullable|string',
+            'from_company_id' => 'nullable|exists:companies,id',
+            'to_company_id' => 'nullable|exists:companies,id',
+            'sender_name' => 'nullable|string',
+            'sender_phone' => 'nullable|string',
+            'receiver_name' => 'nullable|string',
+            'receiver_phone' => 'nullable|string',
             'courier_policy_id' => [
                 'nullable',
                 Rule::exists('courier_policies', 'id')->where(function($q) use ($request) {
                     return $q->where('company_id', $request->company_id);
                 })
             ],
-            'company_id' => 'required|exists:companies,id',
+            'company_id' => $companyIdRule,
             'eta' => 'nullable|string',
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
@@ -278,6 +294,7 @@ class BillController extends Controller
         if ($user->role === 'admin' && $user->company_id !== $bill->company_id) {
             abort(403, 'You can only view bills from your company');
         }
+        $bill->load('fromCompany', 'toCompany');
         return view('bills.show', compact('bill'));
     }
 
@@ -302,6 +319,15 @@ class BillController extends Controller
 
     public function update(Request $request, Bill $bill)
     {
+        $user = auth()->user();
+
+        // For regular admin, automatically use their company_id
+        // For super admin, allow company_id selection
+        if ($user->role === 'admin') {
+            // Admin must use their own company
+            $request->merge(['company_id' => $user->company_id]);
+        }
+
         $data = $request->validate([
             'bill_code' => 'required|string|max:255|unique:bills,bill_code,' . $bill->id,
             'date' => 'required|date',
@@ -313,6 +339,12 @@ class BillController extends Controller
             'customer_name' => 'nullable|string',
             'customer_phone' => 'nullable|string',
             'customer_address' => 'nullable|string',
+            'from_company_id' => 'nullable|exists:companies,id',
+            'to_company_id' => 'nullable|exists:companies,id',
+            'sender_name' => 'nullable|string',
+            'sender_phone' => 'nullable|string',
+            'receiver_name' => 'nullable|string',
+            'receiver_phone' => 'nullable|string',
             'courier_policy_id' => [
                 'nullable',
                 Rule::exists('courier_policies', 'id')->where(function($q) use ($request) {
@@ -455,5 +487,34 @@ class BillController extends Controller
         $bill = Bill::onlyTrashed()->findOrFail($id);
         $bill->restore();
         return redirect()->route('bills.index')->with('status', 'Bill restored');
+    }
+
+    public function template(Bill $bill)
+    {
+        $user = auth()->user();
+        if ($user->role === 'admin' && $user->company_id !== $bill->company_id) {
+            abort(403, 'You can only view bills from your company');
+        }
+
+        // Load relationships
+        $bill->load('company', 'courierPolicy', 'fromCompany', 'toCompany');
+
+        // Parse JSON fields
+        $customerInfo = null;
+        if ($bill->customer_info) {
+            $customerInfo = is_string($bill->customer_info) ? json_decode($bill->customer_info, true) : $bill->customer_info;
+        }
+
+        $sstDetails = null;
+        if ($bill->sst_details) {
+            $sstDetails = is_string($bill->sst_details) ? json_decode($bill->sst_details, true) : $bill->sst_details;
+        }
+
+        $paymentDetails = null;
+        if ($bill->payment_details) {
+            $paymentDetails = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details;
+        }
+
+        return view('bills.template', compact('bill', 'customerInfo', 'sstDetails', 'paymentDetails'));
     }
 }

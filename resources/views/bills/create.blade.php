@@ -31,7 +31,7 @@
               <label class="form-label">
                 <i class="bi bi-calendar"></i> Bill Date <span class="text-danger">*</span>
               </label>
-              <input type="date" name="date" class="form-control @error('date') is-invalid @enderror" 
+              <input type="date" name="date" class="form-control @error('date') is-invalid @enderror"
                      value="{{ old('date', date('Y-m-d')) }}" required>
               @error('date')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -42,7 +42,7 @@
               <label class="form-label">
                 <i class="bi bi-bus-front"></i> Bus Departure DateTime
               </label>
-              <input type="datetime-local" name="bus_datetime" class="form-control @error('bus_datetime') is-invalid @enderror" 
+              <input type="datetime-local" name="bus_datetime" class="form-control @error('bus_datetime') is-invalid @enderror"
                      value="{{ old('bus_datetime') }}">
               <div class="form-text">Vehicle departure datetime for grouping bills</div>
               @error('bus_datetime')
@@ -54,7 +54,7 @@
               <label class="form-label">
                 <i class="bi bi-cash-stack"></i> Amount (RM) <span class="text-danger">*</span>
               </label>
-              <input type="number" step="0.01" name="amount" class="form-control @error('amount') is-invalid @enderror" 
+              <input type="number" step="0.01" name="amount" class="form-control @error('amount') is-invalid @enderror"
                      value="{{ old('amount') }}" required>
               <div class="form-text">Enter amount in Malaysian Ringgit</div>
               @error('amount')
@@ -66,7 +66,7 @@
               <label class="form-label">
                 <i class="bi bi-truck"></i> ETA (Estimated Arrival)
               </label>
-              <input type="text" name="eta" class="form-control @error('eta') is-invalid @enderror" 
+              <input type="text" name="eta" class="form-control @error('eta') is-invalid @enderror"
                      value="{{ old('eta') }}" placeholder="e.g., 3-5 business days">
               @error('eta')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -77,7 +77,7 @@
               <label class="form-label">
                 <i class="bi bi-file-text"></i> Description
               </label>
-              <textarea name="description" rows="3" class="form-control @error('description') is-invalid @enderror" 
+              <textarea name="description" rows="3" class="form-control @error('description') is-invalid @enderror"
                         placeholder="Additional details about this bill">{{ old('description') }}</textarea>
               @error('description')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -104,13 +104,13 @@
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
-            
+
 
             <div class="col-md-6">
               <label class="form-label">
                 <i class="bi bi-calendar-check"></i> Payment Date
               </label>
-              <input type="date" name="payment_date" class="form-control @error('payment_date') is-invalid @enderror" 
+              <input type="date" name="payment_date" class="form-control @error('payment_date') is-invalid @enderror"
                      value="{{ old('payment_date') }}">
               @error('payment_date')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -161,6 +161,89 @@
           </div>
 
           <hr class="my-4">
+          <h5 class="mb-3"><i class="bi bi-arrow-left-right me-2"></i>Company-to-Company Routing</h5>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-building"></i> From Company
+              </label>
+              <select name="from_company_id" class="form-select @error('from_company_id') is-invalid @enderror">
+                <option value="">Select origin company</option>
+                @foreach($companies as $company)
+                  <option value="{{ $company->id }}" {{ old('from_company_id') == $company->id ? 'selected' : '' }}>
+                    {{ $company->name }}
+                  </option>
+                @endforeach
+              </select>
+              @error('from_company_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-building-fill"></i> To Company
+              </label>
+              <select name="to_company_id" class="form-select @error('to_company_id') is-invalid @enderror">
+                <option value="">Select destination company</option>
+                @foreach($companies as $company)
+                  <option value="{{ $company->id }}" {{ old('to_company_id') == $company->id ? 'selected' : '' }}>
+                    {{ $company->name }}
+                  </option>
+                @endforeach
+              </select>
+              @error('to_company_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-person"></i> Sender Name
+              </label>
+              <input type="text" name="sender_name" class="form-control @error('sender_name') is-invalid @enderror"
+                     value="{{ old('sender_name') }}" placeholder="Person sending the package">
+              @error('sender_name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-telephone"></i> Sender Phone
+              </label>
+              <input type="text" name="sender_phone" class="form-control @error('sender_phone') is-invalid @enderror"
+                     value="{{ old('sender_phone') }}" placeholder="+60 12-345 6789">
+              @error('sender_phone')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-person-fill"></i> Receiver Name
+              </label>
+              <input type="text" name="receiver_name" class="form-control @error('receiver_name') is-invalid @enderror"
+                     value="{{ old('receiver_name') }}" placeholder="Person receiving the package">
+              @error('receiver_name')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-telephone-fill"></i> Receiver Phone
+              </label>
+              <input type="text" name="receiver_phone" class="form-control @error('receiver_phone') is-invalid @enderror"
+                     value="{{ old('receiver_phone') }}" placeholder="+60 12-345 6789">
+              @error('receiver_phone')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+
+          <hr class="my-4">
           <h5 class="mb-3"><i class="bi bi-person me-2"></i>Customer Information</h5>
 
           <div class="row g-3">
@@ -168,7 +251,7 @@
               <label class="form-label">
                 <i class="bi bi-person-badge"></i> Customer Name
               </label>
-              <input type="text" name="customer_name" class="form-control @error('customer_name') is-invalid @enderror" 
+              <input type="text" name="customer_name" class="form-control @error('customer_name') is-invalid @enderror"
                      value="{{ old('customer_name') }}">
               @error('customer_name')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -179,7 +262,7 @@
               <label class="form-label">
                 <i class="bi bi-telephone"></i> Customer Contact
               </label>
-              <input type="text" name="customer_phone" class="form-control @error('customer_phone') is-invalid @enderror" 
+              <input type="text" name="customer_phone" class="form-control @error('customer_phone') is-invalid @enderror"
                      value="{{ old('customer_phone') }}" placeholder="+60 12-345 6789">
               @error('customer_phone')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -190,7 +273,7 @@
               <label class="form-label">
                 <i class="bi bi-geo-alt"></i> Customer Address
               </label>
-              <textarea name="customer_address" rows="2" class="form-control @error('customer_address') is-invalid @enderror" 
+              <textarea name="customer_address" rows="2" class="form-control @error('customer_address') is-invalid @enderror"
                         placeholder="Complete delivery address">{{ old('customer_address') }}</textarea>
               @error('customer_address')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -239,7 +322,7 @@
               <select name="courier_policy_id" id="courier_policy_id" class="form-select @error('courier_policy_id') is-invalid @enderror">
                 <option value="">Select courier policy</option>
                 @foreach($policies as $policy)
-                  <option value="{{ $policy->id }}" 
+                  <option value="{{ $policy->id }}"
                           data-company-id="{{ $policy->company_id }}"
                           {{ old('courier_policy_id') == $policy->id ? 'selected' : '' }}>
                     {{ $policy->name }}
@@ -261,7 +344,7 @@
               <label class="form-label">
                 <i class="bi bi-percent"></i> SST Rate (%)
               </label>
-              <input type="number" step="0.01" name="sst_rate" class="form-control @error('sst_rate') is-invalid @enderror" 
+              <input type="number" step="0.01" name="sst_rate" class="form-control @error('sst_rate') is-invalid @enderror"
                      value="{{ old('sst_rate', '0') }}" placeholder="e.g., 6">
               <div class="form-text">Enter SST percentage rate</div>
               @error('sst_rate')
@@ -273,7 +356,7 @@
               <label class="form-label">
                 <i class="bi bi-currency-dollar"></i> SST Amount (RM)
               </label>
-              <input type="number" step="0.01" name="sst_amount" class="form-control @error('sst_amount') is-invalid @enderror" 
+              <input type="number" step="0.01" name="sst_amount" class="form-control @error('sst_amount') is-invalid @enderror"
                      value="{{ old('sst_amount', '0') }}" placeholder="0.00">
               <div class="form-text">Calculated SST amount</div>
               @error('sst_amount')
@@ -338,14 +421,14 @@
   (function(){
     const companySelect = document.getElementById('company_id');
     const policySelect = document.getElementById('courier_policy_id');
-    
+
     if (!companySelect || !policySelect) return;
-    
+
     function filterPolicies() {
       // Get company ID - works for both select and hidden input
       const companyId = companySelect.value || companySelect.getAttribute('value');
       if (!companyId) return;
-      
+
       [...policySelect.options].forEach((opt) => {
         if (!opt.value) return; // skip placeholder
         const cid = opt.getAttribute('data-company-id');
@@ -357,12 +440,12 @@
         policySelect.value = '';
       }
     }
-    
+
     // Only add change listener if it's a select element (super admin)
     if (companySelect.tagName === 'SELECT') {
       companySelect.addEventListener('change', filterPolicies);
     }
-    
+
     // Initial filter (works for both admin and super admin)
     filterPolicies();
   })();

@@ -339,6 +339,72 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         deprecated: false
+      from_company_id:
+        custom: []
+        name: from_company_id
+        description: 'Optional from company ID.'
+        required: false
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      to_company_id:
+        custom: []
+        name: to_company_id
+        description: 'Optional to company ID.'
+        required: false
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      sender_name:
+        custom: []
+        name: sender_name
+        description: 'Optional sender name.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      sender_phone:
+        custom: []
+        name: sender_phone
+        description: 'Optional sender phone.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      receiver_name:
+        custom: []
+        name: receiver_name
+        description: 'Optional receiver name.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      receiver_phone:
+        custom: []
+        name: receiver_phone
+        description: 'Optional receiver phone.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
       courier_policy_id:
         custom: []
         name: courier_policy_id
@@ -426,6 +492,12 @@ endpoints:
       customer_name: architecto
       customer_phone: architecto
       customer_address: architecto
+      from_company_id: 16
+      to_company_id: 16
+      sender_name: architecto
+      sender_phone: architecto
+      receiver_name: architecto
+      receiver_phone: architecto
       courier_policy_id: 16
       eta: architecto
       sst_rate: 4326.41688
@@ -534,6 +606,77 @@ endpoints:
           {
             "message": "Bill is already voided"
           }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 403
+        content: |-
+          {
+            "message": "User does not have an associated company"
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 404
+        content: |-
+          {
+            "message": "Bill not found"
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/bills/{id}/template'
+    metadata:
+      custom: []
+      groupName: Bills
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Generate bill template/receipt PDF for a specific bill.'
+      description: 'Returns a PDF file that will be downloaded automatically.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {token}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the bill.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: 'Binary PDF file'
         headers: []
         description: ''
       -

@@ -20,6 +20,9 @@ use Illuminate\Support\Str;
     <div class="text-muted">Complete bill details and information</div>
   </div>
   <div>
+    <a href="{{ route('bills.template', $bill) }}" class="btn btn-success me-2" target="_blank">
+        <i class="bi bi-file-earmark-text"></i> View Receipt
+    </a>
     <a href="{{ route('bills.edit', $bill) }}" class="btn btn-primary me-2">
         <i class="bi bi-pencil"></i> Edit
     </a>
@@ -104,7 +107,7 @@ use Illuminate\Support\Str;
                     </div>
                     <div class="info-value">
                       @if($bill->payment_details)
-                        @php 
+                        @php
                           $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details;
                           $method = $payment['method'] ?? null;
                           $methodLabels = [
@@ -132,6 +135,53 @@ use Illuminate\Support\Str;
                       @if($bill->payment_details)
                         @php $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details; @endphp
                         {{ isset($payment['date']) ? \Carbon\Carbon::parse($payment['date'])->format('M d, Y') : '—' }}
+                      @else
+                        —
+                      @endif
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
+                      <i class="bi bi-arrow-left-right"></i>
+                      <span>Company Routing</span>
+                    </div>
+                    <div class="info-value">
+                      <div>
+                        <strong>FROM:</strong> {{ $bill->fromCompany->name ?? '—' }}<br>
+                        <strong>TO:</strong> {{ $bill->toCompany->name ?? '—' }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
+                      <i class="bi bi-person"></i>
+                      <span>Sender Information</span>
+                    </div>
+                    <div class="info-value">
+                      @if($bill->sender_name || $bill->sender_phone)
+                        <div>
+                          <div><strong>{{ $bill->sender_name ?? '—' }}</strong></div>
+                          @if($bill->sender_phone)<div class="small text-muted">{{ $bill->sender_phone }}</div>@endif
+                        </div>
+                      @else
+                        —
+                      @endif
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
+                      <i class="bi bi-person-fill"></i>
+                      <span>Receiver Information</span>
+                    </div>
+                    <div class="info-value">
+                      @if($bill->receiver_name || $bill->receiver_phone)
+                        <div>
+                          <div><strong>{{ $bill->receiver_name ?? '—' }}</strong></div>
+                          @if($bill->receiver_phone)<div class="small text-muted">{{ $bill->receiver_phone }}</div>@endif
+                        </div>
                       @else
                         —
                       @endif

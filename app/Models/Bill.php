@@ -12,8 +12,10 @@ class Bill extends Model
 
     protected $fillable = [
         'bill_code', 'date', 'bus_datetime', 'amount', 'description', 'payment_details',
-        'customer_info', 'courier_policy_id', 'company_id', 'eta', 'sst_details', 'policy_snapshot', 'media_attachment',
-        'payment_proof_attachment', 'is_paid', 'created_by', 'checked_by'
+        'customer_info', 'from_company_id', 'to_company_id', 'sender_name', 'sender_phone',
+        'receiver_name', 'receiver_phone', 'courier_policy_id', 'company_id', 'eta',
+        'sst_details', 'policy_snapshot', 'media_attachment', 'payment_proof_attachment',
+        'is_paid', 'created_by', 'checked_by'
     ];
 
     protected $casts = [
@@ -27,6 +29,16 @@ class Bill extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function fromCompany()
+    {
+        return $this->belongsTo(Company::class, 'from_company_id');
+    }
+
+    public function toCompany()
+    {
+        return $this->belongsTo(Company::class, 'to_company_id');
     }
 
     public function courierPolicy()
