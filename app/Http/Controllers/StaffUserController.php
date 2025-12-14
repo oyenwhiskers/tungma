@@ -42,6 +42,7 @@ class StaffUserController extends Controller
             'ic_number' => 'nullable|string',
             'position' => 'nullable|string',
             'company_id' => 'nullable|exists:companies,id',
+            'start_date' => 'nullable|date',
             'password' => 'required|string|min:8',
         ]);
         // Force staff to be assigned to admin's company if admin
@@ -95,6 +96,7 @@ class StaffUserController extends Controller
             'ic_number' => 'nullable|string',
             'position' => 'nullable|string',
             'company_id' => 'nullable|exists:companies,id',
+            'start_date' => 'nullable|date',
         ]);
         // Force company_id to remain unchanged if admin
         if ($user->role === 'admin') {

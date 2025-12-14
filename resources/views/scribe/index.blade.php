@@ -136,7 +136,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: December 11, 2025</li>
+        <li>Last updated: December 14, 2025</li>
     </ul>
 </div>
 
@@ -429,11 +429,16 @@ fetch(url, {
             &quot;id&quot;: 1,
             &quot;bill_code&quot;: &quot;BILL000001&quot;,
             &quot;date&quot;: &quot;2025-12-10&quot;,
+            &quot;bus_datetime&quot;: &quot;2025-12-10T04:30:00Z&quot;,
+            &quot;amount&quot;: 100.5,
+            &quot;is_paid&quot;: false,
             &quot;customer_info&quot;: {
                 &quot;name&quot;: &quot;John Doe&quot;,
                 &quot;phone&quot;: &quot;0123456789&quot;,
                 &quot;address&quot;: &quot;123 Main St&quot;
-            }
+            },
+            &quot;media_attachment_url&quot;: &quot;https://example.com/storage/bills/img.png&quot;,
+            &quot;payment_proof_attachment_url&quot;: &quot;https://example.com/storage/bills/proof.pdf&quot;
         }
     ],
     &quot;current_page&quot;: 1,
@@ -637,14 +642,24 @@ fetch(url, {
             &quot;phone&quot;: &quot;+60123456789&quot;,
             &quot;address&quot;: &quot;123 Main St&quot;
         },
+        &quot;is_paid&quot;: false,
         &quot;eta&quot;: &quot;3&quot;,
         &quot;sst_details&quot;: null,
         &quot;media_attachment_url&quot;: &quot;http://example.com/storage/bills/image.png&quot;,
+        &quot;payment_proof_attachment_url&quot;: &quot;http://example.com/storage/bills/proof.pdf&quot;,
         &quot;company&quot;: {
             &quot;id&quot;: 1,
             &quot;name&quot;: &quot;Company Name&quot;
         },
         &quot;courier_policy&quot;: null,
+        &quot;creator&quot;: {
+            &quot;id&quot;: 2,
+            &quot;name&quot;: &quot;Alice&quot;
+        },
+        &quot;checker&quot;: {
+            &quot;id&quot;: 3,
+            &quot;name&quot;: &quot;Bob&quot;
+        },
         &quot;created_at&quot;: &quot;2025-12-10T02:06:54.000000Z&quot;,
         &quot;updated_at&quot;: &quot;2025-12-10T03:01:06.000000Z&quot;
     }
@@ -786,6 +801,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --form "date=2025-12-10"\
+    --form "bus_datetime=architecto"\
     --form "amount=100.5"\
     --form "description=Eius et animi quos velit et."\
     --form "payment_method=architecto"\
@@ -797,7 +813,9 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "eta=architecto"\
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
-    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\phpA23E.tmp" </code></pre></div>
+    --form "is_paid=1"\
+    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\phpE784.tmp" \
+    --form "payment_proof_attachment=@C:\Users\User\AppData\Local\Temp\phpE785.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -813,6 +831,7 @@ const headers = {
 
 const body = new FormData();
 body.append('date', '2025-12-10');
+body.append('bus_datetime', 'architecto');
 body.append('amount', '100.5');
 body.append('description', 'Eius et animi quos velit et.');
 body.append('payment_method', 'architecto');
@@ -824,7 +843,9 @@ body.append('courier_policy_id', '16');
 body.append('eta', 'architecto');
 body.append('sst_rate', '4326.41688');
 body.append('sst_amount', '4326.41688');
+body.append('is_paid', '1');
 body.append('media_attachment', document.querySelector('input[name="media_attachment"]').files[0]);
+body.append('payment_proof_attachment', document.querySelector('input[name="payment_proof_attachment"]').files[0]);
 
 fetch(url, {
     method: "POST",
@@ -845,6 +866,7 @@ fetch(url, {
   &quot;data&quot;: {
     &quot;id&quot;: 1,
     &quot;bill_code&quot;: &quot;BILL000001&quot;,
+    &quot;is_paid&quot;: false,
     ...
   }
 }</code>
@@ -964,6 +986,18 @@ You can check the Dev Tools console for debugging information.</code></pre>
                data-component="body">
     <br>
 <p>The bill date (Y-m-d format). Example: <code>2025-12-10</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>bus_datetime</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="bus_datetime"                data-endpoint="POSTapi-bills"
+               value="architecto"
+               data-component="body">
+    <br>
+<p>Optional bus departure datetime (Y-m-d H:i:s format). Used for grouping bills by vehicle departure. Example: <code>architecto</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>amount</code></b>&nbsp;&nbsp;
@@ -1098,6 +1132,28 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Optional SST amount. Example: <code>4326.41688</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>is_paid</code></b>&nbsp;&nbsp;
+<small>boolean</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <label data-endpoint="POSTapi-bills" style="display: none">
+            <input type="radio" name="is_paid"
+                   value="true"
+                   data-endpoint="POSTapi-bills"
+                   data-component="body"             >
+            <code>true</code>
+        </label>
+        <label data-endpoint="POSTapi-bills" style="display: none">
+            <input type="radio" name="is_paid"
+                   value="false"
+                   data-endpoint="POSTapi-bills"
+                   data-component="body"             >
+            <code>false</code>
+        </label>
+    <br>
+<p>Optional flag to mark bill as paid. Defaults to false. Example: <code>true</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>media_attachment</code></b>&nbsp;&nbsp;
 <small>file</small>&nbsp;
 <i>optional</i> &nbsp;
@@ -1107,7 +1163,19 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\phpA23E.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\phpE784.tmp</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
+<small>file</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="file" style="display: none"
+                              name="payment_proof_attachment"                data-endpoint="POSTapi-bills"
+               value=""
+               data-component="body">
+    <br>
+<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\User\AppData\Local\Temp\phpE785.tmp</code></p>
         </div>
         </form>
 
@@ -1962,7 +2030,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\User\AppData\Local\Temp\phpA24F.tmp" </code></pre></div>
+    --form "image=@C:\Users\User\AppData\Local\Temp\phpE833.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -2150,7 +2218,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\User\AppData\Local\Temp\phpA24F.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\User\AppData\Local\Temp\phpE833.tmp</code></p>
         </div>
         </form>
 

@@ -40,6 +40,18 @@
 
             <div class="col-md-6">
               <label class="form-label">
+                <i class="bi bi-bus-front"></i> Bus Departure DateTime
+              </label>
+              <input type="datetime-local" name="bus_datetime" class="form-control @error('bus_datetime') is-invalid @enderror" 
+                     value="{{ old('bus_datetime') }}">
+              <div class="form-text">Vehicle departure datetime for grouping bills</div>
+              @error('bus_datetime')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
                 <i class="bi bi-cash-stack"></i> Amount (RM) <span class="text-danger">*</span>
               </label>
               <input type="number" step="0.01" name="amount" class="form-control @error('amount') is-invalid @enderror" 
@@ -85,13 +97,14 @@
                 <option value="">Select payment method</option>
                 <option value="cash" {{ old('payment_method') == 'cash' ? 'selected' : '' }}>Cash</option>
                 <option value="bank_transfer" {{ old('payment_method') == 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                <option value="credit_card" {{ old('payment_method') == 'credit_card' ? 'selected' : '' }}>Credit Card</option>
-                <option value="e_wallet" {{ old('payment_method') == 'e_wallet' ? 'selected' : '' }}>E-Wallet</option>
+                <option value="e_wallet_qr" {{ old('payment_method') == 'e_wallet_qr' ? 'selected' : '' }}>E-wallet/QR</option>
+                <option value="cod" {{ old('payment_method') == 'cod' ? 'selected' : '' }}>COD</option>
               </select>
               @error('payment_method')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
+            
 
             <div class="col-md-6">
               <label class="form-label">
@@ -102,6 +115,48 @@
               @error('payment_date')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
+            </div>
+          </div>
+
+          <hr class="my-4">
+          <h5 class="mb-3"><i class="bi bi-receipt me-2"></i>Payment Proof (QR, Bank Transfer)</h5>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">
+                <i class="bi bi-paperclip"></i> Upload Payment Proof
+              </label>
+              <input type="file" name="payment_proof_attachment" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,application/pdf" class="form-control @error('payment_proof_attachment') is-invalid @enderror">
+              <div class="form-text">Upload receipt/transfer slip (JPG, PNG, GIF, WEBP, PDF; max 5MB)</div>
+              @error('payment_proof_attachment')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+          </div>
+
+          <hr class="my-4">
+          <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Bill Status & Tracking</h5>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-check-circle"></i> Payment Status
+              </label>
+              <select name="is_paid" class="form-select @error('is_paid') is-invalid @enderror">
+                <option value="0" {{ old('is_paid', '0') == '0' ? 'selected' : '' }}>Unpaid</option>
+                <option value="1" {{ old('is_paid') == '1' ? 'selected' : '' }}>Paid</option>
+              </select>
+              @error('is_paid')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-person-plus"></i> Created By
+              </label>
+              <input type="text" class="form-control" value="{{ auth()->user()->name }} ({{ auth()->user()->role }})" disabled>
+              <div class="form-text">This bill will be created by you</div>
             </div>
           </div>
 
@@ -144,22 +199,55 @@
           </div>
 
           <hr class="my-4">
-          <h5 class="mb-3"><i class="bi bi-building me-2"></i>Company</h5>
+          <h5 class="mb-3"><i class="bi bi-building me-2"></i>Courier Policy</h5>
 
           <div class="row g-3">
+            @if(auth()->user()->role === 'admin')
+              {{-- Admin: Hide company field, use hidden input with their company_id --}}
+              <input type="hidden" name="company_id" id="company_id" value="{{ auth()->user()->company_id }}">
+              <div class="col-md-6">
+                <label class="form-label">
+                  <i class="bi bi-building"></i> Company
+                </label>
+                <input type="text" class="form-control" value="{{ auth()->user()->company->name ?? 'N/A' }}" disabled>
+                <div class="form-text">Your assigned company</div>
+              </div>
+            @else
+              {{-- Super Admin: Show company selection --}}
+              <div class="col-md-6">
+                <label class="form-label">
+                  <i class="bi bi-building"></i> Company <span class="text-danger">*</span>
+                </label>
+                <select name="company_id" id="company_id" class="form-select @error('company_id') is-invalid @enderror" required>
+                  <option value="">Select company</option>
+                  @foreach($companies as $company)
+                    <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>
+                      {{ $company->name }}
+                    </option>
+                  @endforeach
+                </select>
+                @error('company_id')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
+            @endif
+
             <div class="col-md-6">
               <label class="form-label">
-                <i class="bi bi-building"></i> Company <span class="text-danger">*</span>
+                <i class="bi bi-shield-check"></i> Courier Policy
               </label>
-              <select name="company_id" id="company_id" class="form-select @error('company_id') is-invalid @enderror" required>
-                <option value="">Select company</option>
-                @foreach($companies as $company)
-                  <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>
-                    {{ $company->name }}
+              <select name="courier_policy_id" id="courier_policy_id" class="form-select @error('courier_policy_id') is-invalid @enderror">
+                <option value="">Select courier policy</option>
+                @foreach($policies as $policy)
+                  <option value="{{ $policy->id }}" 
+                          data-company-id="{{ $policy->company_id }}"
+                          {{ old('courier_policy_id') == $policy->id ? 'selected' : '' }}>
+                    {{ $policy->name }}
                   </option>
                 @endforeach
               </select>
-              @error('company_id')
+              <div class="form-text">Select a courier policy for this company</div>
+              @error('courier_policy_id')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
@@ -250,8 +338,14 @@
   (function(){
     const companySelect = document.getElementById('company_id');
     const policySelect = document.getElementById('courier_policy_id');
+    
+    if (!companySelect || !policySelect) return;
+    
     function filterPolicies() {
-      const companyId = companySelect.value;
+      // Get company ID - works for both select and hidden input
+      const companyId = companySelect.value || companySelect.getAttribute('value');
+      if (!companyId) return;
+      
       [...policySelect.options].forEach((opt) => {
         if (!opt.value) return; // skip placeholder
         const cid = opt.getAttribute('data-company-id');
@@ -263,11 +357,14 @@
         policySelect.value = '';
       }
     }
-    if (companySelect && policySelect) {
+    
+    // Only add change listener if it's a select element (super admin)
+    if (companySelect.tagName === 'SELECT') {
       companySelect.addEventListener('change', filterPolicies);
-      // initial filter
-      filterPolicies();
     }
+    
+    // Initial filter (works for both admin and super admin)
+    filterPolicies();
   })();
   </script>
 @endpush

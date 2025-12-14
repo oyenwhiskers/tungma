@@ -31,6 +31,7 @@ class User extends Authenticatable
         'image',
         'company_id',
         'role',
+        'start_date',
         'password',
     ];
 
@@ -53,6 +54,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'start_date' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -60,6 +62,16 @@ class User extends Authenticatable
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function createdBills()
+    {
+        return $this->hasMany(Bill::class, 'created_by');
+    }
+
+    public function checkedBills()
+    {
+        return $this->hasMany(Bill::class, 'checked_by');
     }
 
     public function isSuperAdmin(): bool
