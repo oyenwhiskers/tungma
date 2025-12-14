@@ -26,7 +26,7 @@
             </style>
 
     <script>
-        var tryItOutBaseUrl = "https://management.tungmaexpress.com.my";
+        var tryItOutBaseUrl = "http://localhost:8000";
         var useCsrf = Boolean();
         var csrfUrl = "/sanctum/csrf-cookie";
     </script>
@@ -93,6 +93,9 @@
                                                                                 <li class="tocify-item level-2" data-unique="bills-DELETEapi-bills--id-">
                                 <a href="#bills-DELETEapi-bills--id-">Void (soft delete) the specified bill.</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="bills-GETapi-bills--id--template">
+                                <a href="#bills-GETapi-bills--id--template">Generate bill template/receipt PDF for a specific bill.</a>
+                            </li>
                                                                         </ul>
                             </ul>
                     <ul id="tocify-header-dashboard" class="tocify-header">
@@ -145,7 +148,7 @@
     <div class="content">
         <h1 id="introduction">Introduction</h1>
 <aside>
-    <strong>Base URL</strong>: <code>https://management.tungmaexpress.com.my</code>
+    <strong>Base URL</strong>: <code>http://localhost:8000</code>
 </aside>
 <pre><code>This documentation aims to provide all the information you need to work with our API.
 
@@ -176,7 +179,7 @@ that should be included in subsequent API requests in the Authorization header a
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://management.tungmaexpress.com.my/api/login" \
+    "http://localhost:8000/api/login" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -188,7 +191,7 @@ that should be included in subsequent API requests in the Authorization header a
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/login"
+    "http://localhost:8000/api/login"
 );
 
 const headers = {
@@ -385,7 +388,7 @@ Set <code>include_voided=true</code> to return only voided bills.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://management.tungmaexpress.com.my/api/bills?per_page=20&amp;page=1&amp;include_voided=1" \
+    --get "http://localhost:8000/api/bills?per_page=20&amp;page=1&amp;include_voided=1" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -393,7 +396,7 @@ Set <code>include_voided=true</code> to return only voided bills.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/bills"
+    "http://localhost:8000/api/bills"
 );
 
 const params = {
@@ -596,7 +599,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://management.tungmaexpress.com.my/api/bills/architecto" \
+    --get "http://localhost:8000/api/bills/architecto" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -604,7 +607,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/bills/architecto"
+    "http://localhost:8000/api/bills/architecto"
 );
 
 const headers = {
@@ -796,7 +799,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://management.tungmaexpress.com.my/api/bills" \
+    "http://localhost:8000/api/bills" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
@@ -809,18 +812,24 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "customer_name=architecto"\
     --form "customer_phone=architecto"\
     --form "customer_address=architecto"\
+    --form "from_company_id=16"\
+    --form "to_company_id=16"\
+    --form "sender_name=architecto"\
+    --form "sender_phone=architecto"\
+    --form "receiver_name=architecto"\
+    --form "receiver_phone=architecto"\
     --form "courier_policy_id=16"\
     --form "eta=architecto"\
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
     --form "is_paid=1"\
-    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\phpE784.tmp" \
-    --form "payment_proof_attachment=@C:\Users\User\AppData\Local\Temp\phpE785.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\User\AppData\Local\Temp\php8EB0.tmp" \
+    --form "payment_proof_attachment=@C:\Users\User\AppData\Local\Temp\php8EC0.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/bills"
+    "http://localhost:8000/api/bills"
 );
 
 const headers = {
@@ -839,6 +848,12 @@ body.append('payment_date', 'architecto');
 body.append('customer_name', 'architecto');
 body.append('customer_phone', 'architecto');
 body.append('customer_address', 'architecto');
+body.append('from_company_id', '16');
+body.append('to_company_id', '16');
+body.append('sender_name', 'architecto');
+body.append('sender_phone', 'architecto');
+body.append('receiver_name', 'architecto');
+body.append('receiver_phone', 'architecto');
 body.append('courier_policy_id', '16');
 body.append('eta', 'architecto');
 body.append('sst_rate', '4326.41688');
@@ -1084,6 +1099,78 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Optional customer address. Example: <code>architecto</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>from_company_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="from_company_id"                data-endpoint="POSTapi-bills"
+               value="16"
+               data-component="body">
+    <br>
+<p>Optional from company ID. Example: <code>16</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>to_company_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="to_company_id"                data-endpoint="POSTapi-bills"
+               value="16"
+               data-component="body">
+    <br>
+<p>Optional to company ID. Example: <code>16</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>sender_name</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="sender_name"                data-endpoint="POSTapi-bills"
+               value="architecto"
+               data-component="body">
+    <br>
+<p>Optional sender name. Example: <code>architecto</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>sender_phone</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="sender_phone"                data-endpoint="POSTapi-bills"
+               value="architecto"
+               data-component="body">
+    <br>
+<p>Optional sender phone. Example: <code>architecto</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>receiver_name</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="receiver_name"                data-endpoint="POSTapi-bills"
+               value="architecto"
+               data-component="body">
+    <br>
+<p>Optional receiver name. Example: <code>architecto</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>receiver_phone</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="receiver_phone"                data-endpoint="POSTapi-bills"
+               value="architecto"
+               data-component="body">
+    <br>
+<p>Optional receiver phone. Example: <code>architecto</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>courier_policy_id</code></b>&nbsp;&nbsp;
 <small>integer</small>&nbsp;
 <i>optional</i> &nbsp;
@@ -1163,7 +1250,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\phpE784.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\User\AppData\Local\Temp\php8EB0.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
@@ -1175,7 +1262,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\User\AppData\Local\Temp\phpE785.tmp</code></p>
+<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\User\AppData\Local\Temp\php8EC0.tmp</code></p>
         </div>
         </form>
 
@@ -1194,7 +1281,7 @@ To correct a mistake, void the bill and create a new one.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "https://management.tungmaexpress.com.my/api/bills/architecto" \
+    "http://localhost:8000/api/bills/architecto" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1202,7 +1289,7 @@ To correct a mistake, void the bill and create a new one.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/bills/architecto"
+    "http://localhost:8000/api/bills/architecto"
 );
 
 const headers = {
@@ -1354,6 +1441,169 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                     </form>
 
+                    <h2 id="bills-GETapi-bills--id--template">Generate bill template/receipt PDF for a specific bill.</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Returns a PDF file that will be downloaded automatically.</p>
+
+<span id="example-requests-GETapi-bills--id--template">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://localhost:8000/api/bills/architecto/template" \
+    --header "Authorization: Bearer {token}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://localhost:8000/api/bills/architecto/template"
+);
+
+const headers = {
+    "Authorization": "Bearer {token}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-bills--id--template">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">Binary PDF file</code>
+ </pre>
+            <blockquote>
+            <p>Example response (403):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;User does not have an associated company&quot;
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (404):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;Bill not found&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-bills--id--template" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-bills--id--template"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-bills--id--template"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-bills--id--template" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-bills--id--template">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-bills--id--template" data-method="GET"
+      data-path="api/bills/{id}/template"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-bills--id--template', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-bills--id--template"
+                    onclick="tryItOut('GETapi-bills--id--template');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-bills--id--template"
+                    onclick="cancelTryOut('GETapi-bills--id--template');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-bills--id--template"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/bills/{id}/template</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-bills--id--template"
+               value="Bearer {token}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {token}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-bills--id--template"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-bills--id--template"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="id"                data-endpoint="GETapi-bills--id--template"
+               value="architecto"
+               data-component="url">
+    <br>
+<p>The ID of the bill. Example: <code>architecto</code></p>
+            </div>
+                    </form>
+
                 <h1 id="dashboard">Dashboard</h1>
 
     
@@ -1372,7 +1622,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://management.tungmaexpress.com.my/api/dashboard" \
+    --get "http://localhost:8000/api/dashboard" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1380,7 +1630,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/dashboard"
+    "http://localhost:8000/api/dashboard"
 );
 
 const headers = {
@@ -1514,7 +1764,7 @@ Use this data to generate a stacked bar chart.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://management.tungmaexpress.com.my/api/dashboard/daily?month=12&amp;year=2025" \
+    --get "http://localhost:8000/api/dashboard/daily?month=12&amp;year=2025" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1522,7 +1772,7 @@ Use this data to generate a stacked bar chart.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/dashboard/daily"
+    "http://localhost:8000/api/dashboard/daily"
 );
 
 const params = {
@@ -1688,7 +1938,7 @@ Use this data to generate a pie chart.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://management.tungmaexpress.com.my/api/dashboard/monthly?month=12&amp;year=2025" \
+    --get "http://localhost:8000/api/dashboard/monthly?month=12&amp;year=2025" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1696,7 +1946,7 @@ Use this data to generate a pie chart.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/dashboard/monthly"
+    "http://localhost:8000/api/dashboard/monthly"
 );
 
 const params = {
@@ -1863,7 +2113,7 @@ contact information, and role.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://management.tungmaexpress.com.my/api/profile" \
+    --get "http://localhost:8000/api/profile" \
     --header "Authorization: Bearer {YOUR_AUTH_TOKEN}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1871,7 +2121,7 @@ contact information, and role.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/profile"
+    "http://localhost:8000/api/profile"
 );
 
 const headers = {
@@ -2024,18 +2274,18 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://management.tungmaexpress.com.my/api/profile" \
+    "http://localhost:8000/api/profile" \
     --header "Authorization: Bearer {YOUR_AUTH_TOKEN}" \
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\User\AppData\Local\Temp\phpE833.tmp" </code></pre></div>
+    --form "image=@C:\Users\User\AppData\Local\Temp\php8ED2.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/profile"
+    "http://localhost:8000/api/profile"
 );
 
 const headers = {
@@ -2218,7 +2468,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\User\AppData\Local\Temp\phpE833.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\User\AppData\Local\Temp\php8ED2.tmp</code></p>
         </div>
         </form>
 
@@ -2237,7 +2487,7 @@ The new password must be at least 8 characters and must be confirmed.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://management.tungmaexpress.com.my/api/profile/password" \
+    "http://localhost:8000/api/profile/password" \
     --header "Authorization: Bearer {YOUR_AUTH_TOKEN}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
@@ -2251,7 +2501,7 @@ The new password must be at least 8 characters and must be confirmed.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://management.tungmaexpress.com.my/api/profile/password"
+    "http://localhost:8000/api/profile/password"
 );
 
 const headers = {

@@ -194,6 +194,12 @@ class BillController extends Controller
      * @bodyParam customer_name string Optional customer name.
      * @bodyParam customer_phone string Optional customer phone.
      * @bodyParam customer_address string Optional customer address.
+     * @bodyParam from_company_id integer Optional from company ID.
+     * @bodyParam to_company_id integer Optional to company ID.
+     * @bodyParam sender_name string Optional sender name.
+     * @bodyParam sender_phone string Optional sender phone.
+     * @bodyParam receiver_name string Optional receiver name.
+     * @bodyParam receiver_phone string Optional receiver phone.
      * @bodyParam courier_policy_id integer Optional courier policy ID.
      * @bodyParam bus_datetime string Optional bus departure datetime (Y-m-d H:i:s format). Used for grouping bills by vehicle departure.
      * @bodyParam eta string Optional estimated time of arrival.
@@ -253,6 +259,12 @@ class BillController extends Controller
             'customer_name' => 'nullable|string',
             'customer_phone' => 'nullable|string',
             'customer_address' => 'nullable|string',
+            'from_company_id' => 'nullable|exists:companies,id',
+            'to_company_id' => 'nullable|exists:companies,id',
+            'sender_name' => 'nullable|string',
+            'sender_phone' => 'nullable|string',
+            'receiver_name' => 'nullable|string',
+            'receiver_phone' => 'nullable|string',
             'courier_policy_id' => [
                 'nullable',
                 Rule::exists('courier_policies', 'id')->where(function($q) use ($user) {
@@ -572,5 +584,74 @@ class BillController extends Controller
         return response()->json([
             'message' => 'Bill voided successfully'
         ]);
+    }
+
+    /**
+     * Generate bill template/receipt PDF for a specific bill.
+     * Returns a PDF file that will be downloaded automatically.
+     *
+     * @group Bills
+     * @authenticated
+     * @header Authorization Bearer {token}
+     *
+     * @param int $id Bill ID
+     * @response 200 Binary PDF file
+     * @response 403 {
+     *   "message": "User does not have an associated company"
+     * }
+     * @response 404 {
+     *   "message": "Bill not found"
+     * }
+     */
+    public function template(Request $request, $id)
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->company_id) {
+            return response()->json([
+                'message' => 'User does not have an associated company'
+            ], 403);
+        }
+
+        $bill = Bill::where('id', $id)
+            ->where('company_id', $user->company_id)
+            ->first();
+
+        if (!$bill) {
+            return response()->json([
+                'message' => 'Bill not found'
+            ], 404);
+        }
+
+        $bill->load('company', 'courierPolicy', 'fromCompany', 'toCompany');
+
+        // Parse JSON fields
+        $customerInfo = null;
+        if ($bill->customer_info) {
+            $customerInfo = is_string($bill->customer_info)
+                ? json_decode($bill->customer_info, true)
+                : $bill->customer_info;
+        }
+
+        $sstDetails = null;
+        if ($bill->sst_details) {
+            $sstDetails = is_string($bill->sst_details)
+                ? json_decode($bill->sst_details, true)
+                : $bill->sst_details;
+        }
+
+        $paymentDetails = null;
+        if ($bill->payment_details) {
+            $paymentDetails = is_string($bill->payment_details)
+                ? json_decode($bill->payment_details, true)
+                : $bill->payment_details;
+        }
+
+        // Generate PDF
+        $pdf = \PDF::loadView('bills.template', compact('bill', 'customerInfo', 'sstDetails', 'paymentDetails'))
+            ->setPaper('a4', 'portrait');
+
+        // Return PDF download
+        return $pdf->download('bill-' . $bill->bill_code . '.pdf');
     }
 }

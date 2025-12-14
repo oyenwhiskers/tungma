@@ -145,10 +145,13 @@
                     <td>{{ $bill->is_paid ? 'Paid' : 'Unpaid' }}</td>
                     <td class="text-end">
                         <div class="btn-group btn-group-sm">
-                            <a href="{{ route('bills.show', $bill) }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('bills.show', $bill) }}" class="btn btn-outline-secondary" title="View">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{{ route('bills.edit', $bill) }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('bills.template', $bill) }}" class="btn btn-outline-success" target="_blank" title="View Receipt">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </a>
+                            <a href="{{ route('bills.edit', $bill) }}" class="btn btn-outline-secondary" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
                         </div>

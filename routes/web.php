@@ -40,6 +40,9 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
+    // Bill template/receipt
+    Route::get('/bills/{bill}/template', [App\Http\Controllers\BillController::class, 'template'])->name('bills.template');
+    
     // Deleted lists with restore
     Route::get('/deleted/bills', [App\Http\Controllers\BillController::class, 'deleted'])->name('bills.deleted');
     Route::post('/deleted/bills/{id}/restore', [App\Http\Controllers\BillController::class, 'restore'])->name('bills.restore');
