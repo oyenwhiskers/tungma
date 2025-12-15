@@ -320,7 +320,7 @@
 
                     <div style="margin-bottom: 12px;">
                         <div class="field-label">I/C :</div>
-                        <div class="info-underline">{{ $customerInfo['ic'] ?? '' }}</div>
+                        <div class="info-underline">{{ $bill->customer_ic_number ?? data_get($customerInfo, 'ic') }}</div>
                     </div>
 
                     <div style="margin-bottom: 12px;">

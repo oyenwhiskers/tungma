@@ -48,17 +48,17 @@ class ChecklistController extends Controller
             $total = $items->count();
             $checkedCount = $items->whereNotNull('checked_by')->count();
 
-            if ($total === 0) {
-                $status = 'no data';
-            } elseif ($checkedCount > 0) {
-                $status = 'success';
-            } else {
-                $status = 'pending';
-            }
+            // if ($total === 0) {
+            //     $status = 'no data';
+            // } elseif ($checkedCount > 0) {
+            //     $status = 'success';
+            // } else {
+            //     $status = 'pending';
+            // }
 
             return [
                 'bus_datetime' => $busDatetime,
-                'status' => $status,
+                // 'status' => $status,
                 'checked_by' => $items->whereNotNull('checked_by')
                     ->pluck('checked_by')
                     ->first() ?? '-',
@@ -157,7 +157,8 @@ class ChecklistController extends Controller
 
         Bill::whereIn('id', $request->bill_ids)
             ->update([
-                'checked_by' => $id
+                'checked_by' => $id,
+                'status' => 'Delivered',
             ]);
 
         return response()->json([

@@ -71,7 +71,7 @@ class ProfileController extends Controller
                 'ic_number' => $user->ic_number,
                 'position' => $user->position,
                 'image' => $user->image ? Storage::url($user->image) : null,
-                'company_id' => $user->company->name,
+                'company_name' => $user->company->name,
                 'role' => $user->role,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at,

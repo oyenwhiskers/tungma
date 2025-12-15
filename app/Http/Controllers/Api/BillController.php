@@ -157,6 +157,7 @@ class BillController extends Controller
                 'bus_datetime' => $bill->bus_datetime ? ($bill->bus_datetime instanceof \Carbon\Carbon ? $bill->bus_datetime->toISOString() : $bill->bus_datetime) : null,
                 'amount' => (float) $bill->amount,
                 'is_paid' => (bool) $bill->is_paid,
+                'customer_ic_number' => $bill->customer_ic_number,
                 'customer_info' => $bill->customer_info ? (is_string($bill->customer_info) ? json_decode($bill->customer_info, true) : $bill->customer_info) : null,
                 'media_attachment_url' => $bill->media_attachment
                     ? URL::to(Storage::url($bill->media_attachment))
@@ -194,6 +195,7 @@ class BillController extends Controller
      * @bodyParam customer_name string Optional customer name.
      * @bodyParam customer_phone string Optional customer phone.
      * @bodyParam customer_address string Optional customer address.
+     * @bodyParam customer_ic_number string Optional customer IC/passport number.
      * @bodyParam from_company_id integer Optional from company ID.
      * @bodyParam to_company_id integer Optional to company ID.
      * @bodyParam sender_name string Optional sender name.
@@ -259,6 +261,7 @@ class BillController extends Controller
             'customer_name' => 'nullable|string',
             'customer_phone' => 'nullable|string',
             'customer_address' => 'nullable|string',
+            'customer_ic_number' => 'nullable|string|max:50',
             'from_company_id' => 'nullable|exists:companies,id',
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
@@ -282,7 +285,9 @@ class BillController extends Controller
         // Automatically set company_id from authenticated user
         $data['company_id'] = $user->company_id;
         $data['created_by'] = $user->id;
+        $data['status'] = 'In_transit';
         $data['is_paid'] = $request->boolean('is_paid', false);
+        $data['customer_ic_number'] = $request->input('customer_ic_number');
 
         // Auto-generate bill code using company prefix and running number
         try {
@@ -325,11 +330,12 @@ class BillController extends Controller
         }
 
         // Build customer_info JSON
-        if ($request->customer_name || $request->customer_phone || $request->customer_address) {
+        if ($request->customer_name || $request->customer_phone || $request->customer_address || $request->customer_ic_number) {
             $data['customer_info'] = json_encode([
                 'name' => $request->customer_name,
                 'phone' => $request->customer_phone,
                 'address' => $request->customer_address,
+                'ic' => $request->customer_ic_number,
             ]);
         }
 
@@ -495,6 +501,7 @@ class BillController extends Controller
             'description' => $bill->description,
             'payment_details' => $paymentDetails,
             'customer_info' => $customerInfo,
+            'customer_ic_number' => $bill->customer_ic_number ?? ($customerInfo['ic'] ?? null),
             'is_paid' => (bool) $bill->is_paid,
             'eta' => $bill->eta,
             'sst_details' => $sstDetails,

@@ -12,10 +12,10 @@ class Bill extends Model
 
     protected $fillable = [
         'bill_code', 'date', 'bus_datetime', 'amount', 'description', 'payment_details',
-        'customer_info', 'from_company_id', 'to_company_id', 'sender_name', 'sender_phone',
+        'customer_info', 'customer_ic_number', 'from_company_id', 'to_company_id', 'sender_name', 'sender_phone',
         'receiver_name', 'receiver_phone', 'courier_policy_id', 'company_id', 'eta',
         'sst_details', 'policy_snapshot', 'media_attachment', 'payment_proof_attachment',
-        'is_paid', 'created_by', 'checked_by'
+        'is_paid', 'status', 'created_by', 'checked_by'
     ];
 
     protected $casts = [

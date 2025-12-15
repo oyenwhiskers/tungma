@@ -76,5 +76,39 @@ class AuthController extends Controller
             'user' => $user,
         ]);
     }
+
+    /**
+     * Logout (Revoke Access Token)
+     * 
+     * Revoke the current user's access token and logout the authenticated user.
+     * 
+     * @group Authentication
+     * @authenticated
+     * 
+     * @header Authorization Bearer {token}
+     * 
+     * @response 200 scenario="Successful Logout" {
+     *   "message": "Logged out successfully"
+     * }
+     * 
+     * @response 401 scenario="Unauthenticated" {
+     *   "message": "Unauthenticated."
+     * }
+     * 
+     * Log out the currently authenticated user by revoking the current access token.
+     * 
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * 
+     * @scribe
+     */
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logged out successfully',
+        ]);
+    }
 }
 

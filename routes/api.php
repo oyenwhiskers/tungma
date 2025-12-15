@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ChecklistController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
