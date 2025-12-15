@@ -7,10 +7,12 @@ use App\Http\Controllers\Api\BillController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ChecklistController;
+use App\Http\Controllers\Api\TrackingController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
+Route::get('/tracking/{bill_code}', [TrackingController::class, 'show']);
 
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {

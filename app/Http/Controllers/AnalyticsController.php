@@ -40,6 +40,27 @@ class AnalyticsController extends Controller
                 ];
             });
 
-        return view('analytics.index', compact('totalRevenue', 'staffDistribution', 'billSummaries'));
+        // Monthly revenue trend
+        $revenueByMonth = Bill::query()
+            ->select(
+                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
+                DB::raw('sum(amount) as revenue')
+            )
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'month' => $row->month,
+                    'revenue' => (float)$row->revenue,
+                ];
+            });
+
+        return view('analytics.index', compact(
+            'totalRevenue',
+            'staffDistribution',
+            'billSummaries',
+            'revenueByMonth'
+        ));
     }
 }
