@@ -153,11 +153,11 @@ class ChecklistController extends Controller
      */
     public function save(Request $request)
     {
-        $userName = auth()->user()->name;
+        $id = auth()->user()->id;
 
         Bill::whereIn('id', $request->bill_ids)
             ->update([
-                'checked_by' => $userName
+                'checked_by' => $id
             ]);
 
         return response()->json([
