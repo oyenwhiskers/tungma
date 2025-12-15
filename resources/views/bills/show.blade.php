@@ -212,6 +212,16 @@ use Illuminate\Support\Str;
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-calendar-check"></i>
+                      <span>Customer Received Date</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $bill->customer_received_date ? $bill->customer_received_date->format('M d, Y') : '—' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-file-earmark-text"></i>
                       <span>Courier Policy</span>
                     </div>

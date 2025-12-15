@@ -104,6 +104,7 @@
                 <tr>
                     <th>Bill Code</th>
                     <th>Date</th>
+                    <th>Customer Received</th>
                     <th>Bus Departure</th>
                     <th>Amount</th>
                     <th>Company</th>
@@ -123,6 +124,7 @@
                         </a>
                     </td>
                     <td>{{ $bill->date?->format('M d, Y') ?? '—' }}</td>
+                    <td>{{ $bill->customer_received_date ? $bill->customer_received_date->format('M d, Y') : '—' }}</td>
                     <td>{{ $bill->bus_datetime ? $bill->bus_datetime->format('M d, Y h:i A') : '—' }}</td>
                     <td><strong>RM {{ number_format($bill->amount, 2) }}</strong></td>
                     <td>{{ $bill->company?->name ?? '—' }}</td>
