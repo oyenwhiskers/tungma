@@ -155,6 +155,9 @@ class BillController extends Controller
                 'bill_code' => $bill->bill_code,
                 'date' => $bill->date,
                 'bus_datetime' => $bill->bus_datetime ? ($bill->bus_datetime instanceof \Carbon\Carbon ? $bill->bus_datetime->toISOString() : $bill->bus_datetime) : null,
+                'customer_received_date' => $bill->customer_received_date
+                    ? ($bill->customer_received_date instanceof \Carbon\Carbon ? $bill->customer_received_date->format('Y-m-d') : $bill->customer_received_date)
+                    : null,
                 'amount' => (float) $bill->amount,
                 'is_paid' => (bool) $bill->is_paid,
                 'customer_ic_number' => $bill->customer_ic_number,
@@ -262,6 +265,7 @@ class BillController extends Controller
             'customer_phone' => 'nullable|string',
             'customer_address' => 'nullable|string',
             'customer_ic_number' => 'nullable|string|max:50',
+            'customer_received_date' => 'nullable|date',
             'from_company_id' => 'nullable|exists:companies,id',
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
@@ -288,6 +292,7 @@ class BillController extends Controller
         $data['status'] = 'In_transit';
         $data['is_paid'] = $request->boolean('is_paid', false);
         $data['customer_ic_number'] = $request->input('customer_ic_number');
+        $data['customer_received_date'] = $request->input('customer_received_date');
 
         // Auto-generate bill code using company prefix and running number
         try {
@@ -457,7 +462,9 @@ class BillController extends Controller
             ], 403);
         }
 
-        $bill = Bill::where('id', $id)
+        // Include soft-deleted (voided) bills so they can still be viewed
+        $bill = Bill::withTrashed()
+            ->where('id', $id)
             ->where('company_id', $user->company_id)
             ->first();
 
@@ -502,6 +509,9 @@ class BillController extends Controller
             'payment_details' => $paymentDetails,
             'customer_info' => $customerInfo,
             'customer_ic_number' => $bill->customer_ic_number ?? ($customerInfo['ic'] ?? null),
+            'customer_received_date' => $bill->customer_received_date
+                ? ($bill->customer_received_date instanceof \Carbon\Carbon ? $bill->customer_received_date->format('Y-m-d') : $bill->customer_received_date)
+                : null,
             'is_paid' => (bool) $bill->is_paid,
             'eta' => $bill->eta,
             'sst_details' => $sstDetails,
