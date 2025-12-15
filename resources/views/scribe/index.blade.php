@@ -149,6 +149,16 @@
                             </li>
                                                                         </ul>
                             </ul>
+                    <ul id="tocify-header-public-tracking" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="public-tracking">
+                    <a href="#public-tracking">Public Tracking</a>
+                </li>
+                                    <ul id="tocify-subheader-public-tracking" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="public-tracking-GETapi-tracking--bill_code-">
+                                <a href="#public-tracking-GETapi-tracking--bill_code-">Public tracking lookup by bill code.</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
             </div>
 
     <ul class="toc-footer" id="toc-footer">
@@ -988,8 +998,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
     --form "is_paid=1"\
-    --form "media_attachment=@C:\Users\USER\AppData\Local\Temp\php67D7.tmp" \
-    --form "payment_proof_attachment=@C:\Users\USER\AppData\Local\Temp\php67D8.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\USER\AppData\Local\Temp\php74E8.tmp" \
+    --form "payment_proof_attachment=@C:\Users\USER\AppData\Local\Temp\php74E9.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1428,7 +1438,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\USER\AppData\Local\Temp\php67D7.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\USER\AppData\Local\Temp\php74E8.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
@@ -1440,7 +1450,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\USER\AppData\Local\Temp\php67D8.tmp</code></p>
+<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\USER\AppData\Local\Temp\php74E9.tmp</code></p>
         </div>
         </form>
 
@@ -2932,7 +2942,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\USER\AppData\Local\Temp\php67F9.tmp" </code></pre></div>
+    --form "image=@C:\Users\USER\AppData\Local\Temp\php750B.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3120,7 +3130,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\USER\AppData\Local\Temp\php67F9.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\USER\AppData\Local\Temp\php750B.tmp</code></p>
         </div>
         </form>
 
@@ -3347,6 +3357,233 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Confirmation of the new password (must match new_password). Example: <code>newpassword123</code></p>
         </div>
         </form>
+
+                <h1 id="public-tracking">Public Tracking</h1>
+
+    
+
+                                <h2 id="public-tracking-GETapi-tracking--bill_code-">Public tracking lookup by bill code.</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+
+
+<span id="example-requests-GETapi-tracking--bill_code-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://localhost:8000/api/tracking/BILL000123" \
+    --header "Authorization: Bearer {YOUR_AUTH_TOKEN}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://localhost:8000/api/tracking/BILL000123"
+);
+
+const headers = {
+    "Authorization": "Bearer {YOUR_AUTH_TOKEN}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-tracking--bill_code-">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;data&quot;: {
+        &quot;bill_code&quot;: &quot;BILL000123&quot;,
+        &quot;status&quot;: &quot;In_transit&quot;,
+        &quot;estimated_delivery_iso&quot;: &quot;2025-12-15T08:00:00.000000Z&quot;,
+        &quot;estimated_delivery_date&quot;: &quot;2025-12-15&quot;,
+        &quot;eta_note&quot;: &quot;3 days&quot;,
+        &quot;current_location&quot;: &quot;Kuala Lumpur Hub&quot;,
+        &quot;amount&quot;: 150.5,
+        &quot;is_paid&quot;: false,
+        &quot;customer_ic_number&quot;: &quot;900101-01-1234&quot;,
+        &quot;customer_info&quot;: {
+            &quot;name&quot;: &quot;John Doe&quot;,
+            &quot;phone&quot;: &quot;0123456789&quot;,
+            &quot;address&quot;: &quot;123 Main St&quot;
+        },
+        &quot;sender&quot;: {
+            &quot;name&quot;: &quot;Alice Sender&quot;,
+            &quot;phone&quot;: &quot;012-2222222&quot;
+        },
+        &quot;receiver&quot;: {
+            &quot;name&quot;: &quot;Bob Receiver&quot;,
+            &quot;phone&quot;: &quot;013-3333333&quot;
+        },
+        &quot;routing&quot;: {
+            &quot;from_company&quot;: {
+                &quot;id&quot;: 1,
+                &quot;name&quot;: &quot;Warehouse A&quot;,
+                &quot;address&quot;: &quot;Origin address&quot;
+            },
+            &quot;to_company&quot;: {
+                &quot;id&quot;: 2,
+                &quot;name&quot;: &quot;City B Branch&quot;,
+                &quot;address&quot;: &quot;Destination address&quot;
+            },
+            &quot;owning_company&quot;: {
+                &quot;id&quot;: 3,
+                &quot;name&quot;: &quot;Tung Ma Express&quot;,
+                &quot;contact_number&quot;: &quot;+60123456789&quot;,
+                &quot;email&quot;: &quot;ops@example.com&quot;
+            }
+        },
+        &quot;contact&quot;: {
+            &quot;staff_in_charge&quot;: {
+                &quot;id&quot;: 10,
+                &quot;name&quot;: &quot;Alice Johnson&quot;,
+                &quot;email&quot;: &quot;alice@example.com&quot;,
+                &quot;contact_number&quot;: &quot;+60123456780&quot;,
+                &quot;position&quot;: &quot;Operations Lead&quot;
+            },
+            &quot;company&quot;: {
+                &quot;id&quot;: 3,
+                &quot;name&quot;: &quot;Tung Ma Express&quot;,
+                &quot;contact_number&quot;: &quot;+60123456789&quot;,
+                &quot;email&quot;: &quot;ops@example.com&quot;
+            }
+        },
+        &quot;attachments&quot;: {
+            &quot;media&quot;: &quot;https://example.com/storage/bills/img.png&quot;,
+            &quot;payment_proof&quot;: &quot;https://example.com/storage/bills/proof.pdf&quot;
+        },
+        &quot;courier_policy&quot;: {
+            &quot;id&quot;: 5,
+            &quot;name&quot;: &quot;Standard Delivery&quot;
+        },
+        &quot;bus_datetime&quot;: &quot;2025-12-15T03:30:00.000000Z&quot;,
+        &quot;created_at&quot;: &quot;2025-12-10T02:06:54.000000Z&quot;,
+        &quot;updated_at&quot;: &quot;2025-12-12T09:20:00.000000Z&quot;
+    }
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (404):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;Bill not found&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-tracking--bill_code-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-tracking--bill_code-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-tracking--bill_code-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-tracking--bill_code-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-tracking--bill_code-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-tracking--bill_code-" data-method="GET"
+      data-path="api/tracking/{bill_code}"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-tracking--bill_code-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-tracking--bill_code-"
+                    onclick="tryItOut('GETapi-tracking--bill_code-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-tracking--bill_code-"
+                    onclick="cancelTryOut('GETapi-tracking--bill_code-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-tracking--bill_code-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/tracking/{bill_code}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-tracking--bill_code-"
+               value="Bearer {YOUR_AUTH_TOKEN}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {YOUR_AUTH_TOKEN}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-tracking--bill_code-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-tracking--bill_code-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>bill_code</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="bill_code"                data-endpoint="GETapi-tracking--bill_code-"
+               value="BILL000123"
+               data-component="url">
+    <br>
+<p>The bill/tracking code. Example: <code>BILL000123</code></p>
+            </div>
+                    </form>
 
             
 
