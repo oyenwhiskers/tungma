@@ -339,6 +339,17 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         deprecated: false
+      customer_ic_number:
+        custom: []
+        name: customer_ic_number
+        description: 'Optional customer IC/passport number.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
       from_company_id:
         custom: []
         name: from_company_id
@@ -492,6 +503,7 @@ endpoints:
       customer_name: architecto
       customer_phone: architecto
       customer_address: architecto
+      customer_ic_number: architecto
       from_company_id: 16
       to_company_id: 16
       sender_name: architecto

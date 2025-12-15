@@ -70,7 +70,9 @@ class BillController extends Controller
                 $q->where('bill_code', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%")
                   ->orWhere('customer_info->name', 'like', "%{$search}%")
-                  ->orWhere('customer_info->phone', 'like', "%{$search}%");
+                  ->orWhere('customer_info->phone', 'like', "%{$search}%")
+                  ->orWhere('customer_info->ic', 'like', "%{$search}%")
+                  ->orWhere('customer_ic_number', 'like', "%{$search}%");
             });
         }
 
@@ -155,6 +157,7 @@ class BillController extends Controller
             'customer_name' => 'nullable|string',
             'customer_phone' => 'nullable|string',
             'customer_address' => 'nullable|string',
+            'customer_ic_number' => 'nullable|string|max:50',
             'from_company_id' => 'nullable|exists:companies,id',
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
@@ -214,11 +217,12 @@ class BillController extends Controller
         }
 
         // Build customer_info JSON
-        if ($request->customer_name || $request->customer_phone || $request->customer_address) {
+        if ($request->customer_name || $request->customer_phone || $request->customer_address || $request->customer_ic_number) {
             $data['customer_info'] = json_encode([
                 'name' => $request->customer_name,
                 'phone' => $request->customer_phone,
                 'address' => $request->customer_address,
+                'ic' => $request->customer_ic_number,
             ]);
         }
 
@@ -271,6 +275,7 @@ class BillController extends Controller
 
         // Set created_by to current authenticated user
         $data['created_by'] = auth()->id();
+        $data['status'] = 'In_transit';
 
         // Handle is_paid (convert string to boolean if needed)
         if (isset($data['is_paid'])) {
@@ -339,6 +344,7 @@ class BillController extends Controller
             'customer_name' => 'nullable|string',
             'customer_phone' => 'nullable|string',
             'customer_address' => 'nullable|string',
+            'customer_ic_number' => 'nullable|string|max:50',
             'from_company_id' => 'nullable|exists:companies,id',
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
@@ -370,11 +376,12 @@ class BillController extends Controller
         }
 
         // Build customer_info JSON
-        if ($request->customer_name || $request->customer_phone || $request->customer_address) {
+        if ($request->customer_name || $request->customer_phone || $request->customer_address || $request->customer_ic_number) {
             $data['customer_info'] = json_encode([
                 'name' => $request->customer_name,
                 'phone' => $request->customer_phone,
                 'address' => $request->customer_address,
+                'ic' => $request->customer_ic_number,
             ]);
         }
 
@@ -456,6 +463,10 @@ class BillController extends Controller
         if (isset($data['bus_datetime']) && $data['bus_datetime'] === '') {
             $data['bus_datetime'] = null;
         }
+
+        // Set status based on whether the bill has been checked
+        $checkedByValue = array_key_exists('checked_by', $data) ? $data['checked_by'] : $bill->checked_by;
+        $data['status'] = $checkedByValue ? 'Delivered' : 'In_transit';
 
         $bill->update($data);
         return redirect()->route('bills.show', $bill)->with('success', 'Bill updated successfully');

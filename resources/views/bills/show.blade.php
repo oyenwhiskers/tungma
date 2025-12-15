@@ -194,10 +194,13 @@ use Illuminate\Support\Str;
                       <span>Customer Information</span>
                     </div>
                     <div class="info-value">
-                      @if($bill->customer_info)
+                      @if($bill->customer_info || $bill->customer_ic_number)
                         @php $customer = is_string($bill->customer_info) ? json_decode($bill->customer_info, true) : $bill->customer_info; @endphp
                         <div>
                           <div><strong>{{ $customer['name'] ?? '—' }}</strong></div>
+                          @if($bill->customer_ic_number || !empty($customer['ic']))
+                            <div class="small text-muted">IC: {{ $bill->customer_ic_number ?? ($customer['ic'] ?? '') }}</div>
+                          @endif
                           @if(isset($customer['phone']))<div class="small text-muted">{{ $customer['phone'] }}</div>@endif
                           @if(isset($customer['address']))<div class="small text-muted">{{ $customer['address'] }}</div>@endif
                         </div>

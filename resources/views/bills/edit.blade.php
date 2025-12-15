@@ -311,6 +311,17 @@ use Illuminate\Support\Facades\Storage;
               @enderror
             </div>
 
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-person-vcard"></i> Customer IC Number
+              </label>
+              <input type="text" name="customer_ic_number" class="form-control @error('customer_ic_number') is-invalid @enderror"
+                     value="{{ old('customer_ic_number', $bill->customer_ic_number ?? ($customer['ic'] ?? '')) }}" placeholder="e.g., 910101-01-1234">
+              @error('customer_ic_number')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
             <div class="col-12">
               <label class="form-label">
                 <i class="bi bi-geo-alt"></i> Customer Address
