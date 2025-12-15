@@ -322,6 +322,17 @@ use Illuminate\Support\Facades\Storage;
               @enderror
             </div>
 
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-calendar-check"></i> Customer Received Date
+              </label>
+              <input type="date" name="customer_received_date" class="form-control @error('customer_received_date') is-invalid @enderror"
+                     value="{{ old('customer_received_date', $bill->customer_received_date?->format('Y-m-d')) }}">
+              @error('customer_received_date')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
             <div class="col-12">
               <label class="form-label">
                 <i class="bi bi-geo-alt"></i> Customer Address

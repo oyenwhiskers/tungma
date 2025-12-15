@@ -158,6 +158,7 @@ class BillController extends Controller
             'customer_phone' => 'nullable|string',
             'customer_address' => 'nullable|string',
             'customer_ic_number' => 'nullable|string|max:50',
+            'customer_received_date' => 'nullable|date',
             'from_company_id' => 'nullable|exists:companies,id',
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
@@ -225,6 +226,10 @@ class BillController extends Controller
                 'ic' => $request->customer_ic_number,
             ]);
         }
+
+        // Persist standalone customer fields
+        $data['customer_ic_number'] = $request->customer_ic_number;
+        $data['customer_received_date'] = $request->customer_received_date;
 
         // Build sst_details JSON
         if ($request->sst_rate || $request->sst_amount) {
@@ -345,6 +350,7 @@ class BillController extends Controller
             'customer_phone' => 'nullable|string',
             'customer_address' => 'nullable|string',
             'customer_ic_number' => 'nullable|string|max:50',
+            'customer_received_date' => 'nullable|date',
             'from_company_id' => 'nullable|exists:companies,id',
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
@@ -384,6 +390,10 @@ class BillController extends Controller
                 'ic' => $request->customer_ic_number,
             ]);
         }
+
+        // Persist standalone customer fields
+        $data['customer_ic_number'] = $request->customer_ic_number;
+        $data['customer_received_date'] = $request->customer_received_date;
 
         // Build sst_details JSON
         if ($request->sst_rate || $request->sst_amount) {

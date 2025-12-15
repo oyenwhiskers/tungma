@@ -392,9 +392,12 @@ class BillController extends Controller
 
         $bill = Bill::create($data);
 
+        // Load related companies and policy for response
+        $bill->load('company', 'courierPolicy', 'fromCompany', 'toCompany');
+
         return response()->json([
             'message' => 'Bill created successfully',
-            'data' => $bill->load('company', 'courierPolicy')
+            'data' => $bill
         ], 201);
     }
 
@@ -412,8 +415,13 @@ class BillController extends Controller
      *     "id": 1,
      *     "bill_code": "BILL000001",
      *     "date": "2025-12-10",
+     *     "bus_datetime": "2025-12-10T04:30:00Z",
      *     "amount": 3000.00,
      *     "description": null,
+     *     "sender_name": "ABC Logistics",
+     *     "sender_phone": "+60123456789",
+     *     "receiver_name": "XYZ Trading",
+     *     "receiver_phone": "+60129876543",
      *     "payment_details": {
      *       "method": "cash",
      *       "date": "2025-12-10"
@@ -423,11 +431,21 @@ class BillController extends Controller
      *       "phone": "+60123456789",
      *       "address": "123 Main St"
      *     },
+     *     "customer_ic_number": "910101-01-1234",
+     *     "customer_received_date": "2025-12-11",
      *     "is_paid": false,
      *     "eta": "3",
      *     "sst_details": null,
      *     "media_attachment_url": "http://example.com/storage/bills/image.png",
      *     "payment_proof_attachment_url": "http://example.com/storage/bills/proof.pdf",
+     *     "from_company": {
+     *       "id": 2,
+     *       "name": "Origin Company"
+     *     },
+     *     "to_company": {
+     *       "id": 3,
+     *       "name": "Destination Company"
+     *     },
      *     "company": {
      *       "id": 1,
      *       "name": "Company Name"
@@ -474,7 +492,7 @@ class BillController extends Controller
             ], 404);
         }
 
-        $bill->load('company', 'courierPolicy', 'creator', 'checker');
+        $bill->load('company', 'courierPolicy', 'creator', 'checker', 'fromCompany', 'toCompany');
 
         // Parse JSON fields for cleaner response
         $paymentDetails = null;
@@ -491,6 +509,11 @@ class BillController extends Controller
                 : $bill->customer_info;
         }
 
+        // Safely extract IC from customer_info if available
+        $customerIcFromInfo = is_array($customerInfo) && array_key_exists('ic', $customerInfo)
+            ? $customerInfo['ic']
+            : null;
+
         $sstDetails = null;
         if ($bill->sst_details) {
             $sstDetails = is_string($bill->sst_details)
@@ -506,9 +529,13 @@ class BillController extends Controller
             'bus_datetime' => $bill->bus_datetime ? ($bill->bus_datetime instanceof \Carbon\Carbon ? $bill->bus_datetime->toISOString() : $bill->bus_datetime) : null,
             'amount' => (float) $bill->amount,
             'description' => $bill->description,
+            'sender_name' => $bill->sender_name,
+            'sender_phone' => $bill->sender_phone,
+            'receiver_name' => $bill->receiver_name,
+            'receiver_phone' => $bill->receiver_phone,
             'payment_details' => $paymentDetails,
             'customer_info' => $customerInfo,
-            'customer_ic_number' => $bill->customer_ic_number ?? ($customerInfo['ic'] ?? null),
+            'customer_ic_number' => $bill->customer_ic_number ?? $customerIcFromInfo,
             'customer_received_date' => $bill->customer_received_date
                 ? ($bill->customer_received_date instanceof \Carbon\Carbon ? $bill->customer_received_date->format('Y-m-d') : $bill->customer_received_date)
                 : null,
@@ -521,6 +548,14 @@ class BillController extends Controller
             'payment_proof_attachment_url' => $bill->payment_proof_attachment
                 ? URL::to(Storage::url($bill->payment_proof_attachment))
                 : null,
+            'from_company' => $bill->fromCompany ? [
+                'id' => $bill->fromCompany->id,
+                'name' => $bill->fromCompany->name,
+            ] : null,
+            'to_company' => $bill->toCompany ? [
+                'id' => $bill->toCompany->id,
+                'name' => $bill->toCompany->name,
+            ] : null,
             'company' => $bill->company ? [
                 'id' => $bill->company->id,
                 'name' => $bill->company->name,

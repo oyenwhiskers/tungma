@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Bill;
+use Carbon\Carbon;
 
 /**
  * @group Checklist
@@ -19,10 +20,13 @@ use App\Models\Bill;
 class ChecklistController extends Controller
 {
     /**
-     * List Today's Checklists
+     * List Checklists
      *
-     * Display a listing of checklists for the current date, grouped by bus departure time.
+     * Display a listing of checklists for a given date (defaults to today),
+     * grouped by bus departure time.
      * Returns a JSON response containing the list of departure times and their status.
+     *
+     * @queryParam date string The date to view checklists for (Y-m-d). Defaults to today's date. Example: 2025-12-14
      *
      * @response 200 {
      *    "success": true,
@@ -35,11 +39,15 @@ class ChecklistController extends Controller
      *     ]
      * }
      */
-    public function index()
+    public function index(Request $request)
     {
-        $today = now()->toDateString();
+        // Allow viewing today's checklist (default) or any previous date via ?date=Y-m-d
+        $date = $request->query('date');
+        $targetDate = $date
+            ? Carbon::parse($date)->toDateString()
+            : now()->toDateString();
 
-        $bills = Bill::whereDate('bus_datetime', $today)
+        $bills = Bill::whereDate('bus_datetime', $targetDate)
             ->get()
             ->groupBy('bus_datetime');
 
