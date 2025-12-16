@@ -476,7 +476,7 @@ class BillController extends Controller
 
         // Set status based on whether the bill has been checked
         $checkedByValue = array_key_exists('checked_by', $data) ? $data['checked_by'] : $bill->checked_by;
-        $data['status'] = $checkedByValue ? 'Delivered' : 'In_transit';
+        $data['status'] = $checkedByValue ? 'Arrived' : 'In_transit';
 
         $bill->update($data);
         return redirect()->route('bills.show', $bill)->with('success', 'Bill updated successfully');

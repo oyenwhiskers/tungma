@@ -48,6 +48,7 @@ class ChecklistController extends Controller
             : now()->toDateString();
 
         $bills = Bill::whereDate('bus_datetime', $targetDate)
+            ->with('checker')
             ->get()
             ->groupBy('bus_datetime');
 
@@ -56,20 +57,22 @@ class ChecklistController extends Controller
             $total = $items->count();
             $checkedCount = $items->whereNotNull('checked_by')->count();
 
-            // if ($total === 0) {
-            //     $status = 'no data';
-            // } elseif ($checkedCount > 0) {
-            //     $status = 'success';
-            // } else {
-            //     $status = 'pending';
-            // }
+            if ($total === 0) {
+                $status = 'no data';
+            } elseif ($checkedCount > 0) {
+                $status = 'success';
+            } else {
+                $status = 'pending';
+            }
 
+            $checkedItem = $items->whereNotNull('checked_by')->first();
+            
             return [
                 'bus_datetime' => $busDatetime,
-                // 'status' => $status,
-                'checked_by' => $items->whereNotNull('checked_by')
-                    ->pluck('checked_by')
-                    ->first() ?? '-',
+                'status' => $status,
+                'checked_by' => $checkedItem && $checkedItem->checker 
+                    ? $checkedItem->checker->name 
+                    : '-',
             ];
         });
 
@@ -166,7 +169,7 @@ class ChecklistController extends Controller
         Bill::whereIn('id', $request->bill_ids)
             ->update([
                 'checked_by' => $id,
-                'status' => 'Delivered',
+                'status' => 'Arrived',
             ]);
 
         return response()->json([
