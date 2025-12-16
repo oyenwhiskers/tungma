@@ -1,14 +1,28 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="tm-header">
-        <div>
-            <h2 class="mb-1">Daily Checklists</h2>
-            <div class="text-muted">
-                Manage bus departure checklists for today
-            </div>
+<div class="tm-breadcrumb">
+    <a href="{{ route('dashboard') }}">Dashboard</a>
+    <i class="bi bi-chevron-right"></i>
+    <span>Checklists</span>
+</div>
+
+<div class="tm-header">
+    <div>
+        <h2 class="mb-1">Daily Checklists</h2>
+        <div class="text-muted">
+            Manage bus departure checklists for {{ \Carbon\Carbon::parse($date)->format('d M Y') }}
         </div>
     </div>
+    <div>
+        <form method="GET" action="{{ route('checklists.index') }}" class="d-flex gap-2">
+            <input type="date" name="date" class="form-control" value="{{ $date }}" max="{{ now()->toDateString() }}">
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+</div>
 
     <div class="row">
         <div class="col-12">
