@@ -31,9 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index']);
     Route::get('dashboard/daily', [DashboardController::class, 'dailyAnalytic']);
     Route::get('dashboard/monthly', [DashboardController::class, 'monthlyAnalytic']);
-    Route::get('checklists', [ChecklistController::class, 'index'])->name('checklists.index');
-    Route::get('checklists/{bus_datetime}', [ChecklistController::class, 'show'])->name('checklists.show');
-    Route::post('checklists/save', [ChecklistController::class, 'save'])->name('checklists.save');
+    Route::get('checklists', [ChecklistController::class, 'index']);
+    Route::get('checklists/{bus_datetime}', [ChecklistController::class, 'show']);
+    Route::post('checklists/save', [ChecklistController::class, 'save']);
 
 });
 

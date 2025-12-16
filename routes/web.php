@@ -53,6 +53,11 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
     Route::resource('staff', App\Http\Controllers\StaffUserController::class);
     Route::get('/deleted/staff', [App\Http\Controllers\StaffUserController::class, 'deleted'])->name('staff.deleted');
     Route::post('/deleted/staff/{id}/restore', [App\Http\Controllers\StaffUserController::class, 'restore'])->name('staff.restore');
+
+    // Checklists (Super Admin & Admin can view)
+    Route::get('/checklists', [App\Http\Controllers\ChecklistController::class, 'index'])->name('checklists.index');
+    Route::get('/checklists/{bus_datetime}', [App\Http\Controllers\ChecklistController::class, 'show'])->name('checklists.show');
+    Route::post('/checklists/save', [App\Http\Controllers\ChecklistController::class, 'save'])->name('checklists.save');
 });
 
 // Super Admin only routes
