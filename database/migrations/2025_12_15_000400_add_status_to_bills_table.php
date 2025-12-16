@@ -15,7 +15,7 @@ return new class extends Migration
 
         DB::table('bills')
             ->whereNotNull('checked_by')
-            ->update(['status' => 'Delivered']);
+            ->update(['status' => 'Arrived']);
     }
 
     public function down(): void
