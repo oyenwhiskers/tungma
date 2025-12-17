@@ -4,7 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
 // Root -> dashboard
-Route::get('/', function () { return redirect()->route('login'); });
+Route::get('/', function () {
+    return redirect()->route('login'); });
 
 // Authentication routes assumed provided by Laravel auth starter (login required)
 Route::middleware(['web'])->group(function () {
@@ -22,6 +23,7 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
     // General routes (accessible by all authenticated users)
     Route::resource('bills', App\Http\Controllers\BillController::class);
     Route::resource('policies', App\Http\Controllers\CourierPolicyController::class);
+    Route::resource('bus-departures', App\Http\Controllers\BusDeparturesController::class);
     Route::get('/analytics', [App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
 
     // Companies (Super Admin only for create/edit/delete, all can view assigned)
@@ -42,7 +44,7 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
 
     // Bill template/receipt
     Route::get('/bills/{bill}/template', [App\Http\Controllers\BillController::class, 'template'])->name('bills.template');
-    
+
     // Deleted lists with restore
     Route::get('/deleted/bills', [App\Http\Controllers\BillController::class, 'deleted'])->name('bills.deleted');
     Route::post('/deleted/bills/{id}/restore', [App\Http\Controllers\BillController::class, 'restore'])->name('bills.restore');
