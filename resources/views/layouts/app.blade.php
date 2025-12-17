@@ -170,6 +170,11 @@
             <a href="{{ route('checklists.index') }}" class="{{ request()->routeIs('checklists.*') ? 'active' : '' }}">
                 <i class="bi bi-list-check"></i> Checklists
             </a>
+
+            <a href="{{ 'www.google.com' }}" class="">
+                <i class="bi bi-bus-front"></i> Bus Date Time
+            </a>
+
             <div class="tm-nav-divider"></div>
             <a href="{{ route('analytics.index') }}" class="{{ request()->routeIs('analytics.*') ? 'active' : '' }}">
                 <i class="bi bi-graph-up"></i> Analytics
