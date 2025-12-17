@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class AnalyticsController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
+        $filter = $request->input('filter', 'monthly');
+
         // Total revenue
         $totalRevenue = Bill::query()->sum('amount');
 
@@ -35,24 +37,30 @@ class AnalyticsController extends Controller
             ->map(function ($row) {
                 return [
                     'company' => optional(Company::find($row->company_id))->name ?? 'Unassigned',
-                    'bills' => (int)$row->bills,
-                    'revenue' => (float)$row->revenue,
+                    'bills' => (int) $row->bills,
+                    'revenue' => (float) $row->revenue,
                 ];
             });
 
-        // Monthly revenue trend
-        $revenueByMonth = Bill::query()
+        // Revenue trend
+        $dateFormat = match ($filter) {
+            'daily' => '%Y-%m-%d',
+            'yearly' => '%Y',
+            default => '%Y-%m',
+        };
+
+        $revenueTrend = Bill::query()
             ->select(
-                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
+                DB::raw("DATE_FORMAT(created_at, '$dateFormat') as label"),
                 DB::raw('sum(amount) as revenue')
             )
-            ->groupBy('month')
-            ->orderBy('month')
+            ->groupBy('label')
+            ->orderBy('label')
             ->get()
             ->map(function ($row) {
                 return [
-                    'month' => $row->month,
-                    'revenue' => (float)$row->revenue,
+                    'label' => $row->label,
+                    'revenue' => (float) $row->revenue,
                 ];
             });
 
@@ -60,7 +68,8 @@ class AnalyticsController extends Controller
             'totalRevenue',
             'staffDistribution',
             'billSummaries',
-            'revenueByMonth'
+            'revenueTrend',
+            'filter'
         ));
     }
 }
