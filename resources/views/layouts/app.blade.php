@@ -171,8 +171,8 @@
                 <i class="bi bi-list-check"></i> Checklists
             </a>
 
-            <a href="{{ 'www.google.com' }}" class="">
-                <i class="bi bi-bus-front"></i> Bus Date Time
+            <a href="{{ route('bus-departures.index') }}" class="{{ request()->routeIs('bus-departures.*') ? 'active' : '' }}">
+                <i class="bi bi-bus-front"></i> Bus Departures
             </a>
 
             <div class="tm-nav-divider"></div>
