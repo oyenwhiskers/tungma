@@ -11,7 +11,7 @@ class Bill extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'bill_code', 'date', 'bus_datetime', 'amount', 'description', 'payment_details',
+        'bill_code', 'date', 'amount', 'description', 'payment_details',
         'customer_info', 'customer_ic_number', 'customer_received_date', 'from_company_id', 'to_company_id', 'sender_name', 'sender_phone',
         'receiver_name', 'receiver_phone', 'courier_policy_id', 'company_id', 'eta',
         'sst_details', 'policy_snapshot', 'media_attachment', 'payment_proof_attachment',
@@ -20,7 +20,6 @@ class Bill extends Model
 
     protected $casts = [
         'date' => 'date',
-        'bus_datetime' => 'datetime',
         'customer_received_date' => 'date',
         'amount' => 'decimal:2',
         'policy_snapshot' => 'array',
@@ -55,5 +54,10 @@ class Bill extends Model
     public function checker()
     {
         return $this->belongsTo(User::class, 'checked_by');
+    }
+
+    public function busDeparture()
+    {
+        return $this->belongsTo(BusDeparture::class);
     }
 }
