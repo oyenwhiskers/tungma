@@ -57,6 +57,30 @@
                         @enderror
                         <div class="form-text">Primary contact email address</div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Based In</label>
+                        <input class="form-control @error('based_in') is-invalid @enderror" name="based_in" value="{{ old('based_in') }}" placeholder="e.g. New York, USA">
+                        @error('based_in')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">Location or city where the company is based</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Registration Number</label>
+                        <input class="form-control @error('registration_number') is-invalid @enderror" name="registration_number" value="{{ old('registration_number') }}" placeholder="e.g. 12345678-X">
+                        @error('registration_number')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">Official company registration number</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SST Number</label>
+                        <input class="form-control @error('sst_number') is-invalid @enderror" name="sst_number" value="{{ old('sst_number') }}" placeholder="e.g. A12-3456-78901234">
+                        @error('sst_number')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">Sales and Service Tax registration number</div>
+                    </div>
                     <div class="mb-4">
                         <label class="form-label">Bill ID Prefix</label>
                         <input class="form-control @error('bill_id_prefix') is-invalid @enderror" name="bill_id_prefix" value="{{ old('bill_id_prefix') }}" placeholder="e.g. BILL, INV, ABC">

@@ -31,6 +31,9 @@ class CompanyController extends Controller
             'contact_number' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'email' => 'nullable|email',
+            'based_in' => 'nullable|string|max:255',
+            'registration_number' => 'nullable|string|max:255',
+            'sst_number' => 'nullable|string|max:255',
             'bill_id_prefix' => 'nullable|string|max:50|regex:/^[A-Za-z]+$/',
         ]);
         Company::create($data);
@@ -58,6 +61,9 @@ class CompanyController extends Controller
             'contact_number' => 'nullable|string|max:255',
             'address' => 'nullable|string',
             'email' => 'nullable|email',
+            'based_in' => 'nullable|string|max:255',
+            'registration_number' => 'nullable|string|max:255',
+            'sst_number' => 'nullable|string|max:255',
             'bill_id_prefix' => 'nullable|string|max:50|regex:/^[A-Za-z]+$/',
         ]);
         $company->update($data);
