@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Bill;
 use App\Models\Company;
+use App\Models\CourierPolicy;
+use App\Models\User;
+use App\Models\BusDepartures;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
@@ -107,9 +110,9 @@ class BillController extends Controller
 
         // Get companies for filter dropdown (only for super admin)
         if ($user->role === 'admin') {
-            $companies = \App\Models\Company::where('id', $user->company_id)->get();
+            $companies = Company::where('id', $user->company_id)->get();
         } else {
-            $companies = \App\Models\Company::all();
+            $companies = Company::all();
         }
 
         // Eager load relationships to avoid N+1 queries
@@ -127,17 +130,17 @@ class BillController extends Controller
 
         if ($user->role === 'admin') {
             // Admin can only see their own company and its policies
-            $companies = \App\Models\Company::where('id', $user->company_id)->get();
-            $policies = \App\Models\CourierPolicy::where('company_id', $user->company_id)->get();
-            $users = \App\Models\User::where('company_id', $user->company_id)->get();
+            $companies = Company::where('id', $user->company_id)->get();
+            $policies = CourierPolicy::where('company_id', $user->company_id)->get();
+            $users = User::where('company_id', $user->company_id)->get();
         } else {
             // Super admin can see all companies and policies
-            $companies = \App\Models\Company::all();
-            $policies = \App\Models\CourierPolicy::all();
-            $users = \App\Models\User::all();
+            $companies = Company::all();
+            $policies = CourierPolicy::all();
+            $users = User::all();
         }
 
-        $busDepartures = \App\Models\BusDepartures::all();
+        $busDepartures = BusDepartures::all();
 
         return view('bills.create', compact('companies', 'policies', 'users', 'busDepartures'));
     }
@@ -229,7 +232,7 @@ class BillController extends Controller
 
         // Auto-select company's policy if not provided
         if (empty($data['courier_policy_id']) && $request->company_id) {
-            $autoPolicy = \App\Models\CourierPolicy::where('company_id', $request->company_id)->orderBy('id')->first();
+            $autoPolicy = CourierPolicy::where('company_id', $request->company_id)->orderBy('id')->first();
             if ($autoPolicy) {
                 $data['courier_policy_id'] = $autoPolicy->id;
             }
@@ -237,7 +240,7 @@ class BillController extends Controller
 
         // Snapshot policy into bill
         if (!empty($data['courier_policy_id'])) {
-            $policy = \App\Models\CourierPolicy::find($data['courier_policy_id']);
+            $policy = CourierPolicy::find($data['courier_policy_id']);
             if ($policy) {
                 $data['policy_snapshot'] = json_encode([
                     'id' => $policy->id,
@@ -309,17 +312,17 @@ class BillController extends Controller
 
         if ($user->role === 'admin') {
             // Admin can only see their own company and its policies
-            $companies = \App\Models\Company::where('id', $user->company_id)->get();
-            $policies = \App\Models\CourierPolicy::where('company_id', $user->company_id)->get();
-            $users = \App\Models\User::where('company_id', $user->company_id)->get();
+            $companies = Company::where('id', $user->company_id)->get();
+            $policies = CourierPolicy::where('company_id', $user->company_id)->get();
+            $users = User::where('company_id', $user->company_id)->get();
         } else {
             // Super admin can see all companies and policies
-            $companies = \App\Models\Company::all();
-            $policies = \App\Models\CourierPolicy::all();
-            $users = \App\Models\User::all();
+            $companies = Company::all();
+            $policies = CourierPolicy::all();
+            $users = User::all();
         }
 
-        $busDepartures = \App\Models\BusDepartures::all();
+        $busDepartures = BusDepartures::all();
 
         return view('bills.edit', compact('bill', 'companies', 'policies', 'users', 'busDepartures'));
     }
@@ -383,13 +386,13 @@ class BillController extends Controller
 
         // If company changed and policy no longer matches, auto-adjust
         if (!empty($data['courier_policy_id'])) {
-            $policy = \App\Models\CourierPolicy::find($data['courier_policy_id']);
+            $policy = CourierPolicy::find($data['courier_policy_id']);
             if (!$policy || $policy->company_id != $data['company_id']) {
                 $data['courier_policy_id'] = null;
             }
         }
         if (empty($data['courier_policy_id']) && $data['company_id']) {
-            $autoPolicy = \App\Models\CourierPolicy::where('company_id', $data['company_id'])->orderBy('id')->first();
+            $autoPolicy = CourierPolicy::where('company_id', $data['company_id'])->orderBy('id')->first();
             if ($autoPolicy) {
                 $data['courier_policy_id'] = $autoPolicy->id;
             }
@@ -397,7 +400,7 @@ class BillController extends Controller
 
         // Refresh snapshot when policy or company changed
         if (!empty($data['courier_policy_id'])) {
-            $policy = \App\Models\CourierPolicy::find($data['courier_policy_id']);
+            $policy = CourierPolicy::find($data['courier_policy_id']);
             if ($policy) {
                 $data['policy_snapshot'] = json_encode([
                     'id' => $policy->id,
