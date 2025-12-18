@@ -171,9 +171,11 @@
                 <i class="bi bi-list-check"></i> Checklists
             </a>
 
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('bus-departures.index') }}" class="{{ request()->routeIs('bus-departures.*') ? 'active' : '' }}">
                 <i class="bi bi-bus-front"></i> Bus Departures
             </a>
+            @endif
 
             <div class="tm-nav-divider"></div>
             <a href="{{ route('analytics.index') }}" class="{{ request()->routeIs('analytics.*') ? 'active' : '' }}">
