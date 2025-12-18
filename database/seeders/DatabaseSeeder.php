@@ -18,11 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             SuperAdminSeeder::class,
+            AdminSeeder::class,
         ]);
-
-        Company::factory(3)->create();
-
-        // Optionally seed demo users
-        // User::factory(10)->create();
     }
 }

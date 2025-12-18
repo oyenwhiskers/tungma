@@ -29,7 +29,9 @@ class BusDeparturesController extends Controller
      */
     public function store(Request $request)
     {
-        BusDepartures::create($request->all());
+        $data = $request->all();
+        $data['company_id'] = auth()->user()->company_id;
+        BusDepartures::create($data);
         return redirect()->route('bus-departures.index');
     }
 

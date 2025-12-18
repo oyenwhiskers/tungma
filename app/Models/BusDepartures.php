@@ -8,6 +8,7 @@ class BusDepartures extends Model
 {
     protected $fillable = [
         'departure_time',
+        'company_id',
     ];
 
     public function bills()
