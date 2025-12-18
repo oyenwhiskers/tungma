@@ -11,6 +11,11 @@ class BusDepartures extends Model
         'company_id',
     ];
 
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
     public function bills()
     {
         return $this->hasMany(Bill::class);

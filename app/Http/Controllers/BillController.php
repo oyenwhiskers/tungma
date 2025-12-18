@@ -133,14 +133,18 @@ class BillController extends Controller
             $companies = Company::where('id', $user->company_id)->get();
             $policies = CourierPolicy::where('company_id', $user->company_id)->get();
             $users = User::where('company_id', $user->company_id)->get();
+
+            // Admin should only see bus departures belonging to their company
+            $busDepartures = BusDepartures::where('company_id', $user->company_id)->get();
         } else {
             // Super admin can see all companies and policies
             $companies = Company::all();
             $policies = CourierPolicy::all();
             $users = User::all();
-        }
 
-        $busDepartures = BusDepartures::all();
+            // Super admin can see all bus departures with company for display
+            $busDepartures = BusDepartures::with('company')->get();
+        }
 
         return view('bills.create', compact('companies', 'policies', 'users', 'busDepartures'));
     }
@@ -315,14 +319,18 @@ class BillController extends Controller
             $companies = Company::where('id', $user->company_id)->get();
             $policies = CourierPolicy::where('company_id', $user->company_id)->get();
             $users = User::where('company_id', $user->company_id)->get();
+
+            // Admin should only see bus departures belonging to their company
+            $busDepartures = BusDepartures::where('company_id', $user->company_id)->get();
         } else {
             // Super admin can see all companies and policies
             $companies = Company::all();
             $policies = CourierPolicy::all();
             $users = User::all();
-        }
 
-        $busDepartures = BusDepartures::all();
+            // Super admin can see all bus departures with company for display
+            $busDepartures = BusDepartures::with('company')->get();
+        }
 
         return view('bills.edit', compact('bill', 'companies', 'policies', 'users', 'busDepartures'));
     }

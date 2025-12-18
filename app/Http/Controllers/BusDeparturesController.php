@@ -12,7 +12,16 @@ class BusDeparturesController extends Controller
      */
     public function index()
     {
-        $busDepartures = BusDepartures::all();
+        $user = auth()->user();
+
+        // Admin: only see bus departures for their own company
+        if ($user && $user->role === 'admin') {
+            $busDepartures = BusDepartures::where('company_id', $user->company_id)->get();
+        } else {
+            // Super admin or other roles: see all
+            $busDepartures = BusDepartures::all();
+        }
+
         return view('bus_departures.index', compact('busDepartures'));
     }
 
