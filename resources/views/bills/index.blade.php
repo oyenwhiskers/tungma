@@ -125,7 +125,7 @@
                     </td>
                     <td>{{ $bill->date?->format('M d, Y') ?? '—' }}</td>
                     <td>{{ $bill->customer_received_date ? $bill->customer_received_date->format('M d, Y') : '—' }}</td>
-                    <td>{{ $bill->bus_datetime ? $bill->bus_datetime->format('M d, Y h:i A') : '—' }}</td>
+                    <td>{{ $bill->busDeparture ? \Carbon\Carbon::parse($bill->busDeparture->departure_time)->format('h:i A') : '—' }}</td>
                     <td><strong>RM {{ number_format($bill->amount, 2) }}</strong></td>
                     <td>{{ $bill->company?->name ?? '—' }}</td>
                     <td>{{ $bill->eta ?? '—' }}</td>

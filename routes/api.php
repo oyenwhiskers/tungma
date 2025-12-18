@@ -32,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('dashboard/daily', [DashboardController::class, 'dailyAnalytic']);
     Route::get('dashboard/monthly', [DashboardController::class, 'monthlyAnalytic']);
     Route::get('checklists', [ChecklistController::class, 'index']);
-    Route::get('checklists/{bus_datetime}', [ChecklistController::class, 'show']);
+    Route::get('checklists/{bus_departures_id}', [ChecklistController::class, 'show']);
     Route::post('checklists/save', [ChecklistController::class, 'save']);
 
 });

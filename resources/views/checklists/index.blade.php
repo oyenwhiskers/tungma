@@ -45,7 +45,7 @@
                             <tbody>
                                 @forelse($rows as $row)
                                     <tr>
-                                        <td>{{ \Carbon\Carbon::parse($row['bus_datetime'])->format('H:i') }}</td>
+                                        <td>{{ $row['departure_time'] ? \Carbon\Carbon::parse($row['departure_time'])->format('H:i') : '—' }}</td>
                                         <td>
                                             @if($row['status'] === 'success')
                                                 <span class="badge bg-success">Completed</span>
@@ -57,8 +57,8 @@
                                         </td>
                                         <td>{{ $row['checked_by'] }}</td>
                                         <td class="text-end">
-                                            @if($row['status'] !== 'no data')
-                                                <a href="{{ route('checklists.show', ['bus_datetime' => $row['bus_datetime']]) }}"
+                                            @if($row['status'] !== 'no data' && $row['bus_departures_id'])
+                                                <a href="{{ route('checklists.show', ['bus_departures_id' => $row['bus_departures_id'], 'date' => $row['date']]) }}"
                                                     class="btn btn-sm btn-primary">
                                                     View
                                                 </a>

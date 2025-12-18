@@ -108,7 +108,7 @@ class BillController extends Controller
         }
 
         // Eager load relationships to avoid N+1 queries
-        $bills = $query->with(['company', 'checker', 'creator', 'fromCompany', 'toCompany'])
+        $bills = $query->with(['company', 'checker', 'creator', 'fromCompany', 'toCompany', 'busDeparture'])
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -132,7 +132,9 @@ class BillController extends Controller
             $users = \App\Models\User::all();
         }
 
-        return view('bills.create', compact('companies', 'policies', 'users'));
+        $busDepartures = \App\Models\BusDepartures::all();
+
+        return view('bills.create', compact('companies', 'policies', 'users', 'busDepartures'));
     }
 
     public function store(Request $request)
@@ -149,7 +151,7 @@ class BillController extends Controller
 
         $data = $request->validate([
             'date' => 'required|date',
-            'bus_datetime' => 'nullable|date',
+            'bus_departures_id' => 'nullable|exists:bus_departures,id',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
@@ -289,9 +291,9 @@ class BillController extends Controller
             $data['is_paid'] = false;
         }
 
-        // Handle bus_datetime - allow null (empty string becomes null)
-        if (isset($data['bus_datetime']) && $data['bus_datetime'] === '') {
-            $data['bus_datetime'] = null;
+        // Handle bus_departures_id - allow null (empty string becomes null)
+        if (isset($data['bus_departures_id']) && $data['bus_departures_id'] === '') {
+            $data['bus_departures_id'] = null;
         }
 
         Bill::create($data);
@@ -304,7 +306,7 @@ class BillController extends Controller
         if ($user->role === 'admin' && $user->company_id !== $bill->company_id) {
             abort(403, 'You can only view bills from your company');
         }
-        $bill->load('fromCompany', 'toCompany');
+        $bill->load('fromCompany', 'toCompany', 'busDeparture');
         return view('bills.show', compact('bill'));
     }
 
@@ -324,7 +326,9 @@ class BillController extends Controller
             $users = \App\Models\User::all();
         }
 
-        return view('bills.edit', compact('bill', 'companies', 'policies', 'users'));
+        $busDepartures = \App\Models\BusDepartures::all();
+
+        return view('bills.edit', compact('bill', 'companies', 'policies', 'users', 'busDepartures'));
     }
 
     public function update(Request $request, Bill $bill)
@@ -341,7 +345,7 @@ class BillController extends Controller
         $data = $request->validate([
             'bill_code' => 'required|string|max:255|unique:bills,bill_code,' . $bill->id,
             'date' => 'required|date',
-            'bus_datetime' => 'nullable|date',
+            'bus_departures_id' => 'nullable|exists:bus_departures,id',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
@@ -469,9 +473,9 @@ class BillController extends Controller
             $data['checked_by'] = null;
         }
 
-        // Handle bus_datetime - allow null (empty string becomes null)
-        if (isset($data['bus_datetime']) && $data['bus_datetime'] === '') {
-            $data['bus_datetime'] = null;
+        // Handle bus_departures_id - allow null (empty string becomes null)
+        if (isset($data['bus_departures_id']) && $data['bus_departures_id'] === '') {
+            $data['bus_departures_id'] = null;
         }
 
         // Set status based on whether the bill has been checked
