@@ -11,7 +11,7 @@ class AnalyticsController extends Controller
 {
     public function index(\Illuminate\Http\Request $request)
     {
-        $filter = $request->input('filter', 'monthly');
+        $filter = $request->input('filter', 'daily');
 
         // Total revenue
         $totalRevenue = Bill::query()->sum('amount');
