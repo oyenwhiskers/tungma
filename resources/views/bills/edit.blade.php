@@ -71,6 +71,9 @@ use Illuminate\Support\Facades\Storage;
                 @foreach($busDepartures as $departure)
                   <option value="{{ $departure->id }}" {{ old('bus_departures_id', $bill->bus_departures_id) == $departure->id ? 'selected' : '' }}>
                     {{ \Carbon\Carbon::parse($departure->departure_time)->format('h:i A') }}
+                    @if(auth()->user()->role !== 'admin' && $departure->company)
+                      - {{ $departure->company->name }}
+                    @endif
                   </option>
                 @endforeach
               </select>
