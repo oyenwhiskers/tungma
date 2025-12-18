@@ -13,11 +13,11 @@
     <div>
         <h2 class="mb-1">Checklist Details</h2>
         <div class="text-muted">
-            Departure: {{ \Carbon\Carbon::parse($bus_datetime)->format('d M Y, h:i A') }}
+            Departure: {{ \Carbon\Carbon::parse($date)->format('d M Y') }}{{ $departure_time ? ', ' . \Carbon\Carbon::parse($departure_time)->format('h:i A') : '' }}
         </div>
     </div>
     <div>
-        <a href="{{ route('checklists.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ route('checklists.index', ['date' => $date]) }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Back
         </a>
     </div>

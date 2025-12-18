@@ -138,7 +138,7 @@ class BillController extends Controller
 
         $includeVoided = $request->boolean('include_voided', false);
 
-        $query = Bill::where('company_id', $user->company_id);
+        $query = Bill::where('company_id', $user->company_id)->with('busDeparture');
 
         // If include_voided is true, return only voided bills
         // Otherwise, return only active bills (default behavior)
@@ -154,7 +154,8 @@ class BillController extends Controller
                 'id' => $bill->id,
                 'bill_code' => $bill->bill_code,
                 'date' => $bill->date,
-                'bus_datetime' => $bill->bus_datetime ? ($bill->bus_datetime instanceof \Carbon\Carbon ? $bill->bus_datetime->toISOString() : $bill->bus_datetime) : null,
+                'bus_departures_id' => $bill->bus_departures_id,
+                'departure_time' => $bill->busDeparture?->departure_time,
                 'customer_received_date' => $bill->customer_received_date
                     ? ($bill->customer_received_date instanceof \Carbon\Carbon ? $bill->customer_received_date->format('Y-m-d') : $bill->customer_received_date)
                     : null,
@@ -206,7 +207,7 @@ class BillController extends Controller
      * @bodyParam receiver_name string Optional receiver name.
      * @bodyParam receiver_phone string Optional receiver phone.
      * @bodyParam courier_policy_id integer Optional courier policy ID.
-     * @bodyParam bus_datetime string Optional bus departure datetime (Y-m-d H:i:s format). Used for grouping bills by vehicle departure.
+     * @bodyParam bus_departures_id integer Optional bus departure ID. Used for grouping bills by vehicle departure time.
      * @bodyParam eta string Optional estimated time of arrival.
      * @bodyParam sst_rate number Optional SST rate percentage.
      * @bodyParam sst_amount number Optional SST amount.
@@ -256,7 +257,7 @@ class BillController extends Controller
 
         $data = $request->validate([
             'date' => 'required|date',
-            'bus_datetime' => 'nullable|date',
+            'bus_departures_id' => 'nullable|exists:bus_departures,id',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
@@ -492,7 +493,7 @@ class BillController extends Controller
             ], 404);
         }
 
-        $bill->load('company', 'courierPolicy', 'creator', 'checker', 'fromCompany', 'toCompany');
+        $bill->load('company', 'courierPolicy', 'creator', 'checker', 'fromCompany', 'toCompany', 'busDeparture');
 
         // Parse JSON fields for cleaner response
         $paymentDetails = null;
@@ -526,7 +527,8 @@ class BillController extends Controller
             'id' => $bill->id,
             'bill_code' => $bill->bill_code,
             'date' => $bill->date ? ($bill->date instanceof \Carbon\Carbon ? $bill->date->format('Y-m-d') : $bill->date) : null,
-            'bus_datetime' => $bill->bus_datetime ? ($bill->bus_datetime instanceof \Carbon\Carbon ? $bill->bus_datetime->toISOString() : $bill->bus_datetime) : null,
+            'bus_departures_id' => $bill->bus_departures_id,
+            'departure_time' => $bill->busDeparture?->departure_time,
             'amount' => (float) $bill->amount,
             'description' => $bill->description,
             'sender_name' => $bill->sender_name,

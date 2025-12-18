@@ -245,7 +245,7 @@
 
                     <div style="margin-bottom: 8px;">
                         <div class="field-label">TIME FROM {{ strtoupper($bill->company->name ?? 'SDK') }} :</div>
-                        <div class="info-underline">{{ $bill->bus_datetime ? $bill->bus_datetime->format('h:i A') : '' }}</div>
+                        <div class="info-underline">{{ $bill->busDeparture ? \Carbon\Carbon::parse($bill->busDeparture->departure_time)->format('h:i A') : '' }}</div>
                     </div>
 
                     <div class="bold text-center small-text" style="margin-top: 10px;">

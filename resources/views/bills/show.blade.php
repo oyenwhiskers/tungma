@@ -76,7 +76,7 @@ use Illuminate\Support\Str;
                       <span>Bus Departure DateTime</span>
                     </div>
                     <div class="info-value">
-                      {{ $bill->bus_datetime ? $bill->bus_datetime->format('M d, Y h:i A') : '—' }}
+                      {{ $bill->busDeparture ? \Carbon\Carbon::parse($bill->busDeparture->departure_time)->format('h:i A') : '—' }}
                     </div>
                   </div>
 

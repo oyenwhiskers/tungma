@@ -15,7 +15,7 @@ class Bill extends Model
         'customer_info', 'customer_ic_number', 'customer_received_date', 'from_company_id', 'to_company_id', 'sender_name', 'sender_phone',
         'receiver_name', 'receiver_phone', 'courier_policy_id', 'company_id', 'eta',
         'sst_details', 'policy_snapshot', 'media_attachment', 'payment_proof_attachment',
-        'is_paid', 'status', 'created_by', 'checked_by'
+        'is_paid', 'status', 'created_by', 'checked_by', 'bus_departures_id'
     ];
 
     protected $casts = [
@@ -58,6 +58,6 @@ class Bill extends Model
 
     public function busDeparture()
     {
-        return $this->belongsTo(BusDeparture::class);
+        return $this->belongsTo(BusDepartures::class, 'bus_departures_id');
     }
 }

@@ -22,16 +22,16 @@ class ChecklistController extends Controller
         $user = auth()->user();
 
         // Filter by company if user is admin or staff
-        $query = Bill::whereDate('bus_datetime', $targetDate)
-            ->with('checker');
+        $query = Bill::whereDate('date', $targetDate)
+            ->with(['checker', 'busDeparture']);
 
         if ($user->role !== 'super_admin') {
             $query->where('company_id', $user->company_id);
         }
 
-        $bills = $query->get()->groupBy('bus_datetime');
+        $bills = $query->get()->groupBy('bus_departures_id');
 
-        $rows = $bills->map(function ($items, $busDatetime) {
+        $rows = $bills->map(function ($items, $busDepartureId) {
             $total = $items->count();
             $checkedCount = $items->whereNotNull('checked_by')->count();
 
@@ -44,9 +44,17 @@ class ChecklistController extends Controller
             }
 
             $checkedItem = $items->whereNotNull('checked_by')->first();
+            $firstItem = $items->first();
+            
+            // Get departure time from the relationship
+            $departureTime = $firstItem && $firstItem->busDeparture 
+                ? $firstItem->busDeparture->departure_time 
+                : null;
             
             return [
-                'bus_datetime' => $busDatetime,
+                'bus_departures_id' => $busDepartureId,
+                'departure_time' => $departureTime,
+                'date' => $firstItem ? $firstItem->date : null,
                 'status' => $status,
                 'checked_by' => $checkedItem && $checkedItem->checker 
                     ? $checkedItem->checker->name 
@@ -61,23 +69,31 @@ class ChecklistController extends Controller
     }
 
     /**
-     * Display the specific checklist for a given bus departure datetime.
+     * Display the specific checklist for a given bus departure.
      */
-    public function show($bus_datetime)
+    public function show($bus_departures_id, Request $request)
     {
         $user = auth()->user();
+        
+        // Get the date from query parameter or default to today
+        $date = $request->query('date', now()->toDateString());
 
         // Filter by company if user is admin or staff
-        $query = Bill::where('bus_datetime', $bus_datetime);
+        $query = Bill::where('bus_departures_id', $bus_departures_id)
+            ->whereDate('date', $date)
+            ->with('busDeparture');
 
         if ($user->role !== 'super_admin') {
             $query->where('company_id', $user->company_id);
         }
 
         $bills = $query->get();
+        $busDeparture = $bills->first()?->busDeparture;
 
         return view('checklists.show', [
-            'bus_datetime' => $bus_datetime,
+            'bus_departures_id' => $bus_departures_id,
+            'departure_time' => $busDeparture?->departure_time,
+            'date' => $date,
             'bills' => $bills
         ]);
     }

@@ -65,12 +65,18 @@ use Illuminate\Support\Facades\Storage;
 
             <div class="col-md-6">
               <label class="form-label">
-                <i class="bi bi-bus-front"></i> Bus Departure DateTime
+                <i class="bi bi-bus-front"></i> Bus Departure Time
               </label>
-              <input type="datetime-local" name="bus_datetime" class="form-control @error('bus_datetime') is-invalid @enderror"
-                     value="{{ old('bus_datetime', $bill->bus_datetime ? $bill->bus_datetime->format('Y-m-d\TH:i') : '') }}">
-              <div class="form-text">Vehicle departure datetime for grouping bills</div>
-              @error('bus_datetime')
+              <select name="bus_departures_id" class="form-select @error('bus_departures_id') is-invalid @enderror">
+                <option value="">Select departure time (optional)</option>
+                @foreach($busDepartures as $departure)
+                  <option value="{{ $departure->id }}" {{ old('bus_departures_id', $bill->bus_departures_id) == $departure->id ? 'selected' : '' }}>
+                    {{ \Carbon\Carbon::parse($departure->departure_time)->format('h:i A') }}
+                  </option>
+                @endforeach
+              </select>
+              <div class="form-text">Vehicle departure time for grouping bills</div>
+              @error('bus_departures_id')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>

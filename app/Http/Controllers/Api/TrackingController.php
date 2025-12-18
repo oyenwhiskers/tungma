@@ -85,7 +85,8 @@ class TrackingController extends Controller
      *       "id": 5,
      *       "name": "Standard Delivery"
      *     },
-     *     "bus_datetime": "2025-12-15T03:30:00.000000Z",
+     *     "bus_departures_id": 1,
+     *     "departure_time": "08:30:00",
      *     "created_at": "2025-12-10T02:06:54.000000Z",
      *     "updated_at": "2025-12-12T09:20:00.000000Z"
      *   }
@@ -97,7 +98,7 @@ class TrackingController extends Controller
     {
         $normalizedCode = Str::lower($billCode);
 
-        $bill = Bill::with(['company', 'fromCompany', 'toCompany', 'courierPolicy', 'creator', 'checker'])
+        $bill = Bill::with(['company', 'fromCompany', 'toCompany', 'courierPolicy', 'creator', 'checker', 'busDeparture'])
             ->whereRaw('LOWER(bill_code) = ?', [$normalizedCode])
             ->first();
 
@@ -116,8 +117,16 @@ class TrackingController extends Controller
             ? ucwords(str_replace('_', ' ', $bill->status))
             : 'In Transit';
 
-        $estimatedDeliveryIso = $bill->bus_datetime ? $bill->bus_datetime->toISOString() : null;
-        $estimatedDeliveryDate = $bill->bus_datetime ? $bill->bus_datetime->toDateString() : null;
+        // Combine bill date with bus departure time for estimated delivery
+        $estimatedDeliveryIso = null;
+        $estimatedDeliveryDate = null;
+        if ($bill->date && $bill->busDeparture) {
+            $datetime = \Carbon\Carbon::parse($bill->date->format('Y-m-d') . ' ' . $bill->busDeparture->departure_time);
+            $estimatedDeliveryIso = $datetime->toISOString();
+            $estimatedDeliveryDate = $datetime->toDateString();
+        } elseif ($bill->date) {
+            $estimatedDeliveryDate = $bill->date->toDateString();
+        }
 
         // Prefer checker as staff-in-charge, otherwise fall back to creator
         $staff = $bill->checker ?: $bill->creator;
@@ -137,7 +146,7 @@ class TrackingController extends Controller
         $response = [
             'bill_code' => $bill->bill_code,
             'status' => $bill->status,
-            'delivery_date' => $bill->bus_datetime ? $bill->bus_datetime->toDateString() : null,
+            'delivery_date' => $estimatedDeliveryDate,
             'eta_note' => $bill->eta,
             'customer_ic_number' => $bill->customer_ic_number ?? ($customerInfo['ic'] ?? null),
             'customer_info' => $customerInfo,

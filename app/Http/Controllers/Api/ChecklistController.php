@@ -32,7 +32,9 @@ class ChecklistController extends Controller
      *    "success": true,
      *    "data": [
      *         {
-     *             "bus_datetime": "2025-12-15 08:30:00",
+     *             "bus_departures_id": 1,
+     *             "departure_time": "08:30:00",
+     *             "date": "2025-12-15",
      *             "status": "pending",
      *             "checked_by": "-"
      *         }
@@ -47,12 +49,12 @@ class ChecklistController extends Controller
             ? Carbon::parse($date)->toDateString()
             : now()->toDateString();
 
-        $bills = Bill::whereDate('bus_datetime', $targetDate)
-            ->with('checker')
+        $bills = Bill::whereDate('date', $targetDate)
+            ->with(['checker', 'busDeparture'])
             ->get()
-            ->groupBy('bus_datetime');
+            ->groupBy('bus_departures_id');
 
-        $rows = $bills->map(function ($items, $busDatetime) {
+        $rows = $bills->map(function ($items, $busDepartureId) {
 
             $total = $items->count();
             $checkedCount = $items->whereNotNull('checked_by')->count();
@@ -66,9 +68,17 @@ class ChecklistController extends Controller
             }
 
             $checkedItem = $items->whereNotNull('checked_by')->first();
+            $firstItem = $items->first();
+            
+            // Get departure time from the relationship
+            $departureTime = $firstItem && $firstItem->busDeparture 
+                ? $firstItem->busDeparture->departure_time 
+                : null;
             
             return [
-                'bus_datetime' => $busDatetime,
+                'bus_departures_id' => $busDepartureId,
+                'departure_time' => $departureTime,
+                'date' => $firstItem ? $firstItem->date->format('Y-m-d') : null,
                 'status' => $status,
                 'checked_by' => $checkedItem && $checkedItem->checker 
                     ? $checkedItem->checker->name 
@@ -96,15 +106,19 @@ class ChecklistController extends Controller
     /**
      * Show Checklist Details
      *
-     * Display the specific checklist for a given bus departure datetime.
+     * Display the specific checklist for a given bus departure.
      * Returns a JSON response with the list of bills/items for that departure.
      *
-     * @urlParam bus_datetime string required The departure datetime to view. Example: 2025-12-15 08:30:00
+     * @urlParam bus_departures_id int required The bus departure ID to view. Example: 1
+     *
+     * @queryParam date string The date to view (Y-m-d). Defaults to today. Example: 2025-12-15
      *
      * @response 200 {
      *    "success": true,
      *    "data": {
-     *        "bus_datetime": "2025-12-15 08:30:00",
+     *        "bus_departures_id": 1,
+     *        "departure_time": "08:30:00",
+     *        "date": "2025-12-15",
      *        "bills": [
      *             {
      *                 "id": 1,
@@ -115,14 +129,23 @@ class ChecklistController extends Controller
      *    }
      * }
      */
-    public function show($bus_datetime)
+    public function show($bus_departures_id, Request $request)
     {
-        $bills = Bill::where('bus_datetime', $bus_datetime)->get();
+        $date = $request->query('date', now()->toDateString());
+        
+        $bills = Bill::where('bus_departures_id', $bus_departures_id)
+            ->whereDate('date', $date)
+            ->with('busDeparture')
+            ->get();
+        
+        $busDeparture = $bills->first()?->busDeparture;
 
         return response()->json([
             'success' => true,
             'data' => [
-                'bus_datetime' => $bus_datetime,
+                'bus_departures_id' => $bus_departures_id,
+                'departure_time' => $busDeparture?->departure_time,
+                'date' => $date,
                 'bills' => $bills
             ]
         ]);
