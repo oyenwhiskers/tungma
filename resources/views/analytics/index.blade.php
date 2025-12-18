@@ -1,20 +1,59 @@
 @extends('layouts.app')
 
 @section('content')
+    <style>
+        .tm-segmented-control {
+            background: rgba(0, 0, 0, 0.04);
+            padding: 4px;
+            border-radius: 12px;
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .tm-segmented-item {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--tm-muted);
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1;
+            border: 1px solid transparent;
+        }
+
+        .tm-segmented-item i {
+            font-size: 15px;
+            margin-bottom: 2px;
+            opacity: 0.7;
+        }
+
+        .tm-segmented-item:hover {
+            color: var(--tm-text);
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .tm-segmented-item.active {
+            background: white;
+            color: var(--tm-primary);
+            box-shadow: 0 2px 6px rgba(179, 32, 32, 0.08);
+            font-weight: 600;
+            border-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .tm-segmented-item.active i {
+            opacity: 1;
+        }
+    </style>
     <div class="tm-header">
         <div>
             <h2>Analytics</h2>
             <div class="text-muted">Visual overview of revenue, staff and billing performance.</div>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <div class="btn-group">
-                <a href="{{ request()->fullUrlWithQuery(['filter' => 'daily']) }}"
-                    class="btn btn-outline-secondary {{ $filter === 'daily' ? 'active' : '' }}">Daily</a>
-                <a href="{{ request()->fullUrlWithQuery(['filter' => 'monthly']) }}"
-                    class="btn btn-outline-secondary {{ $filter === 'monthly' || !in_array($filter, ['daily', 'yearly']) ? 'active' : '' }}">Monthly</a>
-                <a href="{{ request()->fullUrlWithQuery(['filter' => 'yearly']) }}"
-                    class="btn btn-outline-secondary {{ $filter === 'yearly' ? 'active' : '' }}">Yearly</a>
-            </div>
             <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Back to dashboard
             </a>
@@ -53,6 +92,23 @@
                     <span class="text-muted">All recorded bills</span>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div class="tm-segmented-control">
+            <a href="{{ request()->fullUrlWithQuery(['filter' => 'daily']) }}"
+                class="tm-segmented-item {{ $filter === 'daily' ? 'active' : '' }}">
+                <i class="bi bi-calendar-date"></i> Daily
+            </a>
+            <a href="{{ request()->fullUrlWithQuery(['filter' => 'monthly']) }}"
+                class="tm-segmented-item {{ $filter === 'monthly' || !in_array($filter, ['daily', 'yearly']) ? 'active' : '' }}">
+                <i class="bi bi-calendar-month"></i> Monthly
+            </a>
+            <a href="{{ request()->fullUrlWithQuery(['filter' => 'yearly']) }}"
+                class="tm-segmented-item {{ $filter === 'yearly' ? 'active' : '' }}">
+                <i class="bi bi-calendar3"></i> Yearly
+            </a>
         </div>
     </div>
 
