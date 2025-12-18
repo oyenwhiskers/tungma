@@ -155,22 +155,29 @@ endpoints:
               "id": 1,
               "bill_code": "BILL000001",
               "date": "2025-12-10",
+              "bus_datetime": "2025-12-10T04:30:00Z",
               "amount": 3000.00,
               "description": null,
+              "sender_name": "ABC Logistics",
+              "sender_phone": "+60123456789",
+              "receiver_name": "XYZ Trading",
+              "receiver_phone": "+60129876543",
               "payment_details": {
                 "method": "cash",
                 "date": "2025-12-10"
               },
-              "customer_info": {
-                "name": "John Doe",
-                "phone": "+60123456789",
-                "address": "123 Main St"
-              },
               "is_paid": false,
-              "eta": "3",
               "sst_details": null,
               "media_attachment_url": "http://example.com/storage/bills/image.png",
               "payment_proof_attachment_url": "http://example.com/storage/bills/proof.pdf",
+              "from_company": {
+                "id": 2,
+                "name": "Origin Company"
+              },
+              "to_company": {
+                "id": 3,
+                "name": "Destination Company"
+              },
               "company": {
                 "id": 1,
                 "name": "Company Name"
@@ -251,13 +258,13 @@ endpoints:
         exampleWasSpecified: true
         nullable: false
         deprecated: false
-      bus_datetime:
+      bus_departures_id:
         custom: []
-        name: bus_datetime
-        description: 'Optional bus departure datetime (Y-m-d H:i:s format). Used for grouping bills by vehicle departure.'
+        name: bus_departures_id
+        description: 'Optional bus departure ID. Used for grouping bills by vehicle departure time.'
         required: false
-        example: architecto
-        type: string
+        example: 16
+        type: integer
         enumValues: []
         exampleWasSpecified: false
         nullable: true
@@ -299,50 +306,6 @@ endpoints:
         custom: []
         name: payment_date
         description: 'Optional payment date (Y-m-d format).'
-        required: false
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
-      customer_name:
-        custom: []
-        name: customer_name
-        description: 'Optional customer name.'
-        required: false
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
-      customer_phone:
-        custom: []
-        name: customer_phone
-        description: 'Optional customer phone.'
-        required: false
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
-      customer_address:
-        custom: []
-        name: customer_address
-        description: 'Optional customer address.'
-        required: false
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
-      customer_ic_number:
-        custom: []
-        name: customer_ic_number
-        description: 'Optional customer IC/passport number.'
         required: false
         example: architecto
         type: string
@@ -427,17 +390,6 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         deprecated: false
-      eta:
-        custom: []
-        name: eta
-        description: 'Optional estimated time of arrival.'
-        required: false
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
       sst_rate:
         custom: []
         name: sst_rate
@@ -471,6 +423,17 @@ endpoints:
         exampleWasSpecified: true
         nullable: false
         deprecated: false
+      is_collected:
+        custom: []
+        name: is_collected
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
       media_attachment:
         custom: []
         name: media_attachment
@@ -495,15 +458,11 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       date: '2025-12-10'
-      bus_datetime: architecto
+      bus_departures_id: 16
       amount: 100.5
       description: 'Eius et animi quos velit et.'
       payment_method: architecto
       payment_date: architecto
-      customer_name: architecto
-      customer_phone: architecto
-      customer_address: architecto
-      customer_ic_number: architecto
       from_company_id: 16
       to_company_id: 16
       sender_name: architecto
@@ -511,10 +470,10 @@ endpoints:
       receiver_name: architecto
       receiver_phone: architecto
       courier_policy_id: 16
-      eta: architecto
       sst_rate: 4326.41688
       sst_amount: 4326.41688
       is_paid: true
+      is_collected: false
     fileParameters:
       media_attachment: null
       payment_proof_attachment: null

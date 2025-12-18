@@ -99,4 +99,6 @@ Route::middleware(['web', 'auth', 'super.admin'])->group(function () {
     Route::post('/backup/import-media', [App\Http\Controllers\BackupController::class, 'importMedia'])->name('backup.import.media');
     Route::delete('/backup/delete', [App\Http\Controllers\BackupController::class, 'deleteBackup'])->name('backup.delete');
     Route::post('/backup/clear-storage', [App\Http\Controllers\BackupController::class, 'clearStorage'])->name('backup.clear.storage');
+    Route::get('/backup/delete-bills', [App\Http\Controllers\BackupController::class, 'deleteBills'])->name('backup.delete.bills');
+    Route::post('/backup/delete-selected-bills', [App\Http\Controllers\BackupController::class, 'deleteSelectedBills'])->name('backup.delete.selected.bills');
 });

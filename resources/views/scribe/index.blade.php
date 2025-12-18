@@ -107,10 +107,10 @@
                 </li>
                                     <ul id="tocify-subheader-checklist" class="tocify-subheader">
                                                     <li class="tocify-item level-2" data-unique="checklist-GETapi-checklists">
-                                <a href="#checklist-GETapi-checklists">List Today's Checklists</a>
+                                <a href="#checklist-GETapi-checklists">List Checklists</a>
                             </li>
-                                                                                <li class="tocify-item level-2" data-unique="checklist-GETapi-checklists--bus_datetime-">
-                                <a href="#checklist-GETapi-checklists--bus_datetime-">Show Checklist Details</a>
+                                                                                <li class="tocify-item level-2" data-unique="checklist-GETapi-checklists--bus_departures_id-">
+                                <a href="#checklist-GETapi-checklists--bus_departures_id-">Show Checklist Details</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="checklist-POSTapi-checklists-save">
                                 <a href="#checklist-POSTapi-checklists-save">Save Checklist</a>
@@ -168,7 +168,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: December 15, 2025</li>
+        <li>Last updated: December 18, 2025</li>
     </ul>
 </div>
 
@@ -808,22 +808,29 @@ fetch(url, {
         &quot;id&quot;: 1,
         &quot;bill_code&quot;: &quot;BILL000001&quot;,
         &quot;date&quot;: &quot;2025-12-10&quot;,
+        &quot;bus_datetime&quot;: &quot;2025-12-10T04:30:00Z&quot;,
         &quot;amount&quot;: 3000,
         &quot;description&quot;: null,
+        &quot;sender_name&quot;: &quot;ABC Logistics&quot;,
+        &quot;sender_phone&quot;: &quot;+60123456789&quot;,
+        &quot;receiver_name&quot;: &quot;XYZ Trading&quot;,
+        &quot;receiver_phone&quot;: &quot;+60129876543&quot;,
         &quot;payment_details&quot;: {
             &quot;method&quot;: &quot;cash&quot;,
             &quot;date&quot;: &quot;2025-12-10&quot;
         },
-        &quot;customer_info&quot;: {
-            &quot;name&quot;: &quot;John Doe&quot;,
-            &quot;phone&quot;: &quot;+60123456789&quot;,
-            &quot;address&quot;: &quot;123 Main St&quot;
-        },
         &quot;is_paid&quot;: false,
-        &quot;eta&quot;: &quot;3&quot;,
         &quot;sst_details&quot;: null,
         &quot;media_attachment_url&quot;: &quot;http://example.com/storage/bills/image.png&quot;,
         &quot;payment_proof_attachment_url&quot;: &quot;http://example.com/storage/bills/proof.pdf&quot;,
+        &quot;from_company&quot;: {
+            &quot;id&quot;: 2,
+            &quot;name&quot;: &quot;Origin Company&quot;
+        },
+        &quot;to_company&quot;: {
+            &quot;id&quot;: 3,
+            &quot;name&quot;: &quot;Destination Company&quot;
+        },
         &quot;company&quot;: {
             &quot;id&quot;: 1,
             &quot;name&quot;: &quot;Company Name&quot;
@@ -978,15 +985,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --form "date=2025-12-10"\
-    --form "bus_datetime=architecto"\
+    --form "bus_departures_id=16"\
     --form "amount=100.5"\
     --form "description=Eius et animi quos velit et."\
     --form "payment_method=architecto"\
     --form "payment_date=architecto"\
-    --form "customer_name=architecto"\
-    --form "customer_phone=architecto"\
-    --form "customer_address=architecto"\
-    --form "customer_ic_number=architecto"\
     --form "from_company_id=16"\
     --form "to_company_id=16"\
     --form "sender_name=architecto"\
@@ -994,12 +997,12 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "receiver_name=architecto"\
     --form "receiver_phone=architecto"\
     --form "courier_policy_id=16"\
-    --form "eta=architecto"\
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
     --form "is_paid=1"\
-    --form "media_attachment=@C:\Users\USER\AppData\Local\Temp\php74E8.tmp" \
-    --form "payment_proof_attachment=@C:\Users\USER\AppData\Local\Temp\php74E9.tmp" </code></pre></div>
+    --form "is_collected="\
+    --form "media_attachment=@C:\Users\USER\AppData\Local\Temp\php1C1E.tmp" \
+    --form "payment_proof_attachment=@C:\Users\USER\AppData\Local\Temp\php1C1F.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1015,15 +1018,11 @@ const headers = {
 
 const body = new FormData();
 body.append('date', '2025-12-10');
-body.append('bus_datetime', 'architecto');
+body.append('bus_departures_id', '16');
 body.append('amount', '100.5');
 body.append('description', 'Eius et animi quos velit et.');
 body.append('payment_method', 'architecto');
 body.append('payment_date', 'architecto');
-body.append('customer_name', 'architecto');
-body.append('customer_phone', 'architecto');
-body.append('customer_address', 'architecto');
-body.append('customer_ic_number', 'architecto');
 body.append('from_company_id', '16');
 body.append('to_company_id', '16');
 body.append('sender_name', 'architecto');
@@ -1031,10 +1030,10 @@ body.append('sender_phone', 'architecto');
 body.append('receiver_name', 'architecto');
 body.append('receiver_phone', 'architecto');
 body.append('courier_policy_id', '16');
-body.append('eta', 'architecto');
 body.append('sst_rate', '4326.41688');
 body.append('sst_amount', '4326.41688');
 body.append('is_paid', '1');
+body.append('is_collected', '');
 body.append('media_attachment', document.querySelector('input[name="media_attachment"]').files[0]);
 body.append('payment_proof_attachment', document.querySelector('input[name="payment_proof_attachment"]').files[0]);
 
@@ -1179,16 +1178,16 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>The bill date (Y-m-d format). Example: <code>2025-12-10</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>bus_datetime</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
+            <b style="line-height: 2;"><code>bus_departures_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
 <i>optional</i> &nbsp;
  &nbsp;
-                <input type="text" style="display: none"
-                              name="bus_datetime"                data-endpoint="POSTapi-bills"
-               value="architecto"
+                <input type="number" style="display: none"
+               step="any"               name="bus_departures_id"                data-endpoint="POSTapi-bills"
+               value="16"
                data-component="body">
     <br>
-<p>Optional bus departure datetime (Y-m-d H:i:s format). Used for grouping bills by vehicle departure. Example: <code>architecto</code></p>
+<p>Optional bus departure ID. Used for grouping bills by vehicle departure time. Example: <code>16</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>amount</code></b>&nbsp;&nbsp;
@@ -1237,54 +1236,6 @@ You can check the Dev Tools console for debugging information.</code></pre>
                data-component="body">
     <br>
 <p>Optional payment date (Y-m-d format). Example: <code>architecto</code></p>
-        </div>
-                <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>customer_name</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="customer_name"                data-endpoint="POSTapi-bills"
-               value="architecto"
-               data-component="body">
-    <br>
-<p>Optional customer name. Example: <code>architecto</code></p>
-        </div>
-                <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>customer_phone</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="customer_phone"                data-endpoint="POSTapi-bills"
-               value="architecto"
-               data-component="body">
-    <br>
-<p>Optional customer phone. Example: <code>architecto</code></p>
-        </div>
-                <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>customer_address</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="customer_address"                data-endpoint="POSTapi-bills"
-               value="architecto"
-               data-component="body">
-    <br>
-<p>Optional customer address. Example: <code>architecto</code></p>
-        </div>
-                <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>customer_ic_number</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="customer_ic_number"                data-endpoint="POSTapi-bills"
-               value="architecto"
-               data-component="body">
-    <br>
-<p>Optional customer IC/passport number. Example: <code>architecto</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>from_company_id</code></b>&nbsp;&nbsp;
@@ -1371,18 +1322,6 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Optional courier policy ID. Example: <code>16</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>eta</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="eta"                data-endpoint="POSTapi-bills"
-               value="architecto"
-               data-component="body">
-    <br>
-<p>Optional estimated time of arrival. Example: <code>architecto</code></p>
-        </div>
-                <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>sst_rate</code></b>&nbsp;&nbsp;
 <small>number</small>&nbsp;
 <i>optional</i> &nbsp;
@@ -1429,6 +1368,28 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Optional flag to mark bill as paid. Defaults to false. Example: <code>true</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>is_collected</code></b>&nbsp;&nbsp;
+<small>boolean</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <label data-endpoint="POSTapi-bills" style="display: none">
+            <input type="radio" name="is_collected"
+                   value="true"
+                   data-endpoint="POSTapi-bills"
+                   data-component="body"             >
+            <code>true</code>
+        </label>
+        <label data-endpoint="POSTapi-bills" style="display: none">
+            <input type="radio" name="is_collected"
+                   value="false"
+                   data-endpoint="POSTapi-bills"
+                   data-component="body"             >
+            <code>false</code>
+        </label>
+    <br>
+<p>Example: <code>false</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>media_attachment</code></b>&nbsp;&nbsp;
 <small>file</small>&nbsp;
 <i>optional</i> &nbsp;
@@ -1438,7 +1399,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\USER\AppData\Local\Temp\php74E8.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\USER\AppData\Local\Temp\php1C1E.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
@@ -1450,7 +1411,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\USER\AppData\Local\Temp\php74E9.tmp</code></p>
+<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\USER\AppData\Local\Temp\php1C1F.tmp</code></p>
         </div>
         </form>
 
@@ -1798,13 +1759,14 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>This resource allows viewing and updating checklist status for bus departures.
 Note: These endpoints return JSON responses for use in mobile apps or API clients.</p>
 
-                                <h2 id="checklist-GETapi-checklists">List Today&#039;s Checklists</h2>
+                                <h2 id="checklist-GETapi-checklists">List Checklists</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Display a listing of checklists for the current date, grouped by bus departure time.
+<p>Display a listing of checklists for a given date (defaults to today),
+grouped by bus departure time.
 Returns a JSON response containing the list of departure times and their status.</p>
 
 <span id="example-requests-GETapi-checklists">
@@ -1813,7 +1775,7 @@ Returns a JSON response containing the list of departure times and their status.
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/checklists" \
+    --get "http://localhost:8000/api/checklists?date=2025-12-14" \
     --header "Authorization: Bearer {YOUR_AUTH_TOKEN}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1823,6 +1785,12 @@ Returns a JSON response containing the list of departure times and their status.
     <pre><code class="language-javascript">const url = new URL(
     "http://localhost:8000/api/checklists"
 );
+
+const params = {
+    "date": "2025-12-14",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
 
 const headers = {
     "Authorization": "Bearer {YOUR_AUTH_TOKEN}",
@@ -1847,7 +1815,9 @@ fetch(url, {
     &quot;success&quot;: true,
     &quot;data&quot;: [
         {
-            &quot;bus_datetime&quot;: &quot;2025-12-15 08:30:00&quot;,
+            &quot;bus_departures_id&quot;: 1,
+            &quot;departure_time&quot;: &quot;08:30:00&quot;,
+            &quot;date&quot;: &quot;2025-12-15&quot;,
             &quot;status&quot;: &quot;pending&quot;,
             &quot;checked_by&quot;: &quot;-&quot;
         }
@@ -1938,24 +1908,37 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <br>
 <p>Example: <code>application/json</code></p>
             </div>
-                        </form>
+                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>date</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="date"                data-endpoint="GETapi-checklists"
+               value="2025-12-14"
+               data-component="query">
+    <br>
+<p>The date to view checklists for (Y-m-d). Defaults to today's date. Example: <code>2025-12-14</code></p>
+            </div>
+                </form>
 
-                    <h2 id="checklist-GETapi-checklists--bus_datetime-">Show Checklist Details</h2>
+                    <h2 id="checklist-GETapi-checklists--bus_departures_id-">Show Checklist Details</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Display the specific checklist for a given bus departure datetime.
+<p>Display the specific checklist for a given bus departure.
 Returns a JSON response with the list of bills/items for that departure.</p>
 
-<span id="example-requests-GETapi-checklists--bus_datetime-">
+<span id="example-requests-GETapi-checklists--bus_departures_id-">
 <blockquote>Example request:</blockquote>
 
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/checklists/2025-12-15 08:30:00" \
+    --get "http://localhost:8000/api/checklists/1?date=2025-12-15" \
     --header "Authorization: Bearer {YOUR_AUTH_TOKEN}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1963,8 +1946,14 @@ Returns a JSON response with the list of bills/items for that departure.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost:8000/api/checklists/2025-12-15 08:30:00"
+    "http://localhost:8000/api/checklists/1"
 );
+
+const params = {
+    "date": "2025-12-15",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
 
 const headers = {
     "Authorization": "Bearer {YOUR_AUTH_TOKEN}",
@@ -1979,7 +1968,7 @@ fetch(url, {
 
 </span>
 
-<span id="example-responses-GETapi-checklists--bus_datetime-">
+<span id="example-responses-GETapi-checklists--bus_departures_id-">
             <blockquote>
             <p>Example response (200):</p>
         </blockquote>
@@ -1988,7 +1977,9 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
    &quot;success&quot;: true,
    &quot;data&quot;: {
-       &quot;bus_datetime&quot;: &quot;2025-12-15 08:30:00&quot;,
+       &quot;bus_departures_id&quot;: 1,
+       &quot;departure_time&quot;: &quot;08:30:00&quot;,
+       &quot;date&quot;: &quot;2025-12-15&quot;,
        &quot;bills&quot;: [
             {
                 &quot;id&quot;: 1,
@@ -2000,43 +1991,43 @@ fetch(url, {
 }</code>
  </pre>
     </span>
-<span id="execution-results-GETapi-checklists--bus_datetime-" hidden>
+<span id="execution-results-GETapi-checklists--bus_departures_id-" hidden>
     <blockquote>Received response<span
-                id="execution-response-status-GETapi-checklists--bus_datetime-"></span>:
+                id="execution-response-status-GETapi-checklists--bus_departures_id-"></span>:
     </blockquote>
-    <pre class="json"><code id="execution-response-content-GETapi-checklists--bus_datetime-"
+    <pre class="json"><code id="execution-response-content-GETapi-checklists--bus_departures_id-"
       data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
 </span>
-<span id="execution-error-GETapi-checklists--bus_datetime-" hidden>
+<span id="execution-error-GETapi-checklists--bus_departures_id-" hidden>
     <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-GETapi-checklists--bus_datetime-">
+    <pre><code id="execution-error-message-GETapi-checklists--bus_departures_id-">
 
 Tip: Check that you&#039;re properly connected to the network.
 If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
 You can check the Dev Tools console for debugging information.</code></pre>
 </span>
-<form id="form-GETapi-checklists--bus_datetime-" data-method="GET"
-      data-path="api/checklists/{bus_datetime}"
+<form id="form-GETapi-checklists--bus_departures_id-" data-method="GET"
+      data-path="api/checklists/{bus_departures_id}"
       data-authed="1"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('GETapi-checklists--bus_datetime-', this);">
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-checklists--bus_departures_id-', this);">
     <h3>
         Request&nbsp;&nbsp;&nbsp;
                     <button type="button"
                     style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-GETapi-checklists--bus_datetime-"
-                    onclick="tryItOut('GETapi-checklists--bus_datetime-');">Try it out ⚡
+                    id="btn-tryout-GETapi-checklists--bus_departures_id-"
+                    onclick="tryItOut('GETapi-checklists--bus_departures_id-');">Try it out ⚡
             </button>
             <button type="button"
                     style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-GETapi-checklists--bus_datetime-"
-                    onclick="cancelTryOut('GETapi-checklists--bus_datetime-');" hidden>Cancel 🛑
+                    id="btn-canceltryout-GETapi-checklists--bus_departures_id-"
+                    onclick="cancelTryOut('GETapi-checklists--bus_departures_id-');" hidden>Cancel 🛑
             </button>&nbsp;&nbsp;
             <button type="submit"
                     style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-GETapi-checklists--bus_datetime-"
+                    id="btn-executetryout-GETapi-checklists--bus_departures_id-"
                     data-initial-text="Send Request 💥"
                     data-loading-text="⏱ Sending..."
                     hidden>Send Request 💥
@@ -2044,7 +2035,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </h3>
             <p>
             <small class="badge badge-green">GET</small>
-            <b><code>api/checklists/{bus_datetime}</code></b>
+            <b><code>api/checklists/{bus_departures_id}</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
                                 <div style="padding-left: 28px; clear: unset;">
@@ -2053,7 +2044,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="GETapi-checklists--bus_datetime-"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-checklists--bus_departures_id-"
                value="Bearer {YOUR_AUTH_TOKEN}"
                data-component="header">
     <br>
@@ -2065,7 +2056,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="GETapi-checklists--bus_datetime-"
+                              name="Content-Type"                data-endpoint="GETapi-checklists--bus_departures_id-"
                value="application/json"
                data-component="header">
     <br>
@@ -2077,7 +2068,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="GETapi-checklists--bus_datetime-"
+                              name="Accept"                data-endpoint="GETapi-checklists--bus_departures_id-"
                value="application/json"
                data-component="header">
     <br>
@@ -2085,18 +2076,31 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                         <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
                     <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>bus_datetime</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
+                <b style="line-height: 2;"><code>bus_departures_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
  &nbsp;
  &nbsp;
-                <input type="text" style="display: none"
-                              name="bus_datetime"                data-endpoint="GETapi-checklists--bus_datetime-"
-               value="2025-12-15 08:30:00"
+                <input type="number" style="display: none"
+               step="any"               name="bus_departures_id"                data-endpoint="GETapi-checklists--bus_departures_id-"
+               value="1"
                data-component="url">
     <br>
-<p>The departure datetime to view. Example: <code>2025-12-15 08:30:00</code></p>
+<p>The bus departure ID to view. Example: <code>1</code></p>
             </div>
-                    </form>
+                        <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>date</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="date"                data-endpoint="GETapi-checklists--bus_departures_id-"
+               value="2025-12-15"
+               data-component="query">
+    <br>
+<p>The date to view (Y-m-d). Defaults to today. Example: <code>2025-12-15</code></p>
+            </div>
+                </form>
 
                     <h2 id="checklist-POSTapi-checklists-save">Save Checklist</h2>
 
@@ -2942,7 +2946,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\USER\AppData\Local\Temp\php750B.tmp" </code></pre></div>
+    --form "image=@C:\Users\USER\AppData\Local\Temp\php1C40.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3130,7 +3134,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\USER\AppData\Local\Temp\php750B.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\USER\AppData\Local\Temp\php1C40.tmp</code></p>
         </div>
         </form>
 
@@ -3409,71 +3413,9 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
         &quot;bill_code&quot;: &quot;BILL000123&quot;,
-        &quot;status&quot;: &quot;In_transit&quot;,
-        &quot;estimated_delivery_iso&quot;: &quot;2025-12-15T08:00:00.000000Z&quot;,
-        &quot;estimated_delivery_date&quot;: &quot;2025-12-15&quot;,
-        &quot;eta_note&quot;: &quot;3 days&quot;,
-        &quot;current_location&quot;: &quot;Kuala Lumpur Hub&quot;,
-        &quot;amount&quot;: 150.5,
-        &quot;is_paid&quot;: false,
-        &quot;customer_ic_number&quot;: &quot;900101-01-1234&quot;,
-        &quot;customer_info&quot;: {
-            &quot;name&quot;: &quot;John Doe&quot;,
-            &quot;phone&quot;: &quot;0123456789&quot;,
-            &quot;address&quot;: &quot;123 Main St&quot;
-        },
-        &quot;sender&quot;: {
-            &quot;name&quot;: &quot;Alice Sender&quot;,
-            &quot;phone&quot;: &quot;012-2222222&quot;
-        },
-        &quot;receiver&quot;: {
-            &quot;name&quot;: &quot;Bob Receiver&quot;,
-            &quot;phone&quot;: &quot;013-3333333&quot;
-        },
-        &quot;routing&quot;: {
-            &quot;from_company&quot;: {
-                &quot;id&quot;: 1,
-                &quot;name&quot;: &quot;Warehouse A&quot;,
-                &quot;address&quot;: &quot;Origin address&quot;
-            },
-            &quot;to_company&quot;: {
-                &quot;id&quot;: 2,
-                &quot;name&quot;: &quot;City B Branch&quot;,
-                &quot;address&quot;: &quot;Destination address&quot;
-            },
-            &quot;owning_company&quot;: {
-                &quot;id&quot;: 3,
-                &quot;name&quot;: &quot;Tung Ma Express&quot;,
-                &quot;contact_number&quot;: &quot;+60123456789&quot;,
-                &quot;email&quot;: &quot;ops@example.com&quot;
-            }
-        },
-        &quot;contact&quot;: {
-            &quot;staff_in_charge&quot;: {
-                &quot;id&quot;: 10,
-                &quot;name&quot;: &quot;Alice Johnson&quot;,
-                &quot;email&quot;: &quot;alice@example.com&quot;,
-                &quot;contact_number&quot;: &quot;+60123456780&quot;,
-                &quot;position&quot;: &quot;Operations Lead&quot;
-            },
-            &quot;company&quot;: {
-                &quot;id&quot;: 3,
-                &quot;name&quot;: &quot;Tung Ma Express&quot;,
-                &quot;contact_number&quot;: &quot;+60123456789&quot;,
-                &quot;email&quot;: &quot;ops@example.com&quot;
-            }
-        },
-        &quot;attachments&quot;: {
-            &quot;media&quot;: &quot;https://example.com/storage/bills/img.png&quot;,
-            &quot;payment_proof&quot;: &quot;https://example.com/storage/bills/proof.pdf&quot;
-        },
-        &quot;courier_policy&quot;: {
-            &quot;id&quot;: 5,
-            &quot;name&quot;: &quot;Standard Delivery&quot;
-        },
-        &quot;bus_datetime&quot;: &quot;2025-12-15T03:30:00.000000Z&quot;,
-        &quot;created_at&quot;: &quot;2025-12-10T02:06:54.000000Z&quot;,
-        &quot;updated_at&quot;: &quot;2025-12-12T09:20:00.000000Z&quot;
+        &quot;status&quot;: &quot;in_transit&quot;,
+        &quot;delivery_date&quot;: &quot;2025-12-15&quot;,
+        &quot;checked_by&quot;: &quot;Alice Johnson&quot;
     }
 }</code>
  </pre>

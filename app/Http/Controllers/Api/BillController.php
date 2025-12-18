@@ -148,7 +148,7 @@ class BillController extends Controller
 
         $bills = $query->latest()->paginate($request->get('per_page', 20));
 
-        // Transform the data to only include id, customer_info, and date
+        // Transform the data to only include id and date
         $transformedBills = $bills->getCollection()->map(function ($bill) {
             return [
                 'id' => $bill->id,
@@ -156,13 +156,9 @@ class BillController extends Controller
                 'date' => $bill->date,
                 'bus_departures_id' => $bill->bus_departures_id,
                 'departure_time' => $bill->busDeparture?->departure_time,
-                'customer_received_date' => $bill->customer_received_date
-                    ? ($bill->customer_received_date instanceof \Carbon\Carbon ? $bill->customer_received_date->format('Y-m-d') : $bill->customer_received_date)
-                    : null,
                 'amount' => (float) $bill->amount,
                 'is_paid' => (bool) $bill->is_paid,
-                'customer_ic_number' => $bill->customer_ic_number,
-                'customer_info' => $bill->customer_info ? (is_string($bill->customer_info) ? json_decode($bill->customer_info, true) : $bill->customer_info) : null,
+                'is_collected' => (bool) $bill->is_collected,
                 'media_attachment_url' => $bill->media_attachment
                     ? URL::to(Storage::url($bill->media_attachment))
                     : null,
@@ -196,10 +192,6 @@ class BillController extends Controller
      * @bodyParam description string Optional description.
      * @bodyParam payment_method string Optional payment method (cash, bank_transfer, credit_card, e_wallet).
      * @bodyParam payment_date string Optional payment date (Y-m-d format).
-     * @bodyParam customer_name string Optional customer name.
-     * @bodyParam customer_phone string Optional customer phone.
-     * @bodyParam customer_address string Optional customer address.
-     * @bodyParam customer_ic_number string Optional customer IC/passport number.
      * @bodyParam from_company_id integer Optional from company ID.
      * @bodyParam to_company_id integer Optional to company ID.
      * @bodyParam sender_name string Optional sender name.
@@ -208,7 +200,6 @@ class BillController extends Controller
      * @bodyParam receiver_phone string Optional receiver phone.
      * @bodyParam courier_policy_id integer Optional courier policy ID.
      * @bodyParam bus_departures_id integer Optional bus departure ID. Used for grouping bills by vehicle departure time.
-     * @bodyParam eta string Optional estimated time of arrival.
      * @bodyParam sst_rate number Optional SST rate percentage.
      * @bodyParam sst_amount number Optional SST amount.
      * @bodyParam is_paid boolean Optional flag to mark bill as paid. Defaults to false. Example: true
@@ -262,11 +253,6 @@ class BillController extends Controller
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
             'payment_date' => 'nullable|date',
-            'customer_name' => 'nullable|string',
-            'customer_phone' => 'nullable|string',
-            'customer_address' => 'nullable|string',
-            'customer_ic_number' => 'nullable|string|max:50',
-            'customer_received_date' => 'nullable|date',
             'from_company_id' => 'nullable|exists:companies,id',
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
@@ -279,10 +265,10 @@ class BillController extends Controller
                     return $q->where('company_id', $user->company_id);
                 })
             ],
-            'eta' => 'nullable|string',
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'is_paid' => 'sometimes|boolean',
+            'is_collected' => 'sometimes|boolean',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
             'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
         ]);
@@ -292,8 +278,7 @@ class BillController extends Controller
         $data['created_by'] = $user->id;
         $data['status'] = 'In_transit';
         $data['is_paid'] = $request->boolean('is_paid', false);
-        $data['customer_ic_number'] = $request->input('customer_ic_number');
-        $data['customer_received_date'] = $request->input('customer_received_date');
+        $data['is_collected'] = $request->boolean('is_collected', false);
 
         // Auto-generate bill code using company prefix and running number
         try {
@@ -332,16 +317,6 @@ class BillController extends Controller
             $data['payment_details'] = json_encode([
                 'method' => $request->payment_method,
                 'date' => $request->payment_date,
-            ]);
-        }
-
-        // Build customer_info JSON
-        if ($request->customer_name || $request->customer_phone || $request->customer_address || $request->customer_ic_number) {
-            $data['customer_info'] = json_encode([
-                'name' => $request->customer_name,
-                'phone' => $request->customer_phone,
-                'address' => $request->customer_address,
-                'ic' => $request->customer_ic_number,
             ]);
         }
 
@@ -427,15 +402,7 @@ class BillController extends Controller
      *       "method": "cash",
      *       "date": "2025-12-10"
      *     },
-     *     "customer_info": {
-     *       "name": "John Doe",
-     *       "phone": "+60123456789",
-     *       "address": "123 Main St"
-     *     },
-     *     "customer_ic_number": "910101-01-1234",
-     *     "customer_received_date": "2025-12-11",
      *     "is_paid": false,
-     *     "eta": "3",
      *     "sst_details": null,
      *     "media_attachment_url": "http://example.com/storage/bills/image.png",
      *     "payment_proof_attachment_url": "http://example.com/storage/bills/proof.pdf",
@@ -503,18 +470,6 @@ class BillController extends Controller
                 : $bill->payment_details;
         }
 
-        $customerInfo = null;
-        if ($bill->customer_info) {
-            $customerInfo = is_string($bill->customer_info)
-                ? json_decode($bill->customer_info, true)
-                : $bill->customer_info;
-        }
-
-        // Safely extract IC from customer_info if available
-        $customerIcFromInfo = is_array($customerInfo) && array_key_exists('ic', $customerInfo)
-            ? $customerInfo['ic']
-            : null;
-
         $sstDetails = null;
         if ($bill->sst_details) {
             $sstDetails = is_string($bill->sst_details)
@@ -536,13 +491,8 @@ class BillController extends Controller
             'receiver_name' => $bill->receiver_name,
             'receiver_phone' => $bill->receiver_phone,
             'payment_details' => $paymentDetails,
-            'customer_info' => $customerInfo,
-            'customer_ic_number' => $bill->customer_ic_number ?? $customerIcFromInfo,
-            'customer_received_date' => $bill->customer_received_date
-                ? ($bill->customer_received_date instanceof \Carbon\Carbon ? $bill->customer_received_date->format('Y-m-d') : $bill->customer_received_date)
-                : null,
             'is_paid' => (bool) $bill->is_paid,
-            'eta' => $bill->eta,
+            'is_collected' => (bool) $bill->is_collected,
             'sst_details' => $sstDetails,
             'media_attachment_url' => $bill->media_attachment
                 ? URL::to(Storage::url($bill->media_attachment))
@@ -680,13 +630,6 @@ class BillController extends Controller
         $bill->load('company', 'courierPolicy', 'fromCompany', 'toCompany');
 
         // Parse JSON fields
-        $customerInfo = null;
-        if ($bill->customer_info) {
-            $customerInfo = is_string($bill->customer_info)
-                ? json_decode($bill->customer_info, true)
-                : $bill->customer_info;
-        }
-
         $sstDetails = null;
         if ($bill->sst_details) {
             $sstDetails = is_string($bill->sst_details)
@@ -702,7 +645,7 @@ class BillController extends Controller
         }
 
         // Generate PDF
-        $pdf = \PDF::loadView('bills.template', compact('bill', 'customerInfo', 'sstDetails', 'paymentDetails'))
+        $pdf = \PDF::loadView('bills.template', compact('bill', 'sstDetails', 'paymentDetails'))
             ->setPaper('a4', 'portrait');
 
         // Return PDF download

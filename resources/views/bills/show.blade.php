@@ -62,6 +62,16 @@ use Illuminate\Support\Str;
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-box-arrow-down"></i>
+                      <span>Collection Status</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $bill->is_collected ? 'Collected' : 'Uncollected' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-calendar"></i>
                       <span>Bill Date</span>
                     </div>
@@ -96,7 +106,45 @@ use Illuminate\Support\Str;
                       <span>Description</span>
                     </div>
                     <div class="info-value">
-                      {{ $bill->description ?? '—' }}
+                      @php
+                        $descriptionProducts = [];
+                        if ($bill->description) {
+                            try {
+                                $decoded = json_decode($bill->description, true);
+                                if (is_array($decoded) && count($decoded) > 0) {
+                                    $descriptionProducts = $decoded;
+                                }
+                            } catch (\Exception $e) {
+                                // If not JSON, treat as old text format
+                            }
+                        }
+                      @endphp
+                      @if(count($descriptionProducts) > 0)
+                        <div class="table-responsive">
+                          <table class="table table-sm table-bordered">
+                            <thead>
+                              <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Price (RM)</th>
+                                <th>Total (RM)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @foreach($descriptionProducts as $item)
+                                <tr>
+                                  <td>{{ $item['product'] ?? '—' }}</td>
+                                  <td>{{ $item['quantity'] ?? '—' }}</td>
+                                  <td>{{ number_format($item['price'] ?? 0, 2) }}</td>
+                                  <td>{{ number_format(($item['quantity'] ?? 0) * ($item['price'] ?? 0), 2) }}</td>
+                                </tr>
+                              @endforeach
+                            </tbody>
+                          </table>
+                        </div>
+                      @else
+                        {{ $bill->description ?? '—' }}
+                      @endif
                     </div>
                   </div>
 
@@ -190,38 +238,6 @@ use Illuminate\Support\Str;
 
                   <div class="info-row">
                     <div class="info-label">
-                      <i class="bi bi-person"></i>
-                      <span>Customer Information</span>
-                    </div>
-                    <div class="info-value">
-                      @if($bill->customer_info || $bill->customer_ic_number)
-                        @php $customer = is_string($bill->customer_info) ? json_decode($bill->customer_info, true) : $bill->customer_info; @endphp
-                        <div>
-                          <div><strong>{{ $customer['name'] ?? '—' }}</strong></div>
-                          @if($bill->customer_ic_number || !empty($customer['ic']))
-                            <div class="small text-muted">IC: {{ $bill->customer_ic_number ?? ($customer['ic'] ?? '') }}</div>
-                          @endif
-                          @if(isset($customer['phone']))<div class="small text-muted">{{ $customer['phone'] }}</div>@endif
-                          @if(isset($customer['address']))<div class="small text-muted">{{ $customer['address'] }}</div>@endif
-                        </div>
-                      @else
-                        —
-                      @endif
-                    </div>
-                  </div>
-
-                  <div class="info-row">
-                    <div class="info-label">
-                      <i class="bi bi-calendar-check"></i>
-                      <span>Customer Received Date</span>
-                    </div>
-                    <div class="info-value">
-                      {{ $bill->customer_received_date ? $bill->customer_received_date->format('M d, Y') : '—' }}
-                    </div>
-                  </div>
-
-                  <div class="info-row">
-                    <div class="info-label">
                       <i class="bi bi-file-earmark-text"></i>
                       <span>Courier Policy</span>
                     </div>
@@ -256,16 +272,6 @@ use Illuminate\Support\Str;
                       @else
                         —
                       @endif
-                    </div>
-                  </div>
-
-                  <div class="info-row">
-                    <div class="info-label">
-                      <i class="bi bi-truck"></i>
-                      <span>ETA (Estimated Arrival)</span>
-                    </div>
-                    <div class="info-value">
-                      {{ $bill->eta ?? '—' }}
                     </div>
                   </div>
 
@@ -388,6 +394,10 @@ use Illuminate\Support\Str;
                 <div class="mb-3 pb-3 border-bottom">
                     <div class="text-muted small mb-1">Payment Status</div>
                     <span class="badge bg-info">{{ $bill->is_paid ? 'Paid' : 'Unpaid' }}</span>
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <div class="text-muted small mb-1">Collection Status</div>
+                    <span class="badge bg-secondary">{{ $bill->is_collected ? 'Collected' : 'Uncollected' }}</span>
                 </div>
                 <div class="mb-3 pb-3 border-bottom">
                     <div class="text-muted small mb-1">Total Amount</div>

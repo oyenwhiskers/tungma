@@ -47,6 +47,15 @@
                 </select>
             </div>
 
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Collected Status</label>
+                <select name="collected_status" class="form-select">
+                    <option value="">All</option>
+                    <option value="collected" {{ request('collected_status') == 'collected' ? 'selected' : '' }}>Collected</option>
+                    <option value="uncollected" {{ request('collected_status') == 'uncollected' ? 'selected' : '' }}>Uncollected</option>
+                </select>
+            </div>
+
             @if(auth()->user()->role !== 'admin')
             <div class="col-md-2">
                 <label class="form-label small text-muted">Company</label>
@@ -104,13 +113,12 @@
                 <tr>
                     <th>Bill Code</th>
                     <th>Date</th>
-                    <th>Customer Received</th>
                     <th>Bus Departure</th>
                     <th>Amount</th>
                     <th>Company</th>
-                    <th>ETA</th>
                     <th>Payment Type</th>
                     <th>Payment Status</th>
+                    <th>Collected</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -124,11 +132,9 @@
                         </a>
                     </td>
                     <td>{{ $bill->date?->format('M d, Y') ?? '—' }}</td>
-                    <td>{{ $bill->customer_received_date ? $bill->customer_received_date->format('M d, Y') : '—' }}</td>
                     <td>{{ $bill->busDeparture ? \Carbon\Carbon::parse($bill->busDeparture->departure_time)->format('h:i A') : '—' }}</td>
                     <td><strong>RM {{ number_format($bill->amount, 2) }}</strong></td>
                     <td>{{ $bill->company?->name ?? '—' }}</td>
-                    <td>{{ $bill->eta ?? '—' }}</td>
                     <td>
                         @php
                             $payment = $bill->payment_details ? json_decode($bill->payment_details, true) : null;
@@ -145,6 +151,7 @@
                         {{ $methodLabels[$method] ?? ($method ? ucfirst(str_replace('_', ' ', $method)) : '—') }}
                     </td>
                     <td>{{ $bill->is_paid ? 'Paid' : 'Unpaid' }}</td>
+                    <td>{{ $bill->is_collected ? 'Collected' : 'Uncollected' }}</td>
                     <td class="text-end">
                         <div class="btn-group btn-group-sm">
                             <a href="{{ route('bills.show', $bill) }}" class="btn btn-outline-secondary" title="View">

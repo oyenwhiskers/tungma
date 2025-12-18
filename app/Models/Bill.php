@@ -12,18 +12,18 @@ class Bill extends Model
 
     protected $fillable = [
         'bill_code', 'date', 'amount', 'description', 'payment_details',
-        'customer_info', 'customer_ic_number', 'customer_received_date', 'from_company_id', 'to_company_id', 'sender_name', 'sender_phone',
-        'receiver_name', 'receiver_phone', 'courier_policy_id', 'company_id', 'eta',
+        'from_company_id', 'to_company_id', 'sender_name', 'sender_phone',
+        'receiver_name', 'receiver_phone', 'courier_policy_id', 'company_id',
         'sst_details', 'policy_snapshot', 'media_attachment', 'payment_proof_attachment',
-        'is_paid', 'status', 'created_by', 'checked_by', 'bus_departures_id'
+        'is_paid', 'is_collected', 'status', 'created_by', 'checked_by', 'bus_departures_id'
     ];
 
     protected $casts = [
         'date' => 'date',
-        'customer_received_date' => 'date',
         'amount' => 'decimal:2',
         'policy_snapshot' => 'array',
         'is_paid' => 'boolean',
+        'is_collected' => 'boolean',
     ];
 
     public function company()

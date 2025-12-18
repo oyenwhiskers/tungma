@@ -54,14 +54,9 @@
                                 <td>{{ number_format($metrics['backups'] / 1048576, 2) }}</td>
                                 <td><small class="text-muted">storage/app/backups</small></td>
                                 <td>
-                                    <form method="POST" action="{{ route('backup.clear.storage') }}" class="d-inline"
-                                          onsubmit="return confirm('Clear all backups? This cannot be undone!')">
-                                        @csrf
-                                        <input type="hidden" name="target" value="backups">
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i> Clear
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#clearStorageModal" data-target="backups" data-label="Backups" data-warning="Clear all backups? This cannot be undone!">
+                                        <i class="bi bi-trash"></i> Clear
+                                    </button>
                                 </td>
                             </tr>
                             <tr>
@@ -69,14 +64,9 @@
                                 <td>{{ number_format($metrics['media'] / 1048576, 2) }}</td>
                                 <td><small class="text-muted">storage/app/public</small></td>
                                 <td>
-                                    <form method="POST" action="{{ route('backup.clear.storage') }}" class="d-inline"
-                                          onsubmit="return confirm('Clear all media files? This will delete bills attachments and other uploads!')">
-                                        @csrf
-                                        <input type="hidden" name="target" value="media">
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i> Clear
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#clearStorageModal" data-target="media" data-label="Media Files" data-warning="Clear all media files? This will delete bills attachments and other uploads!">
+                                        <i class="bi bi-trash"></i> Clear
+                                    </button>
                                 </td>
                             </tr>
                             <tr>
@@ -84,19 +74,31 @@
                                 <td>{{ number_format($metrics['logs'] / 1048576, 2) }}</td>
                                 <td><small class="text-muted">storage/logs</small></td>
                                 <td>
-                                    <form method="POST" action="{{ route('backup.clear.storage') }}" class="d-inline"
-                                          onsubmit="return confirm('Clear all log files?')">
-                                        @csrf
-                                        <input type="hidden" name="target" value="logs">
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i> Clear
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#clearStorageModal" data-target="logs" data-label="Logs" data-warning="Clear all log files?">
+                                        <i class="bi bi-trash"></i> Clear
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Delete Bills (Gmail-style) --}}
+<div class="row g-3 mt-2">
+    <div class="col-12">
+        <div class="tm-card">
+            <div class="tm-card-header">
+                <i class="bi bi-trash me-2"></i> Delete Database Records
+            </div>
+            <div class="tm-card-body">
+                <p class="text-muted mb-3">Select and delete bills from the database. You can select individual bills or use filters to find specific records.</p>
+                <a href="{{ route('backup.delete.bills') }}" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Manage Bill Deletion
+                </a>
             </div>
         </div>
     </div>
@@ -276,6 +278,89 @@
     </div>
 </div>
 
+{{-- Password Confirmation Modal for Storage Clearing --}}
+<div class="modal fade" id="clearStorageModal" tabindex="-1" aria-labelledby="clearStorageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clearStorageModalLabel">Confirm Storage Clearing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="clearStorageForm" method="POST" action="{{ route('backup.clear.storage') }}">
+                @csrf
+                <input type="hidden" name="target" id="modalTarget">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <span id="modalWarning"></span>
+                    </div>
+                    <p class="mb-3">Please enter your password to confirm this action:</p>
+                    <div class="mb-3">
+                        <label for="modalPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                               id="modalPassword" name="password" required autocomplete="current-password" autofocus>
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('clearStorageModal');
+    const form = document.getElementById('clearStorageForm');
+    const targetInput = document.getElementById('modalTarget');
+    const warningText = document.getElementById('modalWarning');
+    const passwordInput = document.getElementById('modalPassword');
+    
+    // Check if there's a password error and show modal
+    @if($errors->has('password'))
+        const savedTarget = '{{ old("target") }}';
+        if (savedTarget) {
+            targetInput.value = savedTarget;
+            // Find the button that matches this target
+            const buttons = document.querySelectorAll('[data-target="' + savedTarget + '"]');
+            if (buttons.length > 0) {
+                const button = buttons[0];
+                const label = button.getAttribute('data-label');
+                const warning = button.getAttribute('data-warning');
+                warningText.textContent = warning;
+                passwordInput.classList.add('is-invalid');
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+            }
+        }
+    @endif
+    
+    modal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        if (button) {
+            const target = button.getAttribute('data-target');
+            const label = button.getAttribute('data-label');
+            const warning = button.getAttribute('data-warning');
+            
+            targetInput.value = target;
+            warningText.textContent = warning;
+            passwordInput.value = '';
+            passwordInput.classList.remove('is-invalid');
+        }
+    });
+    
+    // Clear password field when modal is hidden
+    modal.addEventListener('hidden.bs.modal', function() {
+        passwordInput.value = '';
+        passwordInput.classList.remove('is-invalid');
+    });
+});
+</script>
 
 @endsection
 

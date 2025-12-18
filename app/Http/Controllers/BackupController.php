@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 use ZipArchive;
 
 class BackupController extends Controller
@@ -104,7 +105,6 @@ class BackupController extends Controller
                     'customer_info' => $bill->customer_info,
                     'courier_policy_id' => $bill->courier_policy_id,
                     'company_id' => $bill->company_id,
-                    'eta' => $bill->eta,
                     'sst_details' => $bill->sst_details,
                     'policy_snapshot' => $bill->policy_snapshot,
                     'media_attachment' => $bill->media_attachment,
@@ -176,7 +176,6 @@ class BackupController extends Controller
                     'customer_info' => $bill->customer_info,
                     'courier_policy_id' => $bill->courier_policy_id,
                     'company_id' => $bill->company_id,
-                    'eta' => $bill->eta,
                     'sst_details' => $bill->sst_details,
                     'policy_snapshot' => $bill->policy_snapshot,
                     'media_attachment' => $bill->media_attachment,
@@ -312,7 +311,6 @@ class BackupController extends Controller
                         'customer_info' => $record['customer_info'] ?? null,
                         'courier_policy_id' => $record['courier_policy_id'] ?? null,
                         'company_id' => $record['company_id'] ?? null,
-                        'eta' => $record['eta'] ?? null,
                         'sst_details' => $record['sst_details'] ?? null,
                         'policy_snapshot' => $record['policy_snapshot'] ?? null,
                         'media_attachment' => $record['media_attachment'] ?? null,
@@ -470,7 +468,6 @@ class BackupController extends Controller
                                 'customer_info' => $record['customer_info'] ?? null,
                                 'courier_policy_id' => $record['courier_policy_id'] ?? null,
                                 'company_id' => $record['company_id'] ?? null,
-                                'eta' => $record['eta'] ?? null,
                                 'sst_details' => $record['sst_details'] ?? null,
                                 'policy_snapshot' => $record['policy_snapshot'] ?? null,
                                 'media_attachment' => $record['media_attachment'] ?? null,
@@ -640,8 +637,19 @@ class BackupController extends Controller
     public function clearStorage(Request $request)
     {
         $request->validate([
-            'target' => 'required|in:backups,media,logs'
+            'target' => 'required|in:backups,media,logs',
+            'password' => 'required|string'
         ]);
+
+        // Verify Super Admin password
+        $user = auth()->user();
+        if (!$user || $user->role !== 'super_admin') {
+            return back()->with('error', 'Unauthorized access.');
+        }
+
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => 'Incorrect password. Please re-enter your password to confirm.'])->withInput();
+        }
 
         try {
             $target = $request->target;
@@ -681,6 +689,90 @@ class BackupController extends Controller
         } catch (\Exception $e) {
             Log::error('Storage clear failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to clear storage: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display bills for bulk deletion (Gmail-style selection)
+     */
+    public function deleteBills(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || $user->role !== 'super_admin') {
+            abort(403, 'Unauthorized access.');
+        }
+
+        // Build query with filters
+        $query = Bill::with(['company', 'creator', 'checker']);
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('bill_code', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('customer_info->name', 'like', "%{$search}%")
+                  ->orWhere('customer_info->phone', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by company
+        if ($request->filled('company_id')) {
+            $query->where('company_id', $request->company_id);
+        }
+
+        // Filter by date
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
+        }
+
+        // Filter by payment status
+        if ($request->filled('payment_status')) {
+            if ($request->payment_status === 'paid') {
+                $query->where('is_paid', true);
+            } elseif ($request->payment_status === 'unpaid') {
+                $query->where('is_paid', false);
+            }
+        }
+
+        $bills = $query->latest()->paginate(50)->withQueryString();
+        $companies = \App\Models\Company::all();
+
+        return view('backup.delete-bills', compact('bills', 'companies'));
+    }
+
+    /**
+     * Delete selected bills (bulk delete)
+     */
+    public function deleteSelectedBills(Request $request)
+    {
+        $request->validate([
+            'bill_ids' => 'required|array',
+            'bill_ids.*' => 'required|integer|exists:bills,id',
+            'password' => 'required|string'
+        ]);
+
+        // Verify Super Admin password
+        $user = auth()->user();
+        if (!$user || $user->role !== 'super_admin') {
+            return back()->with('error', 'Unauthorized access.');
+        }
+
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => 'Incorrect password. Please re-enter your password to confirm.'])->withInput();
+        }
+
+        try {
+            $billIds = $request->bill_ids;
+            $deletedCount = Bill::whereIn('id', $billIds)->delete();
+
+            Log::info("Super Admin deleted {$deletedCount} bills (IDs: " . implode(', ', $billIds) . ")");
+
+            return back()->with('success', "Successfully deleted {$deletedCount} bill(s).");
+
+        } catch (\Exception $e) {
+            Log::error('Delete selected bills failed: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete bills: ' . $e->getMessage());
         }
     }
 }
