@@ -135,7 +135,7 @@
             </a>
           </div>
           <div class="col-md-4">
-            <a class="btn btn-primary w-100 text-start" href="{{ route('analytics.index') }}">
+            <a class="btn btn-outline-secondary w-100 text-start" href="{{ route('analytics.index') }}">
               <i class="bi bi-graph-up"></i> View Analytics
             </a>
           </div>
