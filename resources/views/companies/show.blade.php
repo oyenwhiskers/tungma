@@ -78,6 +78,36 @@
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-geo-alt-fill"></i>
+                      <span>Based In</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $company->based_in ?? '—' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
+                      <i class="bi bi-file-earmark-text"></i>
+                      <span>Registration Number</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $company->registration_number ?? '—' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
+                      <i class="bi bi-receipt-cutoff"></i>
+                      <span>SST Number</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $company->sst_number ?? '—' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-hash"></i>
                       <span>Bill ID Prefix</span>
                     </div>
