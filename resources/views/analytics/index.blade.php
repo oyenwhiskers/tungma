@@ -98,11 +98,11 @@
     <div class="mb-4">
         <div class="tm-segmented-control">
             <a href="{{ request()->fullUrlWithQuery(['filter' => 'daily']) }}"
-                class="tm-segmented-item {{ $filter === 'daily' ? 'active' : '' }}">
+                class="tm-segmented-item {{ $filter === 'daily' || !in_array($filter, ['monthly', 'yearly']) ? 'active' : '' }}">
                 <i class="bi bi-calendar-date"></i> Daily
             </a>
             <a href="{{ request()->fullUrlWithQuery(['filter' => 'monthly']) }}"
-                class="tm-segmented-item {{ $filter === 'monthly' || !in_array($filter, ['daily', 'yearly']) ? 'active' : '' }}">
+                class="tm-segmented-item {{ $filter === 'monthly' ? 'active' : '' }}">
                 <i class="bi bi-calendar-month"></i> Monthly
             </a>
             <a href="{{ request()->fullUrlWithQuery(['filter' => 'yearly']) }}"
