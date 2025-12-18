@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 class StorageController extends Controller
@@ -25,7 +26,22 @@ class StorageController extends Controller
 
     public function clear(Request $request)
     {
-        $target = $request->validate(['target' => 'required|in:logs,bill_attachments,profile_images'])['target'];
+        $request->validate([
+            'target' => 'required|in:logs,bill_attachments,profile_images',
+            'password' => 'required|string'
+        ]);
+
+        // Verify Super Admin password
+        $user = auth()->user();
+        if (!$user || $user->role !== 'super_admin') {
+            return back()->with('error', 'Unauthorized access.');
+        }
+
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => 'Incorrect password. Please re-enter your password to confirm.'])->withInput();
+        }
+
+        $target = $request->target;
         $map = [
             'logs' => storage_path('logs'),
             'bill_attachments' => storage_path('app/public/bills'),

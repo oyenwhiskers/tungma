@@ -24,9 +24,10 @@ endpoints:
         Note: These endpoints return JSON responses for use in mobile apps or API clients.
       subgroup: ''
       subgroupDescription: ''
-      title: "List Today's Checklists"
+      title: 'List Checklists'
       description: |-
-        Display a listing of checklists for the current date, grouped by bus departure time.
+        Display a listing of checklists for a given date (defaults to today),
+        grouped by bus departure time.
         Returns a JSON response containing the list of departure times and their status.
       authenticated: true
       deprecated: false
@@ -36,8 +37,20 @@ endpoints:
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
-    queryParameters: []
-    cleanQueryParameters: []
+    queryParameters:
+      date:
+        custom: []
+        name: date
+        description: "The date to view checklists for (Y-m-d). Defaults to today's date."
+        required: false
+        example: '2025-12-14'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      date: '2025-12-14'
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -50,7 +63,9 @@ endpoints:
              "success": true,
              "data": [
                   {
-                      "bus_datetime": "2025-12-15 08:30:00",
+                      "bus_departures_id": 1,
+                      "departure_time": "08:30:00",
+                      "date": "2025-12-15",
                       "status": "pending",
                       "checked_by": "-"
                   }
@@ -70,7 +85,7 @@ endpoints:
     custom: []
     httpMethods:
       - GET
-    uri: 'api/checklists/{bus_datetime}'
+    uri: 'api/checklists/{bus_departures_id}'
     metadata:
       custom: []
       groupName: Checklist
@@ -84,7 +99,7 @@ endpoints:
       subgroupDescription: ''
       title: 'Show Checklist Details'
       description: |-
-        Display the specific checklist for a given bus departure datetime.
+        Display the specific checklist for a given bus departure.
         Returns a JSON response with the list of bills/items for that departure.
       authenticated: true
       deprecated: false
@@ -93,21 +108,33 @@ endpoints:
       Content-Type: application/json
       Accept: application/json
     urlParameters:
-      bus_datetime:
+      bus_departures_id:
         custom: []
-        name: bus_datetime
-        description: 'The departure datetime to view.'
+        name: bus_departures_id
+        description: 'The bus departure ID to view.'
         required: true
-        example: '2025-12-15 08:30:00'
-        type: string
+        example: 1
+        type: integer
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      bus_datetime: '2025-12-15 08:30:00'
-    queryParameters: []
-    cleanQueryParameters: []
+      bus_departures_id: 1
+    queryParameters:
+      date:
+        custom: []
+        name: date
+        description: 'The date to view (Y-m-d). Defaults to today.'
+        required: false
+        example: '2025-12-15'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      date: '2025-12-15'
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
@@ -119,7 +146,9 @@ endpoints:
           {
              "success": true,
              "data": {
-                 "bus_datetime": "2025-12-15 08:30:00",
+                 "bus_departures_id": 1,
+                 "departure_time": "08:30:00",
+                 "date": "2025-12-15",
                  "bills": [
                       {
                           "id": 1,

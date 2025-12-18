@@ -68,11 +68,7 @@ class BillController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('bill_code', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('customer_info->name', 'like', "%{$search}%")
-                  ->orWhere('customer_info->phone', 'like', "%{$search}%")
-                  ->orWhere('customer_info->ic', 'like', "%{$search}%")
-                  ->orWhere('customer_ic_number', 'like', "%{$search}%");
+                  ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -82,6 +78,15 @@ class BillController extends Controller
                 $query->where('is_paid', true);
             } elseif ($request->payment_status === 'unpaid') {
                 $query->where('is_paid', false);
+            }
+        }
+
+        // Filter by collected status
+        if ($request->filled('collected_status')) {
+            if ($request->collected_status === 'collected') {
+                $query->where('is_collected', true);
+            } elseif ($request->collected_status === 'uncollected') {
+                $query->where('is_collected', false);
             }
         }
 
@@ -156,11 +161,6 @@ class BillController extends Controller
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
             'payment_date' => 'nullable|date',
-            'customer_name' => 'nullable|string',
-            'customer_phone' => 'nullable|string',
-            'customer_address' => 'nullable|string',
-            'customer_ic_number' => 'nullable|string|max:50',
-            'customer_received_date' => 'nullable|date',
             'from_company_id' => 'nullable|exists:companies,id',
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
@@ -174,12 +174,12 @@ class BillController extends Controller
                 })
             ],
             'company_id' => $companyIdRule,
-            'eta' => 'nullable|string',
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
             'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
             'is_paid' => 'nullable|boolean',
+            'is_collected' => 'nullable|boolean',
             'checked_by' => 'nullable|exists:users,id',
         ]);
 
@@ -218,20 +218,6 @@ class BillController extends Controller
                 'date' => $request->payment_date,
             ]);
         }
-
-        // Build customer_info JSON
-        if ($request->customer_name || $request->customer_phone || $request->customer_address || $request->customer_ic_number) {
-            $data['customer_info'] = json_encode([
-                'name' => $request->customer_name,
-                'phone' => $request->customer_phone,
-                'address' => $request->customer_address,
-                'ic' => $request->customer_ic_number,
-            ]);
-        }
-
-        // Persist standalone customer fields
-        $data['customer_ic_number'] = $request->customer_ic_number;
-        $data['customer_received_date'] = $request->customer_received_date;
 
         // Build sst_details JSON
         if ($request->sst_rate || $request->sst_amount) {
@@ -289,6 +275,13 @@ class BillController extends Controller
             $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN);
         } else {
             $data['is_paid'] = false;
+        }
+
+        // Handle is_collected (convert string to boolean if needed)
+        if (isset($data['is_collected'])) {
+            $data['is_collected'] = filter_var($data['is_collected'], FILTER_VALIDATE_BOOLEAN);
+        } else {
+            $data['is_collected'] = false;
         }
 
         // Handle bus_departures_id - allow null (empty string becomes null)
@@ -350,11 +343,6 @@ class BillController extends Controller
             'description' => 'nullable|string',
             'payment_method' => 'nullable|string',
             'payment_date' => 'nullable|date',
-            'customer_name' => 'nullable|string',
-            'customer_phone' => 'nullable|string',
-            'customer_address' => 'nullable|string',
-            'customer_ic_number' => 'nullable|string|max:50',
-            'customer_received_date' => 'nullable|date',
             'from_company_id' => 'nullable|exists:companies,id',
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
@@ -368,12 +356,12 @@ class BillController extends Controller
                 })
             ],
             'company_id' => 'required|exists:companies,id',
-            'eta' => 'nullable|string',
             'sst_rate' => 'nullable|numeric',
             'sst_amount' => 'nullable|numeric',
             'media_attachment' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Max 5MB
             'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
             'is_paid' => 'nullable|boolean',
+            'is_collected' => 'nullable|boolean',
             'checked_by' => 'nullable|exists:users,id',
         ]);
 
@@ -384,20 +372,6 @@ class BillController extends Controller
                 'date' => $request->payment_date,
             ]);
         }
-
-        // Build customer_info JSON
-        if ($request->customer_name || $request->customer_phone || $request->customer_address || $request->customer_ic_number) {
-            $data['customer_info'] = json_encode([
-                'name' => $request->customer_name,
-                'phone' => $request->customer_phone,
-                'address' => $request->customer_address,
-                'ic' => $request->customer_ic_number,
-            ]);
-        }
-
-        // Persist standalone customer fields
-        $data['customer_ic_number'] = $request->customer_ic_number;
-        $data['customer_received_date'] = $request->customer_received_date;
 
         // Build sst_details JSON
         if ($request->sst_rate || $request->sst_amount) {
@@ -468,6 +442,11 @@ class BillController extends Controller
             $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN);
         }
 
+        // Handle is_collected (convert string to boolean if needed)
+        if (isset($data['is_collected'])) {
+            $data['is_collected'] = filter_var($data['is_collected'], FILTER_VALIDATE_BOOLEAN);
+        }
+
         // Handle checked_by - allow null (empty string becomes null)
         if (isset($data['checked_by']) && $data['checked_by'] === '') {
             $data['checked_by'] = null;
@@ -525,11 +504,6 @@ class BillController extends Controller
         $bill->load('company', 'courierPolicy', 'fromCompany', 'toCompany');
 
         // Parse JSON fields
-        $customerInfo = null;
-        if ($bill->customer_info) {
-            $customerInfo = is_string($bill->customer_info) ? json_decode($bill->customer_info, true) : $bill->customer_info;
-        }
-
         $sstDetails = null;
         if ($bill->sst_details) {
             $sstDetails = is_string($bill->sst_details) ? json_decode($bill->sst_details, true) : $bill->sst_details;
@@ -541,7 +515,7 @@ class BillController extends Controller
         }
 
         // Generate PDF
-        $pdf = \PDF::loadView('bills.template', compact('bill', 'customerInfo', 'sstDetails', 'paymentDetails'))
+        $pdf = \PDF::loadView('bills.template', compact('bill', 'sstDetails', 'paymentDetails'))
             ->setPaper('a4', 'portrait');
 
         // Return PDF download

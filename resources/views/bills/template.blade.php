@@ -248,11 +248,8 @@
                         <div class="info-underline">{{ $bill->busDeparture ? \Carbon\Carbon::parse($bill->busDeparture->departure_time)->format('h:i A') : '' }}</div>
                     </div>
 
-                    <div class="bold text-center small-text" style="margin-top: 10px;">
-                        ESTIMATED TO ARRIVE IN {{ $bill->eta ?? '7' }} DAYS
-                    </div>
-                    <div class="small-text text-center" style="margin-top: 3px;">
-                        (BUSINESS HOUR : 7am - 8pm)
+                    <div class="small-text text-center" style="margin-top: 10px;">
+                        BUSINESS HOUR : 7am - 8pm
                     </div>
                 </td>
             </tr>
@@ -263,40 +260,64 @@
             <tr>
                 <td style="width: 40%; padding: 12px;" class="border-right">
                     <div class="bold" style="margin-bottom: 10px;">DESCRIPTION</div>
-                    <table class="description-table" style="width: 100%;">
-                        <tr>
-                            <td style="width: 50%;">Plastik</td>
-                            <td>Kotak</td>
-                        </tr>
-                        <tr>
-                            <td>Karung</td>
-                            <td>Spring</td>
-                        </tr>
-                        <tr>
-                            <td>Sampul</td>
-                            <td>Bag</td>
-                        </tr>
-                        <tr>
-                            <td>Bungkusan</td>
-                            <td>Gabus</td>
-                        </tr>
-                        <tr>
-                            <td>Roll</td>
-                            <td>Besi</td>
-                        </tr>
-                        <tr>
-                            <td>Battery</td>
-                            <td>Tayar</td>
-                        </tr>
-                        <tr>
-                            <td>Kiriman Duit</td>
-                            <td>Tong</td>
-                        </tr>
-                    </table>
-                    @if($bill->description)
-                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 10px;">
-                        <strong>Notes:</strong> {{ $bill->description }}
-                    </div>
+                    @php
+                        $descriptionProducts = [];
+                        if ($bill->description) {
+                            try {
+                                $decoded = json_decode($bill->description, true);
+                                if (is_array($decoded)) {
+                                    $descriptionProducts = $decoded;
+                                }
+                            } catch (\Exception $e) {
+                                // If not JSON, treat as old text format
+                            }
+                        }
+                    @endphp
+                    @if(count($descriptionProducts) > 0)
+                        <table class="description-table" style="width: 100%;">
+                            @foreach($descriptionProducts as $item)
+                                <tr>
+                                    <td style="width: 50%;">{{ $item['product'] ?? '' }}</td>
+                                    <td>Qty: {{ $item['quantity'] ?? '' }} | RM {{ number_format($item['price'] ?? 0, 2) }}</td>
+                                </tr>
+                            @endforeach
+                        </table>
+                    @else
+                        <table class="description-table" style="width: 100%;">
+                            <tr>
+                                <td style="width: 50%;">Plastik</td>
+                                <td>Kotak</td>
+                            </tr>
+                            <tr>
+                                <td>Karung</td>
+                                <td>Spring</td>
+                            </tr>
+                            <tr>
+                                <td>Sampul</td>
+                                <td>Bag</td>
+                            </tr>
+                            <tr>
+                                <td>Bungkusan</td>
+                                <td>Gabus</td>
+                            </tr>
+                            <tr>
+                                <td>Roll</td>
+                                <td>Besi</td>
+                            </tr>
+                            <tr>
+                                <td>Battery</td>
+                                <td>Tayar</td>
+                            </tr>
+                            <tr>
+                                <td>Kiriman Duit</td>
+                                <td>Tong</td>
+                            </tr>
+                        </table>
+                        @if($bill->description && !is_array(json_decode($bill->description, true)))
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 10px;">
+                            <strong>Notes:</strong> {{ $bill->description }}
+                        </div>
+                        @endif
                     @endif
                 </td>
                 <td style="width: 25%; padding: 12px; text-align: center;" class="border-right">
@@ -320,7 +341,7 @@
 
                     <div style="margin-bottom: 12px;">
                         <div class="field-label">I/C :</div>
-                        <div class="info-underline">{{ $bill->customer_ic_number ?? data_get($customerInfo, 'ic') }}</div>
+                        <div class="info-underline"></div>
                     </div>
 
                     <div style="margin-bottom: 12px;">
