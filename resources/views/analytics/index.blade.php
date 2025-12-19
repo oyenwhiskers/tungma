@@ -47,6 +47,55 @@
         .tm-segmented-item.active i {
             opacity: 1;
         }
+
+        /* Filter Styles */
+        .tm-filter-container {
+            background: rgba(0, 0, 0, 0.04);
+            padding: 4px;
+            border-radius: 12px;
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .tm-filter-select {
+            appearance: none;
+            border: 1px solid transparent;
+            background-color: transparent;
+            padding: 8px 32px 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--tm-muted);
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+
+            /* Chevron */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 10px 10px;
+        }
+
+        .tm-filter-select:hover {
+            color: var(--tm-text);
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .tm-filter-select:focus {
+            background-color: white;
+            color: var(--tm-text);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .tm-filter-select.active {
+            background-color: white;
+            color: var(--tm-primary);
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(179, 32, 32, 0.08);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23b32020' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        }
     </style>
     <div class="tm-header">
         <div>
@@ -95,7 +144,7 @@
         </div>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-4 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
         <div class="tm-segmented-control">
             <a href="{{ request()->fullUrlWithQuery(['filter' => 'daily']) }}"
                 class="tm-segmented-item {{ $filter === 'daily' || !in_array($filter, ['monthly', 'yearly']) ? 'active' : '' }}">
@@ -110,6 +159,48 @@
                 <i class="bi bi-calendar3"></i> Yearly
             </a>
         </div>
+
+        <form action="{{ route('analytics.index') }}" method="GET" class="d-flex align-items-center gap-3">
+            <input type="hidden" name="filter" value="{{ $filter }}">
+
+            <div class="tm-filter-container">
+                <select name="year" class="tm-filter-select {{ $selectedYear ? 'active' : '' }}"
+                    onchange="this.form.submit()">
+                    <option value="">Year</option>
+                    @foreach($years as $y)
+                        <option value="{{ $y }}" {{ $selectedYear == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    @endforeach
+                </select>
+
+                <div style="width: 1px; height: 16px; background: rgba(0,0,0,0.1);"></div>
+
+                <select name="month" class="tm-filter-select {{ $selectedMonth ? 'active' : '' }}"
+                    onchange="this.form.submit()">
+                    <option value="">Month</option>
+                    @foreach(range(1, 12) as $m)
+                        <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>
+                            {{ date('F', mktime(0, 0, 0, $m, 1)) }}</option>
+                    @endforeach
+                </select>
+
+                <div style="width: 1px; height: 16px; background: rgba(0,0,0,0.1);"></div>
+
+                <select name="day" class="tm-filter-select {{ $selectedDay ? 'active' : '' }}"
+                    onchange="this.form.submit()">
+                    <option value="">Day</option>
+                    @foreach(range(1, 31) as $d)
+                        <option value="{{ $d }}" {{ $selectedDay == $d ? 'selected' : '' }}>{{ $d }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            @if($selectedYear || $selectedMonth || $selectedDay)
+                <a href="{{ route('analytics.index', ['filter' => $filter]) }}"
+                    class="btn btn-sm btn-link text-danger text-decoration-none px-0">
+                    <i class="bi bi-x-circle"></i> Clear filters
+                </a>
+            @endif
+        </form>
     </div>
 
     <div class="row g-4 mb-4">
