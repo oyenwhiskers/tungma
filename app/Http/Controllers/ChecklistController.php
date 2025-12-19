@@ -45,19 +45,19 @@ class ChecklistController extends Controller
 
             $checkedItem = $items->whereNotNull('checked_by')->first();
             $firstItem = $items->first();
-            
+
             // Get departure time from the relationship
-            $departureTime = $firstItem && $firstItem->busDeparture 
-                ? $firstItem->busDeparture->departure_time 
+            $departureTime = $firstItem && $firstItem->busDeparture
+                ? $firstItem->busDeparture->departure_time
                 : null;
-            
+
             return [
                 'bus_departures_id' => $busDepartureId,
                 'departure_time' => $departureTime,
                 'date' => $firstItem ? $firstItem->date : null,
                 'status' => $status,
-                'checked_by' => $checkedItem && $checkedItem->checker 
-                    ? $checkedItem->checker->name 
+                'checked_by' => $checkedItem && $checkedItem->checker
+                    ? $checkedItem->checker->name
                     : '-',
             ];
         });
@@ -74,7 +74,7 @@ class ChecklistController extends Controller
     public function show($bus_departures_id, Request $request)
     {
         $user = auth()->user();
-        
+
         // Get the date from query parameter or default to today
         $date = $request->query('date', now()->toDateString());
 
@@ -112,6 +112,11 @@ class ChecklistController extends Controller
         $billIds = $request->input('bill_ids', []);
 
         $user = auth()->user();
+
+        // Admins and Super Admins are not allowed to tick/save the checklist
+        if (in_array($user->role, ['admin', 'super_admin'])) {
+            abort(403, 'You are not authorized to update the checklist.');
+        }
 
         // Get all bills for this checklist
         if (!empty($billIds)) {

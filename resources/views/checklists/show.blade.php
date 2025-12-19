@@ -23,6 +23,10 @@
     </div>
 </div>
 
+    @php
+        $canEdit = !in_array(auth()->user()->role, ['admin', 'super_admin']);
+    @endphp
+
     <form action="{{ route('checklists.save') }}" method="POST">
         @csrf
 
@@ -44,7 +48,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th style="width: 50px;">
-                                            <input type="checkbox" class="form-check-input" id="checkAll">
+                                            <input type="checkbox" class="form-check-input" id="checkAll" {{ !$canEdit ? 'disabled' : '' }}>
                                         </th>
                                         <th>Bill Code</th>
                                         <th>Sender</th>
@@ -58,7 +62,9 @@
                                         <tr class="{{ $bill->checked_by ? 'table-success' : '' }}">
                                             <td>
                                                 <input type="checkbox" name="bill_ids[]" value="{{ $bill->id }}"
-                                                    class="form-check-input bill-checkbox" {{ $bill->checked_by ? 'checked' : '' }}>
+                                                    class="form-check-input bill-checkbox" 
+                                                    {{ $bill->checked_by ? 'checked' : '' }}
+                                                    {{ !$canEdit ? 'disabled' : '' }}>
                                             </td>
                                             <td>
                                                 <strong>{{ $bill->bill_code }}</strong>
@@ -93,11 +99,13 @@
                             </table>
                         </div>
                     </div>
-                    <div class="tm-card-footer text-end">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save me-1"></i> Save Checklist
-                        </button>
-                    </div>
+                    @if($canEdit)
+                        <div class="tm-card-footer text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Save Checklist
+                            </button>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

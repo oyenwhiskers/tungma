@@ -77,6 +77,6 @@ class Bill extends Model
 
     public function busDeparture()
     {
-        return $this->belongsTo(BusDepartures::class, 'bus_departures_id');
+        return $this->belongsTo(BusDepartures::class, 'bus_departures_id')->withTrashed();
     }
 }
