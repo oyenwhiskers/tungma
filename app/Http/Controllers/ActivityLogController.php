@@ -19,7 +19,16 @@ class ActivityLogController extends Controller
             $query->where('model', $request->module);
         }
 
-        $logs = $query->latest()->paginate(50)->withQueryString();
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->date);
+        }
+
+        $sortDirection = $request->query('sort', 'desc');
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'desc';
+        }
+
+        $logs = $query->orderBy('created_at', $sortDirection)->paginate(50)->withQueryString();
 
         $actions = ['created', 'updated', 'deleted'];
         $modules = ActivityLog::distinct('model')->pluck('model')->sort();
