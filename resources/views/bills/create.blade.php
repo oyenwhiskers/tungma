@@ -370,7 +370,7 @@
               <label class="form-label">
                 <i class="bi bi-percent"></i> SST Rate (%)
               </label>
-              <input type="number" step="0.01" name="sst_rate" class="form-control @error('sst_rate') is-invalid @enderror"
+              <input type="number" step="0.01" name="sst_rate" id="sst_rate" class="form-control @error('sst_rate') is-invalid @enderror"
                      value="{{ old('sst_rate', '0') }}" placeholder="e.g., 6">
               <div class="form-text">Enter SST percentage rate</div>
               @error('sst_rate')
@@ -382,8 +382,8 @@
               <label class="form-label">
                 <i class="bi bi-currency-dollar"></i> SST Amount (RM)
               </label>
-              <input type="number" step="0.01" name="sst_amount" class="form-control @error('sst_amount') is-invalid @enderror"
-                     value="{{ old('sst_amount', '0') }}" placeholder="0.00">
+              <input type="number" step="0.01" name="sst_amount" id="sst_amount" class="form-control @error('sst_amount') is-invalid @enderror"
+                     value="{{ old('sst_amount', '0') }}" placeholder="0.00" readonly style="background-color: #e9ecef;">
               <div class="form-text">Calculated SST amount</div>
               @error('sst_amount')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -481,6 +481,8 @@
     const productsContainer = document.getElementById('products-container');
     const addProductBtn = document.getElementById('add-product');
     const descriptionInput = document.getElementById('description-input');
+    const sstRateInput = document.getElementById('sst_rate');
+    const sstAmountInput = document.getElementById('sst_amount');
     const form = document.querySelector('form');
 
     if (!productsContainer || !addProductBtn) return;
@@ -521,13 +523,33 @@
 
     function calculateTotal() {
       const items = productsContainer.querySelectorAll('.product-item');
-      let total = 0;
+      let subtotal = 0;
 
       items.forEach((item) => {
         const quantity = parseFloat(item.querySelector('.product-quantity').value) || 0;
         const price = parseFloat(item.querySelector('.product-price').value) || 0;
-        total += quantity * price;
+        subtotal += quantity * price;
       });
+
+      // Calculate SST
+      let sstRate = 0;
+      let sstAmount = 0;
+
+      if (sstRateInput) {
+        sstRate = parseFloat(sstRateInput.value) || 0;
+        // Calculate sstAmount based on rate
+        sstAmount = subtotal * (sstRate / 100);
+        
+        // Update sst amount field
+        if (sstAmountInput) {
+            sstAmountInput.value = sstAmount.toFixed(2);
+        }
+      } else if (sstAmountInput) {
+         // Fallback if no rate input found
+         sstAmount = parseFloat(sstAmountInput.value) || 0;
+      }
+
+      const total = subtotal + sstAmount;
 
       const amountInput = document.getElementById('amount-input');
       if (amountInput) {
@@ -535,6 +557,10 @@
       }
 
       return total;
+    }
+
+    if (sstRateInput) {
+        sstRateInput.addEventListener('input', calculateTotal);
     }
 
     function buildDescriptionJSON() {
