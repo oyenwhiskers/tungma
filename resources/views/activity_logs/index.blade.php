@@ -38,9 +38,12 @@
                             </option>
                         @endforeach
                     </select>
+
+                    <input type="date" name="date" class="form-control form-control-sm" style="width: 150px;"
+                           value="{{ request('date') }}" onchange="this.form.submit()">
                 </div>
 
-                @if(request('action') || request('module'))
+                @if(request('action') || request('module') || request('date'))
                     <a href="{{ route('activity-logs.index') }}"
                         class="btn btn-link btn-sm text-danger text-decoration-none px-0">
                         <i class="bi bi-x-circle"></i> Clear filters
@@ -59,7 +62,17 @@
                             <th class="ps-4 py-3 text-muted fw-bold text-uppercase" style="width: 220px; font-size: 11px; letter-spacing: 0.5px;">User</th>
                             <th class="py-3 text-muted fw-bold text-uppercase" style="width: 120px; font-size: 11px; letter-spacing: 0.5px;">Context</th>
                             <th class="py-3 text-muted fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">Changes</th>
-                            <th class="pe-4 py-3 text-end text-muted fw-bold text-uppercase" style="width: 150px; font-size: 11px; letter-spacing: 0.5px;">Date</th>
+                            <th class="pe-4 py-3 text-end text-muted fw-bold text-uppercase" style="width: 150px; font-size: 11px; letter-spacing: 0.5px;">
+                                <a href="{{ route('activity-logs.index', array_merge(request()->query(), ['sort' => request('sort') === 'asc' ? 'desc' : 'asc'])) }}" 
+                                   class="text-decoration-none text-muted d-flex align-items-center justify-content-end gap-1">
+                                    Date
+                                    @if(request('sort') === 'asc')
+                                        <i class="bi bi-arrow-up"></i>
+                                    @else
+                                        <i class="bi bi-arrow-down"></i>
+                                    @endif
+                                </a>
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
