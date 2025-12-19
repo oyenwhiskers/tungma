@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ChecklistController;
 use App\Http\Controllers\Api\TrackingController;
+use App\Http\Controllers\Api\BusDeparturesController;
+use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\Api\CourierPolicyController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -34,6 +37,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('checklists', [ChecklistController::class, 'index']);
     Route::get('checklists/{bus_departures_id}', [ChecklistController::class, 'show']);
     Route::post('checklists/save', [ChecklistController::class, 'save']);
+    Route::get('bus-departures', [BusDeparturesController::class, 'index']);
+    Route::get('companies', [CompanyController::class, 'index']);
+    Route::get('courier-policies', [CourierPolicyController::class, 'index']);
 
 });
 
