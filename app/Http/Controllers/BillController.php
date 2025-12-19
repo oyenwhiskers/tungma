@@ -19,6 +19,17 @@ class BillController extends Controller
      * @param int $companyId
      * @return string
      */
+    public function calculateSst($subtotal, $rate)
+    {
+        return round($subtotal * ($rate / 100), 2);
+    }
+
+    /**
+     * Generate the next bill code for a company
+     *
+     * @param int $companyId
+     * @return string
+     */
     private function generateNextBillCode($companyId)
     {
         $company = Company::findOrFail($companyId);
@@ -44,7 +55,7 @@ class BillController extends Controller
                 $numberPart = substr($latestCode, strlen($prefix));
                 // Extract numeric part (handle cases where there might be non-numeric characters)
                 if (preg_match('/^(\d+)/', $numberPart, $matches)) {
-                    $nextNumber = (int)$matches[1] + 1;
+                    $nextNumber = (int) $matches[1] + 1;
                 }
             }
         }
@@ -69,9 +80,9 @@ class BillController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('bill_code', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -176,7 +187,7 @@ class BillController extends Controller
             'receiver_phone' => 'nullable|string',
             'courier_policy_id' => [
                 'nullable',
-                Rule::exists('courier_policies', 'id')->where(function($q) use ($request) {
+                Rule::exists('courier_policies', 'id')->where(function ($q) use ($request) {
                     return $q->where('company_id', $request->company_id);
                 })
             ],
@@ -210,7 +221,7 @@ class BillController extends Controller
             $prefix = $company->bill_id_prefix;
             $numberPart = substr($latestBill->bill_code, strlen($prefix));
             if (preg_match('/^(\d+)/', $numberPart, $matches)) {
-                $nextNumber = (int)$matches[1] + 1;
+                $nextNumber = (int) $matches[1] + 1;
                 $paddedNumber = str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
                 $data['bill_code'] = $prefix . $paddedNumber;
             } else {
@@ -362,7 +373,7 @@ class BillController extends Controller
             'receiver_phone' => 'nullable|string',
             'courier_policy_id' => [
                 'nullable',
-                Rule::exists('courier_policies', 'id')->where(function($q) use ($request) {
+                Rule::exists('courier_policies', 'id')->where(function ($q) use ($request) {
                     return $q->where('company_id', $request->company_id);
                 })
             ],
