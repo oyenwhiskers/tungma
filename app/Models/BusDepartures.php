@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class BusDepartures extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'departure_time',
         'company_id',
