@@ -593,12 +593,14 @@ class BillController extends Controller
     /**
      * Generate bill template/receipt PDF for a specific bill.
      * Returns a PDF file that will be downloaded automatically.
+     * Supports customer copy (default) and office copy via query parameter.
      *
      * @group Bills
      * @authenticated
      * @header Authorization Bearer {token}
      *
      * @param int $id Bill ID
+     * @queryParam copy string Copy type: 'customer' (default) or 'office'. Example: customer
      * @response 200 Binary PDF file
      * @response 403 {
      *   "message": "User does not have an associated company"
@@ -627,7 +629,7 @@ class BillController extends Controller
             ], 404);
         }
 
-        $bill->load('company', 'courierPolicy', 'fromCompany', 'toCompany');
+        $bill->load('company', 'courierPolicy', 'fromCompany', 'toCompany', 'busDeparture');
 
         // Parse JSON fields
         $sstDetails = null;
@@ -644,11 +646,23 @@ class BillController extends Controller
                 : $bill->payment_details;
         }
 
+        // Get copy type (customer, office, receiver, or book)
+        $copyType = $request->get('copy', 'customer'); // Default to customer copy
+        $validCopyTypes = ['customer', 'office', 'receiver', 'book'];
+        if (!in_array($copyType, $validCopyTypes)) {
+            $copyType = 'customer';
+        }
+
+        // Determine which template to use
+        $templateView = ($copyType === 'office' || $copyType === 'receiver') 
+            ? 'bills.template-office' 
+            : 'bills.template';
+
         // Generate PDF
-        $pdf = \PDF::loadView('bills.template', compact('bill', 'sstDetails', 'paymentDetails'))
+        $pdf = \PDF::loadView($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType'))
             ->setPaper('a4', 'portrait');
 
         // Return PDF download
-        return $pdf->download('bill-' . $bill->bill_code . '.pdf');
+        return $pdf->download('bill-' . $bill->bill_code . '-' . $copyType . '.pdf');
     }
 }

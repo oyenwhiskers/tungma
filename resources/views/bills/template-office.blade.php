@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Bill {{ $bill->bill_code }}</title>
+    <title>Bill {{ $bill->bill_code }} - Office Copy</title>
     <style>
         @page { margin: 20px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -78,6 +78,53 @@
         .desc-cell { padding: 15px; width: 37%; }
         .total-cell { padding: 15px; width: 33%; text-align: center; }
         .qr-cell { padding: 10px; width: 30%; text-align: center; }
+        
+        /* CONSIGNEE Section */
+        .consignee-section {
+            border: 2px solid #000;
+            padding: 0;
+            width: 30%;
+        }
+        .consignee-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 8px;
+            border-bottom: 2px solid #000;
+        }
+        .consignee-top {
+            padding: 10px;
+            border-bottom: 1px solid #000;
+        }
+        .consignee-field {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .consignee-label {
+            width: 50px;
+            font-size: 11px;
+        }
+        .consignee-input {
+            flex: 1;
+            border-bottom: 1px solid #000;
+            min-height: 18px;
+        }
+        .consignee-bottom {
+            padding: 10px;
+        }
+        .consignee-sign {
+            display: flex;
+            align-items: flex-start;
+        }
+        .consignee-sign-label {
+            width: 50px;
+            font-size: 11px;
+        }
+        .consignee-sign-space {
+            flex: 1;
+            border-bottom: 1px solid #000;
+            min-height: 40px;
+        }
 
         .total-amount { font-size: 32px; font-weight: bold; margin: 15px 0; }
         .description-item { font-size: 14px; font-weight: bold; margin-bottom: 5px; }
@@ -140,7 +187,7 @@
 <body>
 
 <div class="bill-container">
-    <!-- <div class="copy-label">CUSTOMER COPY</div> -->
+    <!-- <div class="copy-label">OFFICE & RECEIVER COPY</div> -->
     <table style="border: none; border-bottom: 2px solid #000;">
         <tr>
             <td class="company-info">
@@ -243,35 +290,23 @@
                 <div class="total-amount">{{ number_format($bill->amount, 2) }}</div>
                 <div style="font-size: 9px; font-weight: bold;">6% SST INCLUDED IN TOTAL</div>
             </td>
-            <td class="qr-cell">
-                @php
-                    // Generate QR code with URL for E-Invoice using Endroid QR Code
-                    // UBAH URL SINI PEGI E-INVOCE PAGE YA                    
-                    $qrData = url('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-                    // Alternative: Use bill template route if you want to link to PDF view
-                    // $qrData = route('bills.template', $bill);
-                    try {
-                        $qrCode = \Endroid\QrCode\Builder\Builder::create()
-                            ->writer(new \Endroid\QrCode\Writer\PngWriter())
-                            ->data($qrData)
-                            ->size(100)
-                            ->margin(2)
-                            ->build();
-                        $qrCodeBase64 = $qrCode->getDataUri();
-                    } catch (\Exception $e) {
-                        // Fallback to SVG if PNG fails
-                        $qrCode = \Endroid\QrCode\Builder\Builder::create()
-                            ->writer(new \Endroid\QrCode\Writer\SvgWriter())
-                            ->data($qrData)
-                            ->size(100)
-                            ->margin(2)
-                            ->build();
-                        $qrCodeBase64 = $qrCode->getDataUri();
-                    }
-                @endphp
-                <img src="{{ $qrCodeBase64 }}" style="width: 90px; display: block; margin: 0 auto;">
-                <div style="font-size: 8px; font-weight: bold; margin-top: 5px;">
-                    Scan here for E-Invoice<br>Submit within 3 days
+            <td class="consignee-section" style="vertical-align: top;">
+                <div class="consignee-header">CONSIGNEE</div>
+                <div class="consignee-top">
+                    <div class="consignee-field">
+                        <div class="consignee-label">NAME:</div>
+                    </div>
+                    <div class="consignee-field">
+                        <div class="consignee-label">I/C:</div>
+                    </div>
+                    <div class="consignee-field">
+                        <div class="consignee-label">DATE:</div>
+                    </div>
+                </div>
+                <div class="consignee-bottom">
+                    <div class="consignee-sign">
+                        <div class="consignee-sign-label">SIGN:</div>
+                    </div>
                 </div>
             </td>
         </tr>
@@ -298,3 +333,4 @@
 </div>
 </body>
 </html>
+

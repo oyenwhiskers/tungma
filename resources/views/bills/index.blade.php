@@ -157,7 +157,7 @@
                             <a href="{{ route('bills.show', $bill) }}" class="btn btn-outline-secondary" title="View">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{{ route('bills.template', $bill) }}" class="btn btn-outline-success" title="Download PDF">
+                            <a href="{{ route('bills.view-template', $bill) }}" class="btn btn-outline-success" title="View PDF">
                                 <i class="bi bi-file-earmark-pdf"></i>
                             </a>
                             <a href="{{ route('bills.edit', $bill) }}" class="btn btn-outline-secondary" title="Edit">

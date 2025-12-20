@@ -44,6 +44,7 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
 
     // Bill template/receipt
     Route::get('/bills/{bill}/template', [App\Http\Controllers\BillController::class, 'template'])->name('bills.template');
+    Route::get('/bills/{bill}/view-template', [App\Http\Controllers\BillController::class, 'viewTemplate'])->name('bills.view-template');
 
     // Deleted lists with restore
     Route::get('/deleted/bills', [App\Http\Controllers\BillController::class, 'deleted'])->name('bills.deleted');

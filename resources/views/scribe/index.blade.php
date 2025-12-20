@@ -198,7 +198,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: December 18, 2025</li>
+        <li>Last updated: December 20, 2025</li>
     </ul>
 </div>
 
@@ -1030,9 +1030,9 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "sst_rate=4326.41688"\
     --form "sst_amount=4326.41688"\
     --form "is_paid=1"\
-    --form "is_collected="\
-    --form "media_attachment=@C:\Users\USER\AppData\Local\Temp\php660A.tmp" \
-    --form "payment_proof_attachment=@C:\Users\USER\AppData\Local\Temp\php661A.tmp" </code></pre></div>
+    --form "is_collected=1"\
+    --form "media_attachment=@C:\Users\USER\AppData\Local\Temp\php946C.tmp" \
+    --form "payment_proof_attachment=@C:\Users\USER\AppData\Local\Temp\php947D.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1063,7 +1063,7 @@ body.append('courier_policy_id', '16');
 body.append('sst_rate', '4326.41688');
 body.append('sst_amount', '4326.41688');
 body.append('is_paid', '1');
-body.append('is_collected', '');
+body.append('is_collected', '1');
 body.append('media_attachment', document.querySelector('input[name="media_attachment"]').files[0]);
 body.append('payment_proof_attachment', document.querySelector('input[name="payment_proof_attachment"]').files[0]);
 
@@ -1417,7 +1417,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             <code>false</code>
         </label>
     <br>
-<p>Example: <code>false</code></p>
+<p>Example: <code>true</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>media_attachment</code></b>&nbsp;&nbsp;
@@ -1429,7 +1429,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\USER\AppData\Local\Temp\php660A.tmp</code></p>
+<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\USER\AppData\Local\Temp\php946C.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
@@ -1441,7 +1441,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\USER\AppData\Local\Temp\php661A.tmp</code></p>
+<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\USER\AppData\Local\Temp\php947D.tmp</code></p>
         </div>
         </form>
 
@@ -1626,7 +1626,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Returns a PDF file that will be downloaded automatically.</p>
+<p>Returns a PDF file that will be downloaded automatically.
+Supports customer copy (default) and office copy via query parameter.</p>
 
 <span id="example-requests-GETapi-bills--id--template">
 <blockquote>Example request:</blockquote>
@@ -1634,7 +1635,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/bills/architecto/template" \
+    --get "http://localhost:8000/api/bills/architecto/template?copy=customer" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1644,6 +1645,12 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <pre><code class="language-javascript">const url = new URL(
     "http://localhost:8000/api/bills/architecto/template"
 );
+
+const params = {
+    "copy": "customer",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
 
 const headers = {
     "Authorization": "Bearer {token}",
@@ -1781,7 +1788,20 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <br>
 <p>The ID of the bill. Example: <code>architecto</code></p>
             </div>
-                    </form>
+                        <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>copy</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="copy"                data-endpoint="GETapi-bills--id--template"
+               value="customer"
+               data-component="query">
+    <br>
+<p>Copy type: 'customer' (default) or 'office'. Example: <code>customer</code></p>
+            </div>
+                </form>
 
                 <h1 id="bus-departures">Bus Departures</h1>
 
@@ -3427,7 +3447,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\USER\AppData\Local\Temp\php663C.tmp" </code></pre></div>
+    --form "image=@C:\Users\USER\AppData\Local\Temp\php94AE.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3615,7 +3635,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\USER\AppData\Local\Temp\php663C.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\USER\AppData\Local\Temp\php94AE.tmp</code></p>
         </div>
         </form>
 
