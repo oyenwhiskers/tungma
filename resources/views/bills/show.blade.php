@@ -23,9 +23,9 @@ use Illuminate\Support\Str;
     <a href="{{ route('bills.view-template', $bill) }}" class="btn btn-success me-2">
         <i class="bi bi-file-earmark-text"></i> View Receipt PDF
     </a>
-    <a href="{{ route('bills.template', ['bill' => $bill->id, 'download' => 1]) }}" class="btn btn-outline-success me-2">
+    {{-- <a href="{{ route('bills.template', ['bill' => $bill->id, 'download' => 1]) }}" class="btn btn-outline-success me-2">
         <i class="bi bi-download"></i> Download PDF
-    </a>
+    </a> --}}
     <a href="{{ route('bills.edit', $bill) }}" class="btn btn-primary me-2">
         <i class="bi bi-pencil"></i> Edit
     </a>
