@@ -59,18 +59,6 @@
               @enderror
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label">
-                <i class="bi bi-cash-stack"></i> Amount (RM) <span class="text-danger">*</span>
-              </label>
-              <input type="number" step="0.01" name="amount" id="amount-input" class="form-control @error('amount') is-invalid @enderror"
-                     value="{{ old('amount') }}" required readonly style="background-color: #e9ecef;">
-              <div class="form-text">Amount is automatically calculated from products</div>
-              @error('amount')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-            </div>
-
             <div class="col-12">
               <label class="form-label">
                 <i class="bi bi-file-text"></i> Description (Products)
@@ -123,6 +111,46 @@
               @error('description')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
+            </div>
+          </div>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-percent"></i> SST Rate (%)
+              </label>
+              <input type="number" step="0.01" name="sst_rate" id="sst_rate" class="form-control @error('sst_rate') is-invalid @enderror"
+                     value="{{ old('sst_rate', '0') }}" placeholder="e.g., 6">
+              <div class="form-text">Enter SST percentage rate</div>
+              @error('sst_rate')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-currency-dollar"></i> SST Amount (RM)
+              </label>
+              <input type="number" step="0.01" name="sst_amount" id="sst_amount" class="form-control @error('sst_amount') is-invalid @enderror"
+                     value="{{ old('sst_amount', '0') }}" placeholder="0.00" readonly style="background-color: #e9ecef;">
+              <div class="form-text">Calculated SST amount</div>
+              @error('sst_amount')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+
+            <div class="col-12">
+              <div class="p-3 border rounded bg-light-subtle">
+                <label class="form-label h5 text-primary">
+                  <i class="bi bi-cash-stack"></i> Total Amount (RM)
+                </label>
+                <input type="number" step="0.01" name="amount" id="amount-input" class="form-control form-control-lg fs-2 fw-bold text-end @error('amount') is-invalid @enderror"
+                       value="{{ old('amount') }}" required readonly style="background-color: #fff;">
+                <div class="form-text text-end">Total Bill Amount (Subtotal + SST)</div>
+                @error('amount')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+              </div>
             </div>
           </div>
 
@@ -362,34 +390,7 @@
             </div>
           </div>
 
-          <hr class="my-4">
-          <h5 class="mb-3"><i class="bi bi-receipt-cutoff me-2"></i>SST (Sales & Service Tax)</h5>
-
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">
-                <i class="bi bi-percent"></i> SST Rate (%)
-              </label>
-              <input type="number" step="0.01" name="sst_rate" class="form-control @error('sst_rate') is-invalid @enderror"
-                     value="{{ old('sst_rate', '0') }}" placeholder="e.g., 6">
-              <div class="form-text">Enter SST percentage rate</div>
-              @error('sst_rate')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">
-                <i class="bi bi-currency-dollar"></i> SST Amount (RM)
-              </label>
-              <input type="number" step="0.01" name="sst_amount" class="form-control @error('sst_amount') is-invalid @enderror"
-                     value="{{ old('sst_amount', '0') }}" placeholder="0.00">
-              <div class="form-text">Calculated SST amount</div>
-              @error('sst_amount')
-                <div class="invalid-feedback">{{ $message }}</div>
-              @enderror
-            </div>
-          </div>
+          
 
           <hr class="my-4">
           <h5 class="mb-3"><i class="bi bi-paperclip me-2"></i>Media Attachment</h5>
@@ -481,6 +482,8 @@
     const productsContainer = document.getElementById('products-container');
     const addProductBtn = document.getElementById('add-product');
     const descriptionInput = document.getElementById('description-input');
+    const sstRateInput = document.getElementById('sst_rate');
+    const sstAmountInput = document.getElementById('sst_amount');
     const form = document.querySelector('form');
 
     if (!productsContainer || !addProductBtn) return;
@@ -521,13 +524,33 @@
 
     function calculateTotal() {
       const items = productsContainer.querySelectorAll('.product-item');
-      let total = 0;
+      let subtotal = 0;
 
       items.forEach((item) => {
         const quantity = parseFloat(item.querySelector('.product-quantity').value) || 0;
         const price = parseFloat(item.querySelector('.product-price').value) || 0;
-        total += quantity * price;
+        subtotal += quantity * price;
       });
+
+      // Calculate SST
+      let sstRate = 0;
+      let sstAmount = 0;
+
+      if (sstRateInput) {
+        sstRate = parseFloat(sstRateInput.value) || 0;
+        // Calculate sstAmount based on rate
+        sstAmount = subtotal * (sstRate / 100);
+        
+        // Update sst amount field
+        if (sstAmountInput) {
+            sstAmountInput.value = sstAmount.toFixed(2);
+        }
+      } else if (sstAmountInput) {
+         // Fallback if no rate input found
+         sstAmount = parseFloat(sstAmountInput.value) || 0;
+      }
+
+      const total = subtotal + sstAmount;
 
       const amountInput = document.getElementById('amount-input');
       if (amountInput) {
@@ -535,6 +558,10 @@
       }
 
       return total;
+    }
+
+    if (sstRateInput) {
+        sstRateInput.addEventListener('input', calculateTotal);
     }
 
     function buildDescriptionJSON() {
