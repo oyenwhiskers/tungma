@@ -428,7 +428,7 @@ endpoints:
         name: is_collected
         description: ''
         required: false
-        example: false
+        example: true
         type: boolean
         enumValues: []
         exampleWasSpecified: false
@@ -473,7 +473,7 @@ endpoints:
       sst_rate: 4326.41688
       sst_amount: 4326.41688
       is_paid: true
-      is_collected: false
+      is_collected: true
     fileParameters:
       media_attachment: null
       payment_proof_attachment: null
@@ -617,7 +617,9 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Generate bill template/receipt PDF for a specific bill.'
-      description: 'Returns a PDF file that will be downloaded automatically.'
+      description: |-
+        Returns a PDF file that will be downloaded automatically.
+        Supports customer copy (default) and office copy via query parameter.
       authenticated: true
       deprecated: false
     headers:
@@ -638,8 +640,20 @@ endpoints:
         deprecated: false
     cleanUrlParameters:
       id: architecto
-    queryParameters: []
-    cleanQueryParameters: []
+    queryParameters:
+      copy:
+        custom: []
+        name: copy
+        description: "Copy type: 'customer' (default) or 'office'."
+        required: false
+        example: customer
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      copy: customer
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []

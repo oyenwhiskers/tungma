@@ -504,7 +504,7 @@ class BillController extends Controller
         return redirect()->route('bills.index')->with('status', 'Bill restored');
     }
 
-    public function template(Bill $bill)
+    public function template(Bill $bill, Request $request)
     {
         $user = auth()->user();
         if ($user->role === 'admin' && $user->company_id !== $bill->company_id) {
@@ -525,11 +525,39 @@ class BillController extends Controller
             $paymentDetails = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details;
         }
 
+        // Get copy type (customer, office, receiver, or book)
+        $copyType = $request->get('copy', 'customer'); // Default to customer copy
+        $validCopyTypes = ['customer', 'office', 'receiver', 'book'];
+        if (!in_array($copyType, $validCopyTypes)) {
+            $copyType = 'customer';
+        }
+
+        // Determine which template to use
+        $templateView = ($copyType === 'office' || $copyType === 'receiver') 
+            ? 'bills.template-office' 
+            : 'bills.template';
+
         // Generate PDF
-        $pdf = \PDF::loadView('bills.template', compact('bill', 'sstDetails', 'paymentDetails'))
+        $pdf = \PDF::loadView($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType'))
             ->setPaper('a4', 'portrait');
 
-        // Return PDF download
-        return $pdf->download('bill-' . $bill->bill_code . '.pdf');
+        // If download parameter is set, download the PDF
+        if ($request->has('download')) {
+            return $pdf->download('bill-' . $bill->bill_code . '-' . $copyType . '.pdf');
+        }
+
+        // Otherwise, return PDF for viewing
+        return $pdf->stream('bill-' . $bill->bill_code . '-' . $copyType . '.pdf');
+    }
+
+    public function viewTemplate(Bill $bill)
+    {
+        $user = auth()->user();
+        if ($user->role === 'admin' && $user->company_id !== $bill->company_id) {
+            abort(403, 'You can only view bills from your company');
+        }
+
+        $bill->load('company', 'courierPolicy', 'fromCompany', 'toCompany');
+        return view('bills.view-template', compact('bill'));
     }
 }
