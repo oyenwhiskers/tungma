@@ -5,7 +5,8 @@ use App\Http\Controllers\AuthController;
 
 // Root -> dashboard
 Route::get('/', function () {
-    return redirect()->route('login'); });
+    return redirect()->route('login');
+});
 
 // Authentication routes assumed provided by Laravel auth starter (login required)
 Route::middleware(['web'])->group(function () {
@@ -102,4 +103,7 @@ Route::middleware(['web', 'auth', 'super.admin'])->group(function () {
     Route::post('/backup/clear-storage', [App\Http\Controllers\BackupController::class, 'clearStorage'])->name('backup.clear.storage');
     Route::get('/backup/delete-bills', [App\Http\Controllers\BackupController::class, 'deleteBills'])->name('backup.delete.bills');
     Route::post('/backup/delete-selected-bills', [App\Http\Controllers\BackupController::class, 'deleteSelectedBills'])->name('backup.delete.selected.bills');
+
+    // Activity Logs
+    Route::get('/activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 });

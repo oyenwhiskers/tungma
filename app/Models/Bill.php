@@ -5,17 +5,36 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\LogsActivity;
 
 class Bill extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     protected $fillable = [
-        'bill_code', 'date', 'amount', 'description', 'payment_details',
-        'from_company_id', 'to_company_id', 'sender_name', 'sender_phone',
-        'receiver_name', 'receiver_phone', 'courier_policy_id', 'company_id',
-        'sst_details', 'policy_snapshot', 'media_attachment', 'payment_proof_attachment',
-        'is_paid', 'is_collected', 'status', 'created_by', 'checked_by', 'bus_departures_id'
+        'bill_code',
+        'date',
+        'amount',
+        'description',
+        'payment_details',
+        'from_company_id',
+        'to_company_id',
+        'sender_name',
+        'sender_phone',
+        'receiver_name',
+        'receiver_phone',
+        'courier_policy_id',
+        'company_id',
+        'sst_details',
+        'policy_snapshot',
+        'media_attachment',
+        'payment_proof_attachment',
+        'is_paid',
+        'is_collected',
+        'status',
+        'created_by',
+        'checked_by',
+        'bus_departures_id'
     ];
 
     protected $casts = [
@@ -58,6 +77,6 @@ class Bill extends Model
 
     public function busDeparture()
     {
-        return $this->belongsTo(BusDepartures::class, 'bus_departures_id');
+        return $this->belongsTo(BusDepartures::class, 'bus_departures_id')->withTrashed();
     }
 }

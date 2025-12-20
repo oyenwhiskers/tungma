@@ -12,11 +12,35 @@ class AnalyticsController extends Controller
     public function index(\Illuminate\Http\Request $request)
     {
         $filter = $request->input('filter', 'daily');
+        $selectedYear = $request->input('year');
+        $selectedMonth = $request->input('month');
+        $selectedDay = $request->input('day');
 
-        // Total revenue
-        $totalRevenue = Bill::query()->sum('amount');
+        // Apply filters to a base query for bills
+        $billQuery = Bill::query();
+
+        if ($selectedYear) {
+            $billQuery->whereYear('created_at', $selectedYear);
+        }
+        if ($selectedMonth) {
+            $billQuery->whereMonth('created_at', $selectedMonth);
+        }
+        if ($selectedDay) {
+            $billQuery->whereDay('created_at', $selectedDay);
+        }
+
+        // Get available years for filter
+        $years = Bill::selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        // Total revenue (filtered)
+        $totalRevenue = (clone $billQuery)->sum('amount');
 
         // Staff distribution per company
+        // Note: Staff is usually a current state, so we might not want to filter by bill dates here.
+        // Keeping it as is for now.
         $staffDistribution = User::query()
             ->select('company_id', DB::raw('count(*) as total'))
             ->where('role', 'staff')
@@ -29,8 +53,8 @@ class AnalyticsController extends Controller
                 ];
             });
 
-        // Bill summaries by company
-        $billSummaries = Bill::query()
+        // Bill summaries by company (filtered)
+        $billSummaries = (clone $billQuery)
             ->select('company_id', DB::raw('count(*) as bills'), DB::raw('sum(amount) as revenue'))
             ->groupBy('company_id')
             ->get()
@@ -49,7 +73,7 @@ class AnalyticsController extends Controller
             default => '%Y-%m',
         };
 
-        $revenueTrend = Bill::query()
+        $revenueTrend = (clone $billQuery)
             ->select(
                 DB::raw("DATE_FORMAT(created_at, '$dateFormat') as label"),
                 DB::raw('sum(amount) as revenue')
@@ -69,7 +93,11 @@ class AnalyticsController extends Controller
             'staffDistribution',
             'billSummaries',
             'revenueTrend',
-            'filter'
+            'filter',
+            'years',
+            'selectedYear',
+            'selectedMonth',
+            'selectedDay'
         ));
     }
 }
