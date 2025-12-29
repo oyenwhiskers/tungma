@@ -9,7 +9,18 @@ class ActivityLogController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
         $query = ActivityLog::with('user');
+
+        // ADMIN: Only see logs from their company, excluding Super Admin activities
+        if ($user->role === 'admin') {
+            $query->where('company_id', $user->company_id)
+                ->whereHas('user', function($q) {
+                    $q->where('role', '!=', 'super_admin');
+                });
+        }
+
+        // SUPER ADMIN: See all logs (no company filter)
 
         if ($request->filled('action')) {
             $query->where('action', $request->action);
@@ -31,7 +42,19 @@ class ActivityLogController extends Controller
         $logs = $query->orderBy('created_at', $sortDirection)->paginate(50)->withQueryString();
 
         $actions = ['created', 'updated', 'deleted'];
-        $modules = ActivityLog::distinct('model')->pluck('model')->sort();
+        
+        // Filter modules based on role
+        if ($user->role === 'admin') {
+            $modules = ActivityLog::where('company_id', $user->company_id)
+                ->whereHas('user', function($q) {
+                    $q->where('role', '!=', 'super_admin');
+                })
+                ->distinct('model')
+                ->pluck('model')
+                ->sort();
+        } else {
+            $modules = ActivityLog::distinct('model')->pluck('model')->sort();
+        }
 
         return view('activity_logs.index', compact('logs', 'actions', 'modules'));
     }

@@ -488,8 +488,8 @@
 
             @auth
                 <div class="tm-user-badge">
-                    <span class="name">{{ auth()->user()->name }}</span>
-                    <span class="role">{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</span>
+                    <span class="name">{{ auth()->check() ? auth()->user()->name : 'Guest' }}</span>
+                    <span class="role">{{ auth()->check() ? ucfirst(str_replace('_', ' ', auth()->user()->role)) : '' }}</span>
                 </div>
             @endauth
 
@@ -499,7 +499,7 @@
                         <i class="bi bi-house"></i> Dashboard
                     </a>
 
-                    @if(auth()->user()->role === 'super_admin')
+                    @if(auth()->check() && auth()->user()->role === 'super_admin')
                         <a href="{{ route('companies.index') }}"
                             class="{{ request()->routeIs('companies.*') ? 'active' : '' }}">
                             <i class="bi bi-building"></i> Companies
@@ -523,7 +523,7 @@
                         <i class="bi bi-list-check"></i> Checklists
                     </a>
 
-                    @if(auth()->user()->role === 'admin')
+                    @if(auth()->check() && auth()->user()->role === 'admin')
                         <a href="{{ route('bus-departures.index') }}"
                             class="{{ request()->routeIs('bus-departures.*') ? 'active' : '' }}">
                             <i class="bi bi-bus-front"></i> Bus Departures
@@ -536,10 +536,13 @@
                         <i class="bi bi-graph-up"></i> Analytics
                     </a>
 
-                    @if(auth()->user()->role === 'super_admin')
+                    @if(auth()->check() && auth()->user()->role === 'super_admin')
                         <a href="{{ route('backup.index') }}" class="{{ request()->routeIs('backup.*') ? 'active' : '' }}">
                             <i class="bi bi-file-earmark-text"></i> Backup & Restore
                         </a>
+                    @endif
+                    
+                    @if(auth()->check() && (auth()->user()->role === 'super_admin' || auth()->user()->role === 'admin'))
                         <a href="{{ route('activity-logs.index') }}"
                             class="{{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
                             <i class="bi bi-clock-history"></i> Activity Logs
