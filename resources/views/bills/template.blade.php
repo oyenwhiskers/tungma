@@ -11,7 +11,7 @@
             font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 11px;
             color: #000;
-            padding: 10px;
+            padding: 1px;
         }
 
         .bill-container {
@@ -241,7 +241,7 @@
             <td class="total-cell">
                 <div style="font-weight: bold; font-size: 14px;">TOTAL RM</div>
                 <div class="total-amount">{{ number_format($bill->amount, 2) }}</div>
-                <div style="font-size: 9px; font-weight: bold;">6% SST INCLUDED IN TOTAL</div>
+                <div style="font-size: 9px; font-weight: bold;">6% SST EXCLUDED IN TOTAL</div>
             </td>
             <td class="qr-cell">
                 @php
