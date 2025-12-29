@@ -120,8 +120,8 @@
                 <i class="bi bi-percent"></i> SST Rate (%)
               </label>
               <input type="number" step="0.01" name="sst_rate" id="sst_rate" class="form-control @error('sst_rate') is-invalid @enderror"
-                     value="{{ old('sst_rate', '0') }}" placeholder="e.g., 6">
-              <div class="form-text">Enter SST percentage rate</div>
+                     value="6" readonly style="background-color: #e9ecef;">
+              <div class="form-text">Fixed at 6% (Malaysian SST)</div>
               @error('sst_rate')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -133,7 +133,7 @@
               </label>
               <input type="number" step="0.01" name="sst_amount" id="sst_amount" class="form-control @error('sst_amount') is-invalid @enderror"
                      value="{{ old('sst_amount', '0') }}" placeholder="0.00" readonly style="background-color: #e9ecef;">
-              <div class="form-text">Calculated SST amount</div>
+              <div class="form-text">SST amount (extracted from total, not added)</div>
               @error('sst_amount')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -146,7 +146,7 @@
                 </label>
                 <input type="number" step="0.01" name="amount" id="amount-input" class="form-control form-control-lg fs-2 fw-bold text-end @error('amount') is-invalid @enderror"
                        value="{{ old('amount') }}" required readonly style="background-color: #fff;">
-                <div class="form-text text-end">Total Bill Amount (Subtotal + SST)</div>
+                <div class="form-text text-end">Total Bill Amount (SST Inclusive - Customer pays this amount)</div>
                 @error('amount')
                   <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -532,14 +532,17 @@
         subtotal += quantity * price;
       });
 
-      // Calculate SST
+      // Calculate SST (Tax Inclusive - SST is extracted from subtotal, not added)
       let sstRate = 0;
       let sstAmount = 0;
 
       if (sstRateInput) {
         sstRate = parseFloat(sstRateInput.value) || 0;
-        // Calculate sstAmount based on rate
-        sstAmount = subtotal * (sstRate / 100);
+        // SST is included in the price - extract it from subtotal
+        // Formula: SST Amount = Subtotal ÷ (1 + rate/100) × (rate/100)
+        if (sstRate > 0) {
+          sstAmount = subtotal / (1 + sstRate / 100) * (sstRate / 100);
+        }
         
         // Update sst amount field
         if (sstAmountInput) {
@@ -550,7 +553,8 @@
          sstAmount = parseFloat(sstAmountInput.value) || 0;
       }
 
-      const total = subtotal + sstAmount;
+      // Total is the same as subtotal (SST is already included)
+      const total = subtotal;
 
       const amountInput = document.getElementById('amount-input');
       if (amountInput) {
