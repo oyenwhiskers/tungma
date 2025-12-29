@@ -62,6 +62,9 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
     Route::get('/checklists', [App\Http\Controllers\ChecklistController::class, 'index'])->name('checklists.index');
     Route::get('/checklists/{bus_departures_id}', [App\Http\Controllers\ChecklistController::class, 'show'])->name('checklists.show');
     Route::post('/checklists/save', [App\Http\Controllers\ChecklistController::class, 'save'])->name('checklists.save');
+
+    // Activity Logs (Super Admin & Admin - company-scoped for Admin)
+    Route::get('/activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 });
 
 // Super Admin only routes
@@ -103,7 +106,4 @@ Route::middleware(['web', 'auth', 'super.admin'])->group(function () {
     Route::post('/backup/clear-storage', [App\Http\Controllers\BackupController::class, 'clearStorage'])->name('backup.clear.storage');
     Route::get('/backup/delete-bills', [App\Http\Controllers\BackupController::class, 'deleteBills'])->name('backup.delete.bills');
     Route::post('/backup/delete-selected-bills', [App\Http\Controllers\BackupController::class, 'deleteSelectedBills'])->name('backup.delete.selected.bills');
-
-    // Activity Logs
-    Route::get('/activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 });
