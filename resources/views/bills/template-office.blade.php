@@ -24,9 +24,9 @@
         td { vertical-align: top; border: 1px solid #000; }
 
         /* Header Specifics */
-        .company-info { padding: 10px; border: none; width: 40%; }
-        .logo-section { padding: 5px; text-align: center; border: none; width: 30%; }
-        .payment-section { padding: 10px; text-align: center; border: none; width: 30%; }
+        .company-info { padding: 10px; border: none; width: 40%; vertical-align: top; }
+        .logo-section { padding: 5px; text-align: center; border: none; width: 30%; vertical-align: middle; }
+        .payment-section { padding: 10px; text-align: center; border: none; width: 30%; vertical-align: middle; }
 
         .company-name { font-size: 18px; font-weight: 900; }
         .sst-no { font-size: 10px; margin-top: 2px; }
