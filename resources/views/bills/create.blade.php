@@ -251,14 +251,19 @@
               <label class="form-label">
                 <i class="bi bi-building"></i> From Company
               </label>
-              <select name="from_company_id" class="form-select @error('from_company_id') is-invalid @enderror">
-                <option value="">Select origin company</option>
-                @foreach($companies as $company)
-                  <option value="{{ $company->id }}" {{ old('from_company_id') == $company->id ? 'selected' : '' }}>
-                    {{ $company->name }}
-                  </option>
-                @endforeach
-              </select>
+              @if(auth()->user()->role === 'admin')
+                <input type="hidden" name="from_company_id" value="{{ auth()->user()->company_id }}">
+                <input type="text" class="form-control bg-light" value="{{ auth()->user()->company->name ?? 'N/A' }}" readonly>
+              @else
+                <select name="from_company_id" class="form-select @error('from_company_id') is-invalid @enderror">
+                  <option value="">Select origin company</option>
+                  @foreach($companies as $company)
+                    <option value="{{ $company->id }}" {{ old('from_company_id') == $company->id ? 'selected' : '' }}>
+                      {{ $company->name }}
+                    </option>
+                  @endforeach
+                </select>
+              @endif
               @error('from_company_id')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
