@@ -133,7 +133,7 @@
               </label>
               <input type="number" step="0.01" name="sst_amount" id="sst_amount" class="form-control @error('sst_amount') is-invalid @enderror"
                      value="{{ old('sst_amount', '0') }}" placeholder="0.00" readonly style="background-color: #e9ecef;">
-              <div class="form-text">SST amount (extracted from total, not added)</div>
+              <div class="form-text">SST amount (calculated from total, not added)</div>
               @error('sst_amount')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -538,10 +538,9 @@
 
       if (sstRateInput) {
         sstRate = parseFloat(sstRateInput.value) || 0;
-        // SST is included in the price - extract it from subtotal
-        // Formula: SST Amount = Subtotal ÷ (1 + rate/100) × (rate/100)
+        // Formula: SST Amount = Subtotal * (rate/100)
         if (sstRate > 0) {
-          sstAmount = subtotal / (1 + sstRate / 100) * (sstRate / 100);
+          sstAmount = subtotal * (sstRate / 100);
         }
         
         // Update sst amount field
