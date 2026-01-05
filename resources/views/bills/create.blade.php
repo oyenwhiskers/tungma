@@ -538,10 +538,10 @@
 
       if (sstRateInput) {
         sstRate = parseFloat(sstRateInput.value) || 0;
-        // SST is included in the price - extract it from subtotal
-        // Formula: SST Amount = Subtotal ÷ (1 + rate/100) × (rate/100)
+        // SST is excluded - calculate on top of subtotal
+        // Formula: SST Amount = Subtotal × (rate/100)
         if (sstRate > 0) {
-          sstAmount = subtotal / (1 + sstRate / 100) * (sstRate / 100);
+          sstAmount = subtotal * (sstRate / 100);
         }
         
         // Update sst amount field
