@@ -25,8 +25,12 @@ class ChecklistController extends Controller
         $query = Bill::whereDate('date', $targetDate)
             ->with(['checker', 'busDeparture']);
 
+        // Filter by company visibility (sender OR receiver)
         if ($user->role !== 'super_admin') {
-            $query->where('company_id', $user->company_id);
+            $query->where(function ($q) use ($user) {
+                $q->where('from_company_id', $user->company_id)
+                    ->orWhere('to_company_id', $user->company_id);
+            });
         }
 
         $bills = $query->get()->groupBy('bus_departures_id');
@@ -78,13 +82,18 @@ class ChecklistController extends Controller
         // Get the date from query parameter or default to today
         $date = $request->query('date', now()->toDateString());
 
-        // Filter by company if user is admin or staff
+        // Start basic query
         $query = Bill::where('bus_departures_id', $bus_departures_id)
             ->whereDate('date', $date)
-            ->with('busDeparture');
+            ->with(['busDeparture', 'fromCompany', 'toCompany']);
 
+        // Filter by company visibility:
+        // Users can see a bill if they belong to 'from_company' OR 'to_company'
         if ($user->role !== 'super_admin') {
-            $query->where('company_id', $user->company_id);
+            $query->where(function ($q) use ($user) {
+                $q->where('from_company_id', $user->company_id)
+                    ->orWhere('to_company_id', $user->company_id);
+            });
         }
 
         $bills = $query->get();
@@ -122,9 +131,12 @@ class ChecklistController extends Controller
         if (!empty($billIds)) {
             $query = Bill::whereIn('id', $billIds);
 
-            // Filter by company if user is not super admin
+            // Filter by company visibility (sender OR receiver)
             if ($user->role !== 'super_admin') {
-                $query->where('company_id', $user->company_id);
+                $query->where(function ($q) use ($user) {
+                    $q->where('from_company_id', $user->company_id)
+                        ->orWhere('to_company_id', $user->company_id);
+                });
             }
 
             $query->update([

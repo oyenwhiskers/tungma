@@ -18,6 +18,11 @@ class AnalyticsController extends Controller
 
         // Apply filters to a base query for bills
         $billQuery = Bill::query();
+        $user = auth()->user();
+
+        if ($user->role !== 'super_admin') {
+            $billQuery->where('company_id', $user->company_id);
+        }
 
         if ($selectedYear) {
             $billQuery->whereYear('created_at', $selectedYear);
@@ -30,7 +35,12 @@ class AnalyticsController extends Controller
         }
 
         // Get available years for filter
-        $years = Bill::selectRaw('YEAR(created_at) as year')
+        $yearsQuery = Bill::query();
+        if ($user->role !== 'super_admin') {
+            $yearsQuery->where('company_id', $user->company_id);
+        }
+
+        $years = $yearsQuery->selectRaw('YEAR(created_at) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');
@@ -41,9 +51,15 @@ class AnalyticsController extends Controller
         // Staff distribution per company
         // Note: Staff is usually a current state, so we might not want to filter by bill dates here.
         // Keeping it as is for now.
-        $staffDistribution = User::query()
+        $staffQuery = User::query()
             ->select('company_id', DB::raw('count(*) as total'))
-            ->where('role', 'staff')
+            ->where('role', 'staff');
+
+        if ($user->role !== 'super_admin') {
+            $staffQuery->where('company_id', $user->company_id);
+        }
+
+        $staffDistribution = $staffQuery
             ->groupBy('company_id')
             ->get()
             ->map(function ($row) {

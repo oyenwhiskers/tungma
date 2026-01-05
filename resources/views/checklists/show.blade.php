@@ -51,8 +51,8 @@
                                             <input type="checkbox" class="form-check-input" id="checkAll" {{ !$canEdit ? 'disabled' : '' }}>
                                         </th>
                                         <th>Bill Code</th>
-                                        <th>Sender</th>
-                                        <th>Receiver</th>
+                                        <th>From</th>
+                                        <th>To</th>
                                         <th>Amount</th>
                                         <th>Verification</th>
                                     </tr>
@@ -70,12 +70,10 @@
                                                 <strong>{{ $bill->bill_code }}</strong>
                                             </td>
                                             <td>
-                                                {{ $bill->sender_name }}<br>
-                                                <small class="text-muted">{{ $bill->sender_phone }}</small>
+                                                <div class="fw-bold">{{ $bill->fromCompany->name ?? 'N/A' }}</div>
                                             </td>
                                             <td>
-                                                {{ $bill->receiver_name }}<br>
-                                                <small class="text-muted">{{ $bill->receiver_phone }}</small>
+                                                <div class="fw-bold">{{ $bill->toCompany->name ?? 'N/A' }}</div>
                                             </td>
                                             <td>RM {{ number_format($bill->amount, 2) }}</td>
                                             <td>
