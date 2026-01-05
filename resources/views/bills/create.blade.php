@@ -133,7 +133,7 @@
               </label>
               <input type="number" step="0.01" name="sst_amount" id="sst_amount" class="form-control @error('sst_amount') is-invalid @enderror"
                      value="{{ old('sst_amount', '0') }}" placeholder="0.00" readonly style="background-color: #e9ecef;">
-              <div class="form-text">SST amount (extracted from total, not added)</div>
+              <div class="form-text">SST amount (calculated from total, not added)</div>
               @error('sst_amount')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -251,14 +251,19 @@
               <label class="form-label">
                 <i class="bi bi-building"></i> From Company
               </label>
-              <select name="from_company_id" class="form-select @error('from_company_id') is-invalid @enderror">
-                <option value="">Select origin company</option>
-                @foreach($companies as $company)
-                  <option value="{{ $company->id }}" {{ old('from_company_id') == $company->id ? 'selected' : '' }}>
-                    {{ $company->name }}
-                  </option>
-                @endforeach
-              </select>
+              @if(auth()->user()->role === 'admin')
+                <input type="hidden" name="from_company_id" value="{{ auth()->user()->company_id }}">
+                <input type="text" class="form-control bg-light" value="{{ auth()->user()->company->name ?? 'N/A' }}" readonly>
+              @else
+                <select name="from_company_id" class="form-select @error('from_company_id') is-invalid @enderror">
+                  <option value="">Select origin company</option>
+                  @foreach($companies as $company)
+                    <option value="{{ $company->id }}" {{ old('from_company_id') == $company->id ? 'selected' : '' }}>
+                      {{ $company->name }}
+                    </option>
+                  @endforeach
+                </select>
+              @endif
               @error('from_company_id')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -541,6 +546,7 @@
         // SST is excluded - calculate on top of subtotal
         // Formula: SST Amount = Subtotal × (rate/100)
         if (sstRate > 0) {
+          sstAmount = subtotal * (sstRate / 100);
           sstAmount = subtotal * (sstRate / 100);
         }
         
