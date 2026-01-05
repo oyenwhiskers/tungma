@@ -141,9 +141,9 @@ class BillController extends Controller
 
         if ($user->role === 'admin') {
             // Admin can only see their own company and its policies
-            $companies = Company::where('id', $user->company_id)->get();
-            $policies = CourierPolicy::where('company_id', $user->company_id)->get();
-            $users = User::where('company_id', $user->company_id)->get();
+            $companies = Company::all();
+            $policies = CourierPolicy::all();
+            $users = User::all();
 
             // Admin should only see bus departures belonging to their company
             $busDepartures = BusDepartures::where('company_id', $user->company_id)->get();
@@ -327,7 +327,7 @@ class BillController extends Controller
 
         if ($user->role === 'admin') {
             // Admin can only see their own company and its policies
-            $companies = Company::where('id', $user->company_id)->get();
+            $companies = Company::all();
             $policies = CourierPolicy::where('company_id', $user->company_id)->get();
             $users = User::where('company_id', $user->company_id)->get();
 
@@ -544,8 +544,8 @@ class BillController extends Controller
         }
 
         // Determine which template to use
-        $templateView = ($copyType === 'office' || $copyType === 'receiver') 
-            ? 'bills.template-office' 
+        $templateView = ($copyType === 'office' || $copyType === 'receiver')
+            ? 'bills.template-office'
             : 'bills.template';
 
         // Generate PDF
