@@ -137,6 +137,7 @@ class ChecklistController extends Controller
      * @urlParam bus_departures_id int required The bus departure ID to view. Example: 1
      *
      * @queryParam date string The date to view (Y-m-d). Defaults to today. Example: 2025-12-15
+     * @queryParam search string Optional search term to filter bills by code, description, sender, or receiver. Example: INV-001
      *
      * @response 200 {
      *    "success": true,
@@ -171,6 +172,17 @@ class ChecklistController extends Controller
             $query->where(function ($q) use ($user) {
                 $q->where('from_company_id', $user->company_id)
                     ->orWhere('to_company_id', $user->company_id);
+            });
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('bill_code', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('sender_name', 'like', "%{$search}%")
+                    ->orWhere('receiver_name', 'like', "%{$search}%");
             });
         }
 
