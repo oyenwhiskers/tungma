@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Bill;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 /**
  * @group Checklist
@@ -29,6 +31,7 @@ class ChecklistController extends Controller
      * @group Checklist
      * @authenticated
      * @queryParam date string The date to view checklists for (Y-m-d). Defaults to today's date. Example: 2025-12-14
+     * @queryParam search string Optional search term to filter bills by code, description, sender, or receiver. Example: INV-001
      *
      * @response 200 {
      *    "success": true,
@@ -61,6 +64,17 @@ class ChecklistController extends Controller
             $query->where(function ($q) use ($user) {
                 $q->where('from_company_id', $user->company_id)
                     ->orWhere('to_company_id', $user->company_id);
+            });
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('bill_code', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('sender_name', 'like', "%{$search}%")
+                    ->orWhere('receiver_name', 'like', "%{$search}%");
             });
         }
 
@@ -134,7 +148,9 @@ class ChecklistController extends Controller
      *             {
      *                 "id": 1,
      *                 "bill_code": "INV-001",
-     *                 "amount": 100.00
+     *                 "amount": 100.00,
+     *                 "media_attachment_url": "http://...",
+     *                 "company": { "id": 1, "name": "Company A" }
      *             }
      *        ]
      *    }
@@ -147,7 +163,7 @@ class ChecklistController extends Controller
 
         $query = Bill::where('bus_departures_id', $bus_departures_id)
             ->whereDate('date', $date)
-            ->with(['busDeparture', 'fromCompany', 'toCompany']);
+            ->with(['busDeparture', 'fromCompany', 'toCompany', 'company', 'courierPolicy', 'creator', 'checker']);
 
         // Filter by company visibility:
         // Users can see a bill if they belong to 'from_company' OR 'to_company'
@@ -158,8 +174,75 @@ class ChecklistController extends Controller
             });
         }
 
-        $bills = $query->get();
-        $busDeparture = $bills->first()?->busDeparture;
+        $rawBills = $query->get();
+        $busDeparture = $rawBills->first()?->busDeparture;
+
+        $bills = $rawBills->map(function ($bill) {
+            $paymentDetails = null;
+            if ($bill->payment_details) {
+                $paymentDetails = is_string($bill->payment_details)
+                    ? json_decode($bill->payment_details, true)
+                    : $bill->payment_details;
+            }
+
+            $sstDetails = null;
+            if ($bill->sst_details) {
+                $sstDetails = is_string($bill->sst_details)
+                    ? json_decode($bill->sst_details, true)
+                    : $bill->sst_details;
+            }
+
+            return [
+                'id' => $bill->id,
+                'bill_code' => $bill->bill_code,
+                'date' => $bill->date ? (is_a($bill->date, '\Carbon\Carbon') ? $bill->date->format('Y-m-d') : $bill->date) : null,
+                'bus_departures_id' => $bill->bus_departures_id,
+                'departure_time' => $bill->busDeparture?->departure_time,
+                'amount' => (float) $bill->amount,
+                'description' => $bill->description,
+                'sender_name' => $bill->sender_name,
+                'sender_phone' => $bill->sender_phone,
+                'receiver_name' => $bill->receiver_name,
+                'receiver_phone' => $bill->receiver_phone,
+                'payment_details' => $paymentDetails,
+                'is_paid' => (bool) $bill->is_paid,
+                'is_collected' => (bool) $bill->is_collected,
+                'sst_details' => $sstDetails,
+                'media_attachment_url' => $bill->media_attachment
+                    ? URL::to(Storage::url($bill->media_attachment))
+                    : null,
+                'payment_proof_attachment_url' => $bill->payment_proof_attachment
+                    ? URL::to(Storage::url($bill->payment_proof_attachment))
+                    : null,
+                'from_company' => $bill->fromCompany ? [
+                    'id' => $bill->fromCompany->id,
+                    'name' => $bill->fromCompany->name,
+                ] : null,
+                'to_company' => $bill->toCompany ? [
+                    'id' => $bill->toCompany->id,
+                    'name' => $bill->toCompany->name,
+                ] : null,
+                'company' => $bill->company ? [
+                    'id' => $bill->company->id,
+                    'name' => $bill->company->name,
+                ] : null,
+                'courier_policy' => $bill->courierPolicy ? [
+                    'id' => $bill->courierPolicy->id,
+                    'name' => $bill->courierPolicy->name,
+                ] : null,
+                'creator' => $bill->creator ? [
+                    'id' => $bill->creator->id,
+                    'name' => $bill->creator->name,
+                ] : null,
+                'checker' => $bill->checker ? [
+                    'id' => $bill->checker->id,
+                    'name' => $bill->checker->name,
+                ] : null,
+                'created_at' => $bill->created_at ? $bill->created_at->toISOString() : null,
+                'updated_at' => $bill->updated_at ? $bill->updated_at->toISOString() : null,
+                'status' => $bill->checked_by ? 'Arrived' : 'In_transit',
+            ];
+        });
 
         return response()->json([
             'success' => true,
