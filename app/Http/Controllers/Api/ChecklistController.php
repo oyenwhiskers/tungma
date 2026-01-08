@@ -26,6 +26,8 @@ class ChecklistController extends Controller
      * grouped by bus departure time.
      * Returns a JSON response containing the list of departure times and their status.
      *
+     * @group Checklist
+     * @authenticated
      * @queryParam date string The date to view checklists for (Y-m-d). Defaults to today's date. Example: 2025-12-14
      *
      * @response 200 {
@@ -49,10 +51,20 @@ class ChecklistController extends Controller
             ? Carbon::parse($date)->toDateString()
             : now()->toDateString();
 
-        $bills = Bill::whereDate('date', $targetDate)
-            ->with(['checker', 'busDeparture'])
-            ->get()
-            ->groupBy('bus_departures_id');
+        $user = $request->user();
+
+        $query = Bill::whereDate('date', $targetDate)
+            ->with(['checker', 'busDeparture']);
+
+        // Filter by company visibility (sender OR receiver)
+        if ($user->role !== 'super_admin') {
+            $query->where(function ($q) use ($user) {
+                $q->where('from_company_id', $user->company_id)
+                    ->orWhere('to_company_id', $user->company_id);
+            });
+        }
+
+        $bills = $query->get()->groupBy('bus_departures_id');
 
         $rows = $bills->map(function ($items, $busDepartureId) {
 
@@ -69,38 +81,35 @@ class ChecklistController extends Controller
 
             $checkedItem = $items->whereNotNull('checked_by')->first();
             $firstItem = $items->first();
-            
+
             // Get departure time from the relationship
-            $departureTime = $firstItem && $firstItem->busDeparture 
-                ? $firstItem->busDeparture->departure_time 
+            $departureTime = $firstItem && $firstItem->busDeparture
+                ? $firstItem->busDeparture->departure_time
                 : null;
-            
+
             return [
                 'bus_departures_id' => $busDepartureId,
                 'departure_time' => $departureTime,
-                'date' => $firstItem ? $firstItem->date->format('Y-m-d') : null,
+                'date' => $firstItem ? $firstItem->date : null,
                 'status' => $status,
-                'checked_by' => $checkedItem && $checkedItem->checker 
-                    ? $checkedItem->checker->name 
+                'checked_by' => $checkedItem && $checkedItem->checker
+                    ? $checkedItem->checker->name
                     : '-',
             ];
         });
 
+        // Ensure date formatting consistency
+        $formattedRows = $rows->values()->map(function ($row) {
+            if ($row['date'] instanceof Carbon) {
+                $row['date'] = $row['date']->format('Y-m-d');
+            }
+            return $row;
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $rows->values(),
+            'data' => $formattedRows,
         ]);
-    }
-
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @ignore
-     */
-    public function store(Request $request)
-    {
-        //
     }
 
     /**
@@ -109,6 +118,8 @@ class ChecklistController extends Controller
      * Display the specific checklist for a given bus departure.
      * Returns a JSON response with the list of bills/items for that departure.
      *
+     * @group Checklist
+     * @authenticated
      * @urlParam bus_departures_id int required The bus departure ID to view. Example: 1
      *
      * @queryParam date string The date to view (Y-m-d). Defaults to today. Example: 2025-12-15
@@ -123,7 +134,7 @@ class ChecklistController extends Controller
      *             {
      *                 "id": 1,
      *                 "bill_code": "INV-001",
-     *                 ...
+     *                 "amount": 100.00
      *             }
      *        ]
      *    }
@@ -131,13 +142,23 @@ class ChecklistController extends Controller
      */
     public function show($bus_departures_id, Request $request)
     {
+        $user = $request->user();
         $date = $request->query('date', now()->toDateString());
-        
-        $bills = Bill::where('bus_departures_id', $bus_departures_id)
+
+        $query = Bill::where('bus_departures_id', $bus_departures_id)
             ->whereDate('date', $date)
-            ->with('busDeparture')
-            ->get();
-        
+            ->with(['busDeparture', 'fromCompany', 'toCompany']);
+
+        // Filter by company visibility:
+        // Users can see a bill if they belong to 'from_company' OR 'to_company'
+        if ($user->role !== 'super_admin') {
+            $query->where(function ($q) use ($user) {
+                $q->where('from_company_id', $user->company_id)
+                    ->orWhere('to_company_id', $user->company_id);
+            });
+        }
+
+        $bills = $query->get();
         $busDeparture = $bills->first()?->busDeparture;
 
         return response()->json([
@@ -151,54 +172,59 @@ class ChecklistController extends Controller
         ]);
     }
 
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @ignore
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @ignore
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
     /**
      * Save Checklist
      *
      * Mark selected bills as checked/verified by the authenticated user.
      * Updates the `checked_by` field for the provided bill IDs.
      *
+     * @group Checklist
+     * @authenticated
      * @bodyParam bill_ids int[] required Array of Bill IDs that have been checked. Example: [1, 2, 3]
      *
      * @response 200 {
      *    "success": true,
-     *    "message": "Checklist saved"
+     *    "message": "Checklist saved successfully!"
+     * }
+     * @response 403 {
+     *    "message": "You are not authorized to update the checklist."
      * }
      */
     public function save(Request $request)
     {
-        $id = auth()->user()->id;
+        $request->validate([
+            'bill_ids' => 'nullable|array',
+            'bill_ids.*' => 'exists:bills,id'
+        ]);
 
-        Bill::whereIn('id', $request->bill_ids)
-            ->update([
-                'checked_by' => $id,
-                'status' => 'Arrived',
+        $user = $request->user();
+        $userId = $user->id;
+        $billIds = $request->input('bill_ids', []);
+
+        // Admins and Super Admins are not allowed to tick/save the checklist
+        if (in_array($user->role, ['admin', 'super_admin'])) {
+            return response()->json(['message' => 'You are not authorized to update the checklist.'], 403);
+        }
+
+        if (!empty($billIds)) {
+            $query = Bill::whereIn('id', $billIds);
+
+            // Filter by company visibility (sender OR receiver)
+            if ($user->role !== 'super_admin') {
+                $query->where(function ($q) use ($user) {
+                    $q->where('from_company_id', $user->company_id)
+                        ->orWhere('to_company_id', $user->company_id);
+                });
+            }
+
+            $query->update([
+                'checked_by' => $userId
             ]);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Checklist saved'
+            'message' => 'Checklist saved successfully!'
         ]);
     }
-
 }

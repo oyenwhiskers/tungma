@@ -85,19 +85,19 @@
                 </li>
                                     <ul id="tocify-subheader-bills" class="tocify-subheader">
                                                     <li class="tocify-item level-2" data-unique="bills-GETapi-bills">
-                                <a href="#bills-GETapi-bills">Display a listing of bills with pagination support.</a>
+                                <a href="#bills-GETapi-bills">List Bills</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="bills-GETapi-bills--id-">
-                                <a href="#bills-GETapi-bills--id-">Display the specified bill.</a>
+                                <a href="#bills-GETapi-bills--id-">Show Bill</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="bills-POSTapi-bills">
-                                <a href="#bills-POSTapi-bills">Store a newly created resource in storage.</a>
+                                <a href="#bills-POSTapi-bills">Create Bill</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="bills-DELETEapi-bills--id-">
-                                <a href="#bills-DELETEapi-bills--id-">Void (soft delete) the specified bill.</a>
+                                <a href="#bills-DELETEapi-bills--id-">Delete Bill</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="bills-GETapi-bills--id--template">
-                                <a href="#bills-GETapi-bills--id--template">Generate bill template/receipt PDF for a specific bill.</a>
+                                <a href="#bills-GETapi-bills--id--template">Download Bill PDF</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -198,7 +198,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: December 20, 2025</li>
+        <li>Last updated: January 8, 2026</li>
     </ul>
 </div>
 
@@ -577,14 +577,13 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
     
 
-                                <h2 id="bills-GETapi-bills">Display a listing of bills with pagination support.</h2>
+                                <h2 id="bills-GETapi-bills">List Bills</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>By default, only shows non-voided bills for the authenticated user's company.
-Set <code>include_voided=true</code> to return only voided bills.</p>
+<p>Display a listing of bills with pagination support.</p>
 
 <span id="example-requests-GETapi-bills">
 <blockquote>Example request:</blockquote>
@@ -592,7 +591,7 @@ Set <code>include_voided=true</code> to return only voided bills.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/bills?per_page=20&amp;page=1&amp;include_voided=1" \
+    --get "http://localhost:8000/api/bills?search=INV-001&amp;payment_status=unpaid&amp;collected_status=uncollected&amp;date=2025-12-15&amp;payment_method=cash&amp;per_page=20&amp;include_voided=" \
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -604,9 +603,13 @@ Set <code>include_voided=true</code> to return only voided bills.</p>
 );
 
 const params = {
+    "search": "INV-001",
+    "payment_status": "unpaid",
+    "collected_status": "uncollected",
+    "date": "2025-12-15",
+    "payment_method": "cash",
     "per_page": "20",
-    "page": "1",
-    "include_voided": "1",
+    "include_voided": "0",
 };
 Object.keys(params)
     .forEach(key =&gt; url.searchParams.append(key, params[key]));
@@ -634,24 +637,18 @@ fetch(url, {
     &quot;data&quot;: [
         {
             &quot;id&quot;: 1,
-            &quot;bill_code&quot;: &quot;BILL000001&quot;,
-            &quot;date&quot;: &quot;2025-12-10&quot;,
-            &quot;bus_datetime&quot;: &quot;2025-12-10T04:30:00Z&quot;,
-            &quot;amount&quot;: 100.5,
+            &quot;bill_code&quot;: &quot;INV-0001&quot;,
+            &quot;date&quot;: &quot;2025-12-15&quot;,
+            &quot;amount&quot;: 150,
+            &quot;description&quot;: &quot;Delivery fee&quot;,
             &quot;is_paid&quot;: false,
-            &quot;customer_info&quot;: {
-                &quot;name&quot;: &quot;John Doe&quot;,
-                &quot;phone&quot;: &quot;0123456789&quot;,
-                &quot;address&quot;: &quot;123 Main St&quot;
-            },
-            &quot;media_attachment_url&quot;: &quot;https://example.com/storage/bills/img.png&quot;,
-            &quot;payment_proof_attachment_url&quot;: &quot;https://example.com/storage/bills/proof.pdf&quot;
+            &quot;is_collected&quot;: false
         }
     ],
     &quot;current_page&quot;: 1,
     &quot;per_page&quot;: 20,
-    &quot;total&quot;: 100,
-    &quot;last_page&quot;: 5,
+    &quot;total&quot;: 50,
+    &quot;last_page&quot;: 3,
     &quot;from&quot;: 1,
     &quot;to&quot;: 20
 }</code>
@@ -742,6 +739,66 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                             <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
                                     <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>search</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="search"                data-endpoint="GETapi-bills"
+               value="INV-001"
+               data-component="query">
+    <br>
+<p>Search by bill code or description. Example: <code>INV-001</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>payment_status</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="payment_status"                data-endpoint="GETapi-bills"
+               value="unpaid"
+               data-component="query">
+    <br>
+<p>Filter by payment status ('paid', 'unpaid'). Example: <code>unpaid</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>collected_status</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="collected_status"                data-endpoint="GETapi-bills"
+               value="uncollected"
+               data-component="query">
+    <br>
+<p>Filter by collected status ('collected', 'uncollected'). Example: <code>uncollected</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>date</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="date"                data-endpoint="GETapi-bills"
+               value="2025-12-15"
+               data-component="query">
+    <br>
+<p>Filter by date (Y-m-d). Example: <code>2025-12-15</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>payment_method</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="payment_method"                data-endpoint="GETapi-bills"
+               value="cash"
+               data-component="query">
+    <br>
+<p>Filter by payment method (cash, bank_transfer, etc.). Example: <code>cash</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>per_page</code></b>&nbsp;&nbsp;
 <small>integer</small>&nbsp;
 <i>optional</i> &nbsp;
@@ -752,18 +809,6 @@ You can check the Dev Tools console for debugging information.</code></pre>
                data-component="query">
     <br>
 <p>Number of items per page (default: 20). Example: <code>20</code></p>
-            </div>
-                                    <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>page</code></b>&nbsp;&nbsp;
-<small>integer</small>&nbsp;
-<i>optional</i> &nbsp;
- &nbsp;
-                <input type="number" style="display: none"
-               step="any"               name="page"                data-endpoint="GETapi-bills"
-               value="1"
-               data-component="query">
-    <br>
-<p>Page number (default: 1). Example: <code>1</code></p>
             </div>
                                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>include_voided</code></b>&nbsp;&nbsp;
@@ -785,17 +830,17 @@ You can check the Dev Tools console for debugging information.</code></pre>
             <code>false</code>
         </label>
     <br>
-<p>If true, returns only voided bills. If false or not set, returns only active bills (default: false). Example: <code>true</code></p>
+<p>If true, returns only voided bills. Example: <code>false</code></p>
             </div>
                 </form>
 
-                    <h2 id="bills-GETapi-bills--id-">Display the specified bill.</h2>
+                    <h2 id="bills-GETapi-bills--id-">Show Bill</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Only shows non-voided bills for the authenticated user's company.</p>
+<p>Display the specified bill.</p>
 
 <span id="example-requests-GETapi-bills--id-">
 <blockquote>Example request:</blockquote>
@@ -803,19 +848,19 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/bills/architecto" \
-    --header "Authorization: Bearer {token}" \
+    --get "http://localhost:8000/api/bills/1" \
+    --header "Authorization: Bearer {token} Example: Bearer 1|abc123def456..." \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost:8000/api/bills/architecto"
+    "http://localhost:8000/api/bills/1"
 );
 
 const headers = {
-    "Authorization": "Bearer {token}",
+    "Authorization": "Bearer {token} Example: Bearer 1|abc123def456...",
     "Content-Type": "application/json",
     "Accept": "application/json",
 };
@@ -834,58 +879,12 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;data&quot;: {
-        &quot;id&quot;: 1,
-        &quot;bill_code&quot;: &quot;BILL000001&quot;,
-        &quot;date&quot;: &quot;2025-12-10&quot;,
-        &quot;bus_datetime&quot;: &quot;2025-12-10T04:30:00Z&quot;,
-        &quot;amount&quot;: 3000,
-        &quot;description&quot;: null,
-        &quot;sender_name&quot;: &quot;ABC Logistics&quot;,
-        &quot;sender_phone&quot;: &quot;+60123456789&quot;,
-        &quot;receiver_name&quot;: &quot;XYZ Trading&quot;,
-        &quot;receiver_phone&quot;: &quot;+60129876543&quot;,
-        &quot;payment_details&quot;: {
-            &quot;method&quot;: &quot;cash&quot;,
-            &quot;date&quot;: &quot;2025-12-10&quot;
-        },
-        &quot;is_paid&quot;: false,
-        &quot;sst_details&quot;: null,
-        &quot;media_attachment_url&quot;: &quot;http://example.com/storage/bills/image.png&quot;,
-        &quot;payment_proof_attachment_url&quot;: &quot;http://example.com/storage/bills/proof.pdf&quot;,
-        &quot;from_company&quot;: {
-            &quot;id&quot;: 2,
-            &quot;name&quot;: &quot;Origin Company&quot;
-        },
-        &quot;to_company&quot;: {
-            &quot;id&quot;: 3,
-            &quot;name&quot;: &quot;Destination Company&quot;
-        },
-        &quot;company&quot;: {
-            &quot;id&quot;: 1,
-            &quot;name&quot;: &quot;Company Name&quot;
-        },
-        &quot;courier_policy&quot;: null,
-        &quot;creator&quot;: {
-            &quot;id&quot;: 2,
-            &quot;name&quot;: &quot;Alice&quot;
-        },
-        &quot;checker&quot;: {
-            &quot;id&quot;: 3,
-            &quot;name&quot;: &quot;Bob&quot;
-        },
-        &quot;created_at&quot;: &quot;2025-12-10T02:06:54.000000Z&quot;,
-        &quot;updated_at&quot;: &quot;2025-12-10T03:01:06.000000Z&quot;
-    }
-}</code>
- </pre>
-            <blockquote>
-            <p>Example response (403):</p>
-        </blockquote>
-                <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;User does not have an associated company&quot;
+  &quot;data&quot;: {
+    &quot;id&quot;: 1,
+    &quot;bill_code&quot;: &quot;INV-001&quot;,
+    &quot;amount&quot;: 100.00,
+    ...
+  }
 }</code>
  </pre>
             <blockquote>
@@ -952,10 +951,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="Authorization" class="auth-value"               data-endpoint="GETapi-bills--id-"
-               value="Bearer {token}"
+               value="Bearer {token} Example: Bearer 1|abc123def456..."
                data-component="header">
     <br>
-<p>Example: <code>Bearer {token}</code></p>
+<p>Example: <code>Bearer {token} Example: Bearer 1|abc123def456...</code></p>
             </div>
                                 <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
@@ -984,25 +983,25 @@ You can check the Dev Tools console for debugging information.</code></pre>
                         <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
+<small>integer</small>&nbsp;
  &nbsp;
  &nbsp;
-                <input type="text" style="display: none"
-                              name="id"                data-endpoint="GETapi-bills--id-"
-               value="architecto"
+                <input type="number" style="display: none"
+               step="any"               name="id"                data-endpoint="GETapi-bills--id-"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the bill. Example: <code>architecto</code></p>
+<p>The ID of the bill. Example: <code>1</code></p>
             </div>
                     </form>
 
-                    <h2 id="bills-POSTapi-bills">Store a newly created resource in storage.</h2>
+                    <h2 id="bills-POSTapi-bills">Create Bill</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-
+<p>Store a newly created bill.</p>
 
 <span id="example-requests-POSTapi-bills">
 <blockquote>Example request:</blockquote>
@@ -1014,25 +1013,27 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Authorization: Bearer {token}" \
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
-    --form "date=2025-12-10"\
-    --form "bus_departures_id=16"\
-    --form "amount=100.5"\
-    --form "description=Eius et animi quos velit et."\
-    --form "payment_method=architecto"\
-    --form "payment_date=architecto"\
-    --form "from_company_id=16"\
-    --form "to_company_id=16"\
-    --form "sender_name=architecto"\
-    --form "sender_phone=architecto"\
-    --form "receiver_name=architecto"\
-    --form "receiver_phone=architecto"\
-    --form "courier_policy_id=16"\
-    --form "sst_rate=4326.41688"\
-    --form "sst_amount=4326.41688"\
-    --form "is_paid=1"\
-    --form "is_collected=1"\
-    --form "media_attachment=@C:\Users\USER\AppData\Local\Temp\php946C.tmp" \
-    --form "payment_proof_attachment=@C:\Users\USER\AppData\Local\Temp\php947D.tmp" </code></pre></div>
+    --form "date=2025-12-15"\
+    --form "bus_departures_id=5"\
+    --form "amount=120.5"\
+    --form "description=Delivery charge for electronics"\
+    --form "payment_method=cash"\
+    --form "payment_date=2025-12-16"\
+    --form "from_company_id=2"\
+    --form "to_company_id=3"\
+    --form "sender_name=John Doe"\
+    --form "sender_phone=0123456789"\
+    --form "receiver_name=Jane Smith"\
+    --form "receiver_phone=0198765432"\
+    --form "courier_policy_id=1"\
+    --form "company_id=architecto"\
+    --form "sst_rate=6"\
+    --form "sst_amount=7.23"\
+    --form "is_paid="\
+    --form "is_collected="\
+    --form "checked_by=2"\
+    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php3314.tmp" \
+    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\php3315.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1047,23 +1048,25 @@ const headers = {
 };
 
 const body = new FormData();
-body.append('date', '2025-12-10');
-body.append('bus_departures_id', '16');
-body.append('amount', '100.5');
-body.append('description', 'Eius et animi quos velit et.');
-body.append('payment_method', 'architecto');
-body.append('payment_date', 'architecto');
-body.append('from_company_id', '16');
-body.append('to_company_id', '16');
-body.append('sender_name', 'architecto');
-body.append('sender_phone', 'architecto');
-body.append('receiver_name', 'architecto');
-body.append('receiver_phone', 'architecto');
-body.append('courier_policy_id', '16');
-body.append('sst_rate', '4326.41688');
-body.append('sst_amount', '4326.41688');
-body.append('is_paid', '1');
-body.append('is_collected', '1');
+body.append('date', '2025-12-15');
+body.append('bus_departures_id', '5');
+body.append('amount', '120.5');
+body.append('description', 'Delivery charge for electronics');
+body.append('payment_method', 'cash');
+body.append('payment_date', '2025-12-16');
+body.append('from_company_id', '2');
+body.append('to_company_id', '3');
+body.append('sender_name', 'John Doe');
+body.append('sender_phone', '0123456789');
+body.append('receiver_name', 'Jane Smith');
+body.append('receiver_phone', '0198765432');
+body.append('courier_policy_id', '1');
+body.append('company_id', 'architecto');
+body.append('sst_rate', '6');
+body.append('sst_amount', '7.23');
+body.append('is_paid', '');
+body.append('is_collected', '');
+body.append('checked_by', '2');
 body.append('media_attachment', document.querySelector('input[name="media_attachment"]').files[0]);
 body.append('payment_proof_attachment', document.querySelector('input[name="payment_proof_attachment"]').files[0]);
 
@@ -1084,20 +1087,12 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
   &quot;message&quot;: &quot;Bill created successfully&quot;,
   &quot;data&quot;: {
-    &quot;id&quot;: 1,
-    &quot;bill_code&quot;: &quot;BILL000001&quot;,
-    &quot;is_paid&quot;: false,
+    &quot;id&quot;: 15,
+    &quot;bill_code&quot;: &quot;INV-000015&quot;,
+    &quot;date&quot;: &quot;2025-12-15&quot;,
+    &quot;amount&quot;: 120.50,
     ...
   }
-}</code>
- </pre>
-            <blockquote>
-            <p>Example response (403):</p>
-        </blockquote>
-                <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;User does not have an associated company&quot;
 }</code>
  </pre>
             <blockquote>
@@ -1106,8 +1101,12 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-  &quot;message&quot;: &quot;Validation failed&quot;,
-  &quot;errors&quot;: {...}
+    &quot;message&quot;: &quot;The given data was invalid.&quot;,
+    &quot;errors&quot;: {
+        &quot;amount&quot;: [
+            &quot;The amount field is required.&quot;
+        ]
+    }
 }</code>
  </pre>
     </span>
@@ -1202,10 +1201,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="date"                data-endpoint="POSTapi-bills"
-               value="2025-12-10"
+               value="2025-12-15"
                data-component="body">
     <br>
-<p>The bill date (Y-m-d format). Example: <code>2025-12-10</code></p>
+<p>The date of the bill (Y-m-d). Example: <code>2025-12-15</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>bus_departures_id</code></b>&nbsp;&nbsp;
@@ -1214,10 +1213,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="bus_departures_id"                data-endpoint="POSTapi-bills"
-               value="16"
+               value="5"
                data-component="body">
     <br>
-<p>Optional bus departure ID. Used for grouping bills by vehicle departure time. Example: <code>16</code></p>
+<p>Optional bus departure ID. Example: <code>5</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>amount</code></b>&nbsp;&nbsp;
@@ -1226,10 +1225,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="amount"                data-endpoint="POSTapi-bills"
-               value="100.5"
+               value="120.5"
                data-component="body">
     <br>
-<p>The bill amount. Example: <code>100.5</code></p>
+<p>The bill amount. Example: <code>120.5</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>description</code></b>&nbsp;&nbsp;
@@ -1238,10 +1237,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="description"                data-endpoint="POSTapi-bills"
-               value="Eius et animi quos velit et."
+               value="Delivery charge for electronics"
                data-component="body">
     <br>
-<p>Optional description. Example: <code>Eius et animi quos velit et.</code></p>
+<p>Optional description of the bill. Example: <code>Delivery charge for electronics</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_method</code></b>&nbsp;&nbsp;
@@ -1250,10 +1249,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="payment_method"                data-endpoint="POSTapi-bills"
-               value="architecto"
+               value="cash"
                data-component="body">
     <br>
-<p>Optional payment method (cash, bank_transfer, credit_card, e_wallet). Example: <code>architecto</code></p>
+<p>Optional payment method (e.g., cash, credit_card). Example: <code>cash</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_date</code></b>&nbsp;&nbsp;
@@ -1262,10 +1261,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="payment_date"                data-endpoint="POSTapi-bills"
-               value="architecto"
+               value="2025-12-16"
                data-component="body">
     <br>
-<p>Optional payment date (Y-m-d format). Example: <code>architecto</code></p>
+<p>Optional payment date (Y-m-d). Example: <code>2025-12-16</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>from_company_id</code></b>&nbsp;&nbsp;
@@ -1274,10 +1273,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="from_company_id"                data-endpoint="POSTapi-bills"
-               value="16"
+               value="2"
                data-component="body">
     <br>
-<p>Optional from company ID. Example: <code>16</code></p>
+<p>Optional sender company ID. Example: <code>2</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>to_company_id</code></b>&nbsp;&nbsp;
@@ -1286,10 +1285,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="to_company_id"                data-endpoint="POSTapi-bills"
-               value="16"
+               value="3"
                data-component="body">
     <br>
-<p>Optional to company ID. Example: <code>16</code></p>
+<p>Optional receiver company ID. Example: <code>3</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>sender_name</code></b>&nbsp;&nbsp;
@@ -1298,10 +1297,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="sender_name"                data-endpoint="POSTapi-bills"
-               value="architecto"
+               value="John Doe"
                data-component="body">
     <br>
-<p>Optional sender name. Example: <code>architecto</code></p>
+<p>Optional name of the sender. Example: <code>John Doe</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>sender_phone</code></b>&nbsp;&nbsp;
@@ -1310,10 +1309,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="sender_phone"                data-endpoint="POSTapi-bills"
-               value="architecto"
+               value="0123456789"
                data-component="body">
     <br>
-<p>Optional sender phone. Example: <code>architecto</code></p>
+<p>Optional phone number of the sender. Example: <code>0123456789</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>receiver_name</code></b>&nbsp;&nbsp;
@@ -1322,10 +1321,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="receiver_name"                data-endpoint="POSTapi-bills"
-               value="architecto"
+               value="Jane Smith"
                data-component="body">
     <br>
-<p>Optional receiver name. Example: <code>architecto</code></p>
+<p>Optional name of the receiver. Example: <code>Jane Smith</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>receiver_phone</code></b>&nbsp;&nbsp;
@@ -1334,10 +1333,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="receiver_phone"                data-endpoint="POSTapi-bills"
-               value="architecto"
+               value="0198765432"
                data-component="body">
     <br>
-<p>Optional receiver phone. Example: <code>architecto</code></p>
+<p>Optional phone number of the receiver. Example: <code>0198765432</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>courier_policy_id</code></b>&nbsp;&nbsp;
@@ -1346,10 +1345,22 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="courier_policy_id"                data-endpoint="POSTapi-bills"
-               value="16"
+               value="1"
                data-component="body">
     <br>
-<p>Optional courier policy ID. Example: <code>16</code></p>
+<p>Optional courier policy ID. If not provided, it will auto-select the company's default policy. Example: <code>1</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>company_id</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="company_id"                data-endpoint="POSTapi-bills"
+               value="architecto"
+               data-component="body">
+    <br>
+<p>The <code>id</code> of an existing record in the companies table. Example: <code>architecto</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>sst_rate</code></b>&nbsp;&nbsp;
@@ -1358,10 +1369,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="sst_rate"                data-endpoint="POSTapi-bills"
-               value="4326.41688"
+               value="6"
                data-component="body">
     <br>
-<p>Optional SST rate percentage. Example: <code>4326.41688</code></p>
+<p>Optional SST rate percentage. Example: <code>6</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>sst_amount</code></b>&nbsp;&nbsp;
@@ -1370,10 +1381,34 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="number" style="display: none"
                step="any"               name="sst_amount"                data-endpoint="POSTapi-bills"
-               value="4326.41688"
+               value="7.23"
                data-component="body">
     <br>
-<p>Optional SST amount. Example: <code>4326.41688</code></p>
+<p>Optional SST amount calculated. Example: <code>7.23</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>media_attachment</code></b>&nbsp;&nbsp;
+<small>file</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="file" style="display: none"
+                              name="media_attachment"                data-endpoint="POSTapi-bills"
+               value=""
+               data-component="body">
+    <br>
+<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php3314.tmp</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
+<small>file</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="file" style="display: none"
+                              name="payment_proof_attachment"                data-endpoint="POSTapi-bills"
+               value=""
+               data-component="body">
+    <br>
+<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php3315.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>is_paid</code></b>&nbsp;&nbsp;
@@ -1395,7 +1430,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             <code>false</code>
         </label>
     <br>
-<p>Optional flag to mark bill as paid. Defaults to false. Example: <code>true</code></p>
+<p>Optional payment status. Example: <code>false</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>is_collected</code></b>&nbsp;&nbsp;
@@ -1417,42 +1452,29 @@ You can check the Dev Tools console for debugging information.</code></pre>
             <code>false</code>
         </label>
     <br>
-<p>Example: <code>true</code></p>
+<p>Optional collection status. Example: <code>false</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>media_attachment</code></b>&nbsp;&nbsp;
-<small>file</small>&nbsp;
+            <b style="line-height: 2;"><code>checked_by</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
 <i>optional</i> &nbsp;
  &nbsp;
-                <input type="file" style="display: none"
-                              name="media_attachment"                data-endpoint="POSTapi-bills"
-               value=""
+                <input type="number" style="display: none"
+               step="any"               name="checked_by"                data-endpoint="POSTapi-bills"
+               value="2"
                data-component="body">
     <br>
-<p>Optional Single image file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp. Example: <code>C:\Users\USER\AppData\Local\Temp\php946C.tmp</code></p>
-        </div>
-                <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
-<small>file</small>&nbsp;
-<i>optional</i> &nbsp;
- &nbsp;
-                <input type="file" style="display: none"
-                              name="payment_proof_attachment"                data-endpoint="POSTapi-bills"
-               value=""
-               data-component="body">
-    <br>
-<p>Optional Payment proof file (max 5MB). Accepted formats: jpg, jpeg, png, gif, webp, pdf. Example: <code>C:\Users\USER\AppData\Local\Temp\php947D.tmp</code></p>
+<p>Optional ID of the user who checked/verified the bill. Example: <code>2</code></p>
         </div>
         </form>
 
-                    <h2 id="bills-DELETEapi-bills--id-">Void (soft delete) the specified bill.</h2>
+                    <h2 id="bills-DELETEapi-bills--id-">Delete Bill</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Once voided, the bill will not appear in index or show endpoints.
-To correct a mistake, void the bill and create a new one.</p>
+<p>Void (soft delete) the specified bill.</p>
 
 <span id="example-requests-DELETEapi-bills--id-">
 <blockquote>Example request:</blockquote>
@@ -1460,19 +1482,19 @@ To correct a mistake, void the bill and create a new one.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "http://localhost:8000/api/bills/architecto" \
-    --header "Authorization: Bearer {token}" \
+    "http://localhost:8000/api/bills/1" \
+    --header "Authorization: Bearer {token} Example: Bearer 1|abc123def456..." \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost:8000/api/bills/architecto"
+    "http://localhost:8000/api/bills/1"
 );
 
 const headers = {
-    "Authorization": "Bearer {token}",
+    "Authorization": "Bearer {token} Example: Bearer 1|abc123def456...",
     "Content-Type": "application/json",
     "Accept": "application/json",
 };
@@ -1492,33 +1514,6 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;message&quot;: &quot;Bill voided successfully&quot;
-}</code>
- </pre>
-            <blockquote>
-            <p>Example response (400):</p>
-        </blockquote>
-                <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Bill is already voided&quot;
-}</code>
- </pre>
-            <blockquote>
-            <p>Example response (403):</p>
-        </blockquote>
-                <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;User does not have an associated company&quot;
-}</code>
- </pre>
-            <blockquote>
-            <p>Example response (404):</p>
-        </blockquote>
-                <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Bill not found&quot;
 }</code>
  </pre>
     </span>
@@ -1576,10 +1571,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="Authorization" class="auth-value"               data-endpoint="DELETEapi-bills--id-"
-               value="Bearer {token}"
+               value="Bearer {token} Example: Bearer 1|abc123def456..."
                data-component="header">
     <br>
-<p>Example: <code>Bearer {token}</code></p>
+<p>Example: <code>Bearer {token} Example: Bearer 1|abc123def456...</code></p>
             </div>
                                 <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
@@ -1608,26 +1603,25 @@ You can check the Dev Tools console for debugging information.</code></pre>
                         <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
+<small>integer</small>&nbsp;
  &nbsp;
  &nbsp;
-                <input type="text" style="display: none"
-                              name="id"                data-endpoint="DELETEapi-bills--id-"
-               value="architecto"
+                <input type="number" style="display: none"
+               step="any"               name="id"                data-endpoint="DELETEapi-bills--id-"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the bill. Example: <code>architecto</code></p>
+<p>The ID of the bill. Example: <code>1</code></p>
             </div>
                     </form>
 
-                    <h2 id="bills-GETapi-bills--id--template">Generate bill template/receipt PDF for a specific bill.</h2>
+                    <h2 id="bills-GETapi-bills--id--template">Download Bill PDF</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Returns a PDF file that will be downloaded automatically.
-Supports customer copy (default) and office copy via query parameter.</p>
+<p>Generate bill template/receipt PDF.</p>
 
 <span id="example-requests-GETapi-bills--id--template">
 <blockquote>Example request:</blockquote>
@@ -1635,15 +1629,15 @@ Supports customer copy (default) and office copy via query parameter.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/bills/architecto/template?copy=customer" \
-    --header "Authorization: Bearer {token}" \
+    --get "http://localhost:8000/api/bills/1/template?copy=customer" \
+    --header "Authorization: Bearer {token} Example: Bearer 1|abc123def456..." \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://localhost:8000/api/bills/architecto/template"
+    "http://localhost:8000/api/bills/1/template"
 );
 
 const params = {
@@ -1653,7 +1647,7 @@ Object.keys(params)
     .forEach(key =&gt; url.searchParams.append(key, params[key]));
 
 const headers = {
-    "Authorization": "Bearer {token}",
+    "Authorization": "Bearer {token} Example: Bearer 1|abc123def456...",
     "Content-Type": "application/json",
     "Accept": "application/json",
 };
@@ -1672,24 +1666,6 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">Binary PDF file</code>
- </pre>
-            <blockquote>
-            <p>Example response (403):</p>
-        </blockquote>
-                <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;User does not have an associated company&quot;
-}</code>
- </pre>
-            <blockquote>
-            <p>Example response (404):</p>
-        </blockquote>
-                <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Bill not found&quot;
-}</code>
  </pre>
     </span>
 <span id="execution-results-GETapi-bills--id--template" hidden>
@@ -1746,10 +1722,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="Authorization" class="auth-value"               data-endpoint="GETapi-bills--id--template"
-               value="Bearer {token}"
+               value="Bearer {token} Example: Bearer 1|abc123def456..."
                data-component="header">
     <br>
-<p>Example: <code>Bearer {token}</code></p>
+<p>Example: <code>Bearer {token} Example: Bearer 1|abc123def456...</code></p>
             </div>
                                 <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
@@ -1778,15 +1754,15 @@ You can check the Dev Tools console for debugging information.</code></pre>
                         <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
+<small>integer</small>&nbsp;
  &nbsp;
  &nbsp;
-                <input type="text" style="display: none"
-                              name="id"                data-endpoint="GETapi-bills--id--template"
-               value="architecto"
+                <input type="number" style="display: none"
+               step="any"               name="id"                data-endpoint="GETapi-bills--id--template"
+               value="1"
                data-component="url">
     <br>
-<p>The ID of the bill. Example: <code>architecto</code></p>
+<p>The ID of the bill. Example: <code>1</code></p>
             </div>
                         <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
                                     <div style="padding-left: 28px; clear: unset;">
@@ -1799,7 +1775,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value="customer"
                data-component="query">
     <br>
-<p>Copy type: 'customer' (default) or 'office'. Example: <code>customer</code></p>
+<p>Copy type: 'customer', 'office', 'receiver', 'book'. Default: customer. Example: <code>customer</code></p>
             </div>
                 </form>
 
@@ -1958,9 +1934,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
                 <h1 id="checklist">Checklist</h1>
 
-    <p>API for managing daily bus checklists.</p>
-<p>This resource allows viewing and updating checklist status for bus departures.
-Note: These endpoints return JSON responses for use in mobile apps or API clients.</p>
+    
 
                                 <h2 id="checklist-GETapi-checklists">List Checklists</h2>
 
@@ -2178,19 +2152,19 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-   &quot;success&quot;: true,
-   &quot;data&quot;: {
-       &quot;bus_departures_id&quot;: 1,
-       &quot;departure_time&quot;: &quot;08:30:00&quot;,
-       &quot;date&quot;: &quot;2025-12-15&quot;,
-       &quot;bills&quot;: [
+    &quot;success&quot;: true,
+    &quot;data&quot;: {
+        &quot;bus_departures_id&quot;: 1,
+        &quot;departure_time&quot;: &quot;08:30:00&quot;,
+        &quot;date&quot;: &quot;2025-12-15&quot;,
+        &quot;bills&quot;: [
             {
                 &quot;id&quot;: 1,
                 &quot;bill_code&quot;: &quot;INV-001&quot;,
-                ...
+                &quot;amount&quot;: 100
             }
-       ]
-   }
+        ]
+    }
 }</code>
  </pre>
     </span>
@@ -2369,7 +2343,16 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;success&quot;: true,
-    &quot;message&quot;: &quot;Checklist saved&quot;
+    &quot;message&quot;: &quot;Checklist saved successfully!&quot;
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (403):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;You are not authorized to update the checklist.&quot;
 }</code>
  </pre>
     </span>
@@ -3447,7 +3430,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\USER\AppData\Local\Temp\php94AE.tmp" </code></pre></div>
+    --form "image=@C:\Users\tiber\AppData\Local\Temp\php33A3.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3635,7 +3618,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\USER\AppData\Local\Temp\php94AE.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\php33A3.tmp</code></p>
         </div>
         </form>
 
