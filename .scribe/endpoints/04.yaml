@@ -1,10 +1,5 @@
 name: Checklist
-description: |-
-
-  API for managing daily bus checklists.
-
-  This resource allows viewing and updating checklist status for bus departures.
-  Note: These endpoints return JSON responses for use in mobile apps or API clients.
+description: ''
 endpoints:
   -
     custom: []
@@ -14,12 +9,7 @@ endpoints:
     metadata:
       custom: []
       groupName: Checklist
-      groupDescription: |-
-
-        API for managing daily bus checklists.
-
-        This resource allows viewing and updating checklist status for bus departures.
-        Note: These endpoints return JSON responses for use in mobile apps or API clients.
+      groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'List Checklists'
@@ -87,12 +77,7 @@ endpoints:
     metadata:
       custom: []
       groupName: Checklist
-      groupDescription: |-
-
-        API for managing daily bus checklists.
-
-        This resource allows viewing and updating checklist status for bus departures.
-        Note: These endpoints return JSON responses for use in mobile apps or API clients.
+      groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'Show Checklist Details'
@@ -151,7 +136,7 @@ endpoints:
                       {
                           "id": 1,
                           "bill_code": "INV-001",
-                          ...
+                          "amount": 100.00
                       }
                  ]
              }
@@ -174,12 +159,7 @@ endpoints:
     metadata:
       custom: []
       groupName: Checklist
-      groupDescription: |-
-
-        API for managing daily bus checklists.
-
-        This resource allows viewing and updating checklist status for bus departures.
-        Note: These endpoints return JSON responses for use in mobile apps or API clients.
+      groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
       title: 'Save Checklist'
@@ -224,7 +204,16 @@ endpoints:
         content: |-
           {
              "success": true,
-             "message": "Checklist saved"
+             "message": "Checklist saved successfully!"
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 403
+        content: |-
+          {
+             "message": "You are not authorized to update the checklist."
           }
         headers: []
         description: ''
