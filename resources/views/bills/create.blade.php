@@ -543,8 +543,10 @@
 
       if (sstRateInput) {
         sstRate = parseFloat(sstRateInput.value) || 0;
-        // Formula: SST Amount = Subtotal * (rate/100)
+        // SST is excluded - calculate on top of subtotal
+        // Formula: SST Amount = Subtotal × (rate/100)
         if (sstRate > 0) {
+          sstAmount = subtotal * (sstRate / 100);
           sstAmount = subtotal * (sstRate / 100);
         }
         
