@@ -879,12 +879,69 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-  &quot;data&quot;: {
-    &quot;id&quot;: 1,
-    &quot;bill_code&quot;: &quot;INV-001&quot;,
-    &quot;amount&quot;: 100.00,
-    ...
-  }
+    &quot;data&quot;: {
+        &quot;id&quot;: 1,
+        &quot;bill_code&quot;: &quot;INV-001&quot;,
+        &quot;date&quot;: &quot;2025-12-15&quot;,
+        &quot;amount&quot;: 100,
+        &quot;description&quot;: &quot;Delivery fee&quot;,
+        &quot;payment_details&quot;: {
+            &quot;method&quot;: &quot;cash&quot;,
+            &quot;date&quot;: &quot;2025-12-16&quot;
+        },
+        &quot;from_company_id&quot;: 2,
+        &quot;to_company_id&quot;: 3,
+        &quot;sender_name&quot;: &quot;John Doe&quot;,
+        &quot;sender_phone&quot;: &quot;0123456789&quot;,
+        &quot;receiver_name&quot;: &quot;Jane Smith&quot;,
+        &quot;receiver_phone&quot;: &quot;0198765432&quot;,
+        &quot;courier_policy_id&quot;: 1,
+        &quot;company_id&quot;: 1,
+        &quot;sst_details&quot;: {
+            &quot;rate&quot;: 6,
+            &quot;amount&quot;: 6
+        },
+        &quot;policy_snapshot&quot;: {
+            &quot;id&quot;: 1,
+            &quot;name&quot;: &quot;Standard&quot;,
+            &quot;company_id&quot;: 1
+        },
+        &quot;media_attachment&quot;: &quot;bills/image.jpg&quot;,
+        &quot;payment_proof_attachment&quot;: &quot;bills/proof.pdf&quot;,
+        &quot;is_paid&quot;: true,
+        &quot;is_collected&quot;: false,
+        &quot;status&quot;: &quot;In_transit&quot;,
+        &quot;created_by&quot;: 1,
+        &quot;checked_by&quot;: null,
+        &quot;bus_departures_id&quot;: 5,
+        &quot;created_at&quot;: &quot;2025-12-15T10:00:00.000000Z&quot;,
+        &quot;updated_at&quot;: &quot;2025-12-15T10:00:00.000000Z&quot;,
+        &quot;deleted_at&quot;: null,
+        &quot;departure_time&quot;: &quot;10:00:00&quot;,
+        &quot;media_attachment_url&quot;: &quot;http://localhost/storage/bills/image.jpg&quot;,
+        &quot;payment_proof_attachment_url&quot;: &quot;http://localhost/storage/bills/proof.pdf&quot;,
+        &quot;from_company&quot;: {
+            &quot;id&quot;: 2,
+            &quot;name&quot;: &quot;Sender Corp&quot;
+        },
+        &quot;to_company&quot;: {
+            &quot;id&quot;: 3,
+            &quot;name&quot;: &quot;Receiver Corp&quot;
+        },
+        &quot;company&quot;: {
+            &quot;id&quot;: 1,
+            &quot;name&quot;: &quot;My Company&quot;
+        },
+        &quot;courier_policy&quot;: {
+            &quot;id&quot;: 1,
+            &quot;name&quot;: &quot;Standard&quot;
+        },
+        &quot;creator&quot;: {
+            &quot;id&quot;: 1,
+            &quot;name&quot;: &quot;Admin User&quot;
+        },
+        &quot;checker&quot;: null
+    }
 }</code>
  </pre>
             <blockquote>
@@ -1032,8 +1089,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "is_paid="\
     --form "is_collected="\
     --form "checked_by=2"\
-    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\phpBF2A.tmp" \
-    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\phpBF2B.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php4FE7.tmp" \
+    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\php4FE8.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1396,7 +1453,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpBF2A.tmp</code></p>
+<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php4FE7.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
@@ -1408,7 +1465,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpBF2B.tmp</code></p>
+<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php4FE8.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>is_paid</code></b>&nbsp;&nbsp;
@@ -3471,7 +3528,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\tiber\AppData\Local\Temp\phpBFBA.tmp" </code></pre></div>
+    --form "image=@C:\Users\tiber\AppData\Local\Temp\php5018.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3659,7 +3716,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\phpBFBA.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\php5018.tmp</code></p>
         </div>
         </form>
 
