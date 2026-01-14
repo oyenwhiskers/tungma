@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('checklists', [ChecklistController::class, 'index']);
     Route::get('checklists/{bus_departures_id}', [ChecklistController::class, 'show']);
     Route::post('checklists/save', [ChecklistController::class, 'save']);
+    Route::get('checklists/{bus_departures_id}/print-all', [ChecklistController::class, 'printAll']);
     Route::get('bus-departures', [BusDeparturesController::class, 'index']);
     Route::get('companies', [CompanyController::class, 'index']);
     Route::get('courier-policies', [CourierPolicyController::class, 'index']);

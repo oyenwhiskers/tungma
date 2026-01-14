@@ -322,4 +322,67 @@ class ChecklistController extends Controller
             'message' => 'Checklist saved successfully!'
         ]);
     }
+
+    /**
+     * Print All Bills in Checklist
+     *
+     * Generate a single PDF containing all bills for a specific bus departure.
+     * This combines all bills into one PDF file to avoid multiple print dialogs.
+     *
+     * @group Checklist
+     * @authenticated
+     * @urlParam bus_departures_id int required The bus departure ID. Example: 1
+     * @queryParam date string The date to print bills for (Y-m-d). Defaults to today. Example: 2025-12-15
+     * @queryParam copy string The copy type: 'customer', 'office', or 'combined'. Defaults to 'combined'. Example: combined
+     *
+     * @response 200 (PDF file download)
+     */
+    public function printAll($bus_departures_id, Request $request)
+    {
+        $user = $request->user();
+        $date = $request->query('date', now()->toDateString());
+        $copyType = $request->query('copy', 'combined');
+
+        $query = Bill::where('bus_departures_id', $bus_departures_id)
+            ->whereDate('date', $date)
+            ->with(['busDeparture', 'fromCompany', 'toCompany', 'company', 'courierPolicy', 'creator', 'checker']);
+
+        // Filter by company visibility
+        if ($user->role !== 'super_admin') {
+            $query->where(function ($q) use ($user) {
+                $q->where('from_company_id', $user->company_id)
+                    ->orWhere('to_company_id', $user->company_id);
+            });
+        }
+
+        $bills = $query->get();
+
+        if ($bills->isEmpty()) {
+            return response()->json(['message' => 'No bills found for this checklist'], 404);
+        }
+
+        // Determine template based on copy type
+        $validCopyTypes = ['customer', 'office', 'receiver', 'book', 'combined'];
+        if (!in_array($copyType, $validCopyTypes)) {
+            $copyType = 'combined';
+        }
+
+        if ($copyType === 'combined') {
+            $templateView = 'bills.template-combined';
+        } elseif ($copyType === 'office' || $copyType === 'receiver') {
+            $templateView = 'bills.template-office';
+        } else {
+            $templateView = 'bills.template';
+        }
+
+        // Get bus departure info for filename
+        $busDeparture = $bills->first()->busDeparture;
+        $departureTime = $busDeparture ? str_replace(':', '', $busDeparture->departure_time) : 'unknown';
+
+        // Generate PDF with all bills
+        $pdf = \PDF::loadView('bills.template-checklist-print', compact('bills', 'templateView', 'copyType'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('checklist-' . $date . '-' . $departureTime . '-' . $copyType . '.pdf');
+    }
 }
