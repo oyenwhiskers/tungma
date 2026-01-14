@@ -426,7 +426,20 @@ class BillController extends Controller
      *     "payment_proof_attachment_url": "http://localhost/storage/bills/proof.pdf",
      *     "from_company": {"id": 2, "name": "Sender Corp"},
      *     "to_company": {"id": 3, "name": "Receiver Corp"},
-     *     "company": {"id": 1, "name": "My Company"},
+     *     "company": {
+     *       "id": 1,
+     *       "name": "My Company",
+     *       "contact_number": "0123456789",
+     *       "address": "123 Main St",
+     *       "email": "admin@mycompany.com",
+     *       "based_in": "Kuala Lumpur",
+     *       "registration_number": "123456-X",
+     *       "sst_number": "W10-2345-5678",
+     *       "bill_id_prefix": "INV",
+     *       "created_at": "2023-01-01T00:00:00.000000Z",
+     *       "updated_at": "2023-01-01T00:00:00.000000Z",
+     *       "deleted_at": null
+     *     },
      *     "courier_policy": {
      *       "id": 1,
      *       "name": "Standard",
@@ -780,10 +793,7 @@ class BillController extends Controller
                 'id' => $bill->toCompany->id,
                 'name' => $bill->toCompany->name,
             ] : null,
-            'company' => $bill->company ? [
-                'id' => $bill->company->id,
-                'name' => $bill->company->name,
-            ] : null,
+            'company' => $bill->company ? $bill->company->attributesToArray() : null,
             'courier_policy' => $bill->courierPolicy ? $bill->courierPolicy->attributesToArray() : null,
             'creator' => $bill->creator ? [
                 'id' => $bill->creator->id,

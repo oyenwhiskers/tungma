@@ -930,7 +930,17 @@ fetch(url, {
         },
         &quot;company&quot;: {
             &quot;id&quot;: 1,
-            &quot;name&quot;: &quot;My Company&quot;
+            &quot;name&quot;: &quot;My Company&quot;,
+            &quot;contact_number&quot;: &quot;0123456789&quot;,
+            &quot;address&quot;: &quot;123 Main St&quot;,
+            &quot;email&quot;: &quot;admin@mycompany.com&quot;,
+            &quot;based_in&quot;: &quot;Kuala Lumpur&quot;,
+            &quot;registration_number&quot;: &quot;123456-X&quot;,
+            &quot;sst_number&quot;: &quot;W10-2345-5678&quot;,
+            &quot;bill_id_prefix&quot;: &quot;INV&quot;,
+            &quot;created_at&quot;: &quot;2023-01-01T00:00:00.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2023-01-01T00:00:00.000000Z&quot;,
+            &quot;deleted_at&quot;: null
         },
         &quot;courier_policy&quot;: {
             &quot;id&quot;: 1,
@@ -1094,8 +1104,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "is_paid="\
     --form "is_collected="\
     --form "checked_by=2"\
-    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\phpE9CD.tmp" \
-    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\phpE9CE.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php4656.tmp" \
+    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\php4657.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1458,7 +1468,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpE9CD.tmp</code></p>
+<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php4656.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
@@ -1470,7 +1480,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpE9CE.tmp</code></p>
+<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php4657.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>is_paid</code></b>&nbsp;&nbsp;
@@ -3533,7 +3543,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\tiber\AppData\Local\Temp\phpEA0E.tmp" </code></pre></div>
+    --form "image=@C:\Users\tiber\AppData\Local\Temp\php4687.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3721,7 +3731,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\phpEA0E.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\php4687.tmp</code></p>
         </div>
         </form>
 
