@@ -198,7 +198,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: January 8, 2026</li>
+        <li>Last updated: January 14, 2026</li>
     </ul>
 </div>
 
@@ -1032,8 +1032,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "is_paid="\
     --form "is_collected="\
     --form "checked_by=2"\
-    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php3314.tmp" \
-    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\php3315.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\phpBF2A.tmp" \
+    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\phpBF2B.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1396,7 +1396,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php3314.tmp</code></p>
+<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpBF2A.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
@@ -1408,7 +1408,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php3315.tmp</code></p>
+<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpBF2B.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>is_paid</code></b>&nbsp;&nbsp;
@@ -1952,7 +1952,7 @@ Returns a JSON response containing the list of departure times and their status.
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/checklists?date=2025-12-14" \
+    --get "http://localhost:8000/api/checklists?date=2025-12-14&amp;search=INV-001" \
     --header "Authorization: Bearer {YOUR_AUTH_TOKEN}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -1965,6 +1965,7 @@ Returns a JSON response containing the list of departure times and their status.
 
 const params = {
     "date": "2025-12-14",
+    "search": "INV-001",
 };
 Object.keys(params)
     .forEach(key =&gt; url.searchParams.append(key, params[key]));
@@ -2098,6 +2099,18 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <br>
 <p>The date to view checklists for (Y-m-d). Defaults to today's date. Example: <code>2025-12-14</code></p>
             </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>search</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="search"                data-endpoint="GETapi-checklists"
+               value="INV-001"
+               data-component="query">
+    <br>
+<p>Optional search term to filter bills by code, description, sender, or receiver. Example: <code>INV-001</code></p>
+            </div>
                 </form>
 
                     <h2 id="checklist-GETapi-checklists--bus_departures_id-">Show Checklist Details</h2>
@@ -2115,7 +2128,7 @@ Returns a JSON response with the list of bills/items for that departure.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://localhost:8000/api/checklists/1?date=2025-12-15" \
+    --get "http://localhost:8000/api/checklists/1?date=2025-12-15&amp;search=INV-001" \
     --header "Authorization: Bearer {YOUR_AUTH_TOKEN}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -2128,6 +2141,7 @@ Returns a JSON response with the list of bills/items for that departure.</p>
 
 const params = {
     "date": "2025-12-15",
+    "search": "INV-001",
 };
 Object.keys(params)
     .forEach(key =&gt; url.searchParams.append(key, params[key]));
@@ -2161,7 +2175,12 @@ fetch(url, {
             {
                 &quot;id&quot;: 1,
                 &quot;bill_code&quot;: &quot;INV-001&quot;,
-                &quot;amount&quot;: 100
+                &quot;amount&quot;: 100,
+                &quot;media_attachment_url&quot;: &quot;http://...&quot;,
+                &quot;company&quot;: {
+                    &quot;id&quot;: 1,
+                    &quot;name&quot;: &quot;Company A&quot;
+                }
             }
         ]
     }
@@ -2276,6 +2295,18 @@ You can check the Dev Tools console for debugging information.</code></pre>
                data-component="query">
     <br>
 <p>The date to view (Y-m-d). Defaults to today. Example: <code>2025-12-15</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>search</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="search"                data-endpoint="GETapi-checklists--bus_departures_id-"
+               value="INV-001"
+               data-component="query">
+    <br>
+<p>Optional search term to filter bills by code, description, sender, or receiver. Example: <code>INV-001</code></p>
             </div>
                 </form>
 
@@ -2509,7 +2540,17 @@ fetch(url, {
     &quot;data&quot;: [
         {
             &quot;id&quot;: 1,
-            &quot;name&quot;: &quot;Company A&quot;
+            &quot;name&quot;: &quot;Company A&quot;,
+            &quot;contact_number&quot;: &quot;0123456789&quot;,
+            &quot;address&quot;: &quot;123 Jalan Ampang&quot;,
+            &quot;email&quot;: &quot;company@example.com&quot;,
+            &quot;based_in&quot;: &quot;Kuala Lumpur&quot;,
+            &quot;registration_number&quot;: &quot;123456-A&quot;,
+            &quot;sst_number&quot;: &quot;W10-1808-32000455&quot;,
+            &quot;bill_id_prefix&quot;: &quot;INV&quot;,
+            &quot;created_at&quot;: &quot;2023-01-01T00:00:00.000000Z&quot;,
+            &quot;updated_at&quot;: &quot;2023-01-01T00:00:00.000000Z&quot;,
+            &quot;deleted_at&quot;: null
         }
     ]
 }</code>
@@ -3430,7 +3471,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\tiber\AppData\Local\Temp\php33A3.tmp" </code></pre></div>
+    --form "image=@C:\Users\tiber\AppData\Local\Temp\phpBFBA.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3618,7 +3659,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\php33A3.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\phpBFBA.tmp</code></p>
         </div>
         </form>
 
