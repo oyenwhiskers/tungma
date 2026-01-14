@@ -185,8 +185,8 @@
 
     <table>
         <tr>
-            <td class="label-cell" style="width: 37%;">FROM {{ strtoupper($bill->fromCompany->based_in ?? 'N/A') }}</td>
-            <td class="label-cell" style="width: 33%;">TO {{ strtoupper($bill->toCompany->based_in ?? 'N/A') }}</td>
+            <td class="label-cell" style="width: 37%;">FROM {{ strtoupper($bill->fromCompany->name ?? 'N/A') }}</td>
+            <td class="label-cell" style="width: 33%;">TO {{ strtoupper($bill->toCompany->name ?? 'N/A') }}</td>
             <td class="label-cell" style="width: 30%; text-align: left;">
                 <span class="cs-no">CS No. D:</span> <span class="cs-val">{{ $bill->bill_code }}</span>
             </td>
