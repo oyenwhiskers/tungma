@@ -16,7 +16,7 @@
         }
 
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-family: 'notosanscjk', 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif;
             font-size: 11px;
             color: #000;
             padding: 10px;
