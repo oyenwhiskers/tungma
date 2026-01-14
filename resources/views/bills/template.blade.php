@@ -8,7 +8,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-family: 'notosanscjk', 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif;
             font-size: 11px;
             color: #000;
         }

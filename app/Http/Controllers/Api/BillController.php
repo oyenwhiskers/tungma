@@ -728,15 +728,21 @@ class BillController extends Controller
             $paymentDetails = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details;
         }
 
-        $copyType = $request->get('copy', 'customer');
-        $validCopyTypes = ['customer', 'office', 'receiver', 'book'];
+        $copyType = $request->get('copy', 'combined');
+        $validCopyTypes = ['customer', 'office', 'receiver', 'book', 'combined'];
         if (!in_array($copyType, $validCopyTypes)) {
-            $copyType = 'customer';
+            $copyType = 'combined';
         }
 
-        $templateView = ($copyType === 'office' || $copyType === 'receiver')
-            ? 'bills.template-office'
-            : 'bills.template';
+        // Determine which template to use
+        if ($copyType === 'combined') {
+            // Use combined template (1 customer copy + 2 office copies)
+            $templateView = 'bills.template-combined';
+        } elseif ($copyType === 'office' || $copyType === 'receiver') {
+            $templateView = 'bills.template-office';
+        } else {
+            $templateView = 'bills.template';
+        }
 
         $pdf = \PDF::loadView($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType'))
             ->setPaper('a4', 'portrait');
