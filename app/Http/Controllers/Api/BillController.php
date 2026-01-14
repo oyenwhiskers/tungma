@@ -427,7 +427,15 @@ class BillController extends Controller
      *     "from_company": {"id": 2, "name": "Sender Corp"},
      *     "to_company": {"id": 3, "name": "Receiver Corp"},
      *     "company": {"id": 1, "name": "My Company"},
-     *     "courier_policy": {"id": 1, "name": "Standard"},
+     *     "courier_policy": {
+     *       "id": 1,
+     *       "name": "Standard",
+     *       "description": "Standard delivery policy",
+     *       "company_id": 1,
+     *       "created_at": "2023-01-01T00:00:00.000000Z",
+     *       "updated_at": "2023-01-01T00:00:00.000000Z",
+     *       "deleted_at": null
+     *     },
      *     "creator": {"id": 1, "name": "Admin User"},
      *     "checker": null
      *   }
@@ -776,10 +784,7 @@ class BillController extends Controller
                 'id' => $bill->company->id,
                 'name' => $bill->company->name,
             ] : null,
-            'courier_policy' => $bill->courierPolicy ? [
-                'id' => $bill->courierPolicy->id,
-                'name' => $bill->courierPolicy->name,
-            ] : null,
+            'courier_policy' => $bill->courierPolicy ? $bill->courierPolicy->attributesToArray() : null,
             'creator' => $bill->creator ? [
                 'id' => $bill->creator->id,
                 'name' => $bill->creator->name,
