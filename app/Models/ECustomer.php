@@ -2,22 +2,38 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ECustomer extends Model
 {
-    use HasFactory;
-
-    // Optional (Laravel will auto-detect)
-    protected $table = 'e_customers';
-
     protected $fillable = [
-        'ic_number',
-        'name',
+        'date_time',
+        'bill_id',
+        'amount',
+        'tin_number',
+        'customer_name',
+        'customer_type',
         'contact_number',
         'email_address',
+        'identity_type',
+        'customer_ic',
+        'business_reg_number',
+        'sst_reg_number',
         'address',
-        'tin_number',
+        'postcode',
+        'city',
+        'state',
+        'country',
     ];
+
+    protected $casts = [
+        'date_time' => 'datetime',
+        'amount' => 'decimal:2',
+    ];
+
+    public function bill(): BelongsTo
+    {
+        return $this->belongsTo(Bill::class);
+    }
 }
