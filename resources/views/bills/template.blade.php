@@ -372,8 +372,8 @@
                         $qrData = url('https://einvoice.tungmaexpress.com.my') . '?' . http_build_query([
                             'bill_id' => $bill->id,
                             'bill_code' => $bill->bill_code,
+                            'date' => optional($bill->date)->format('Y-m-d'),
                             'amount' => $bill->amount,
-                            'date' => $bill->date,
                         ]);
 
                         try {
