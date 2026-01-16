@@ -251,3 +251,82 @@ endpoints:
     controller: null
     method: null
     route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/checklists/{bus_departures_id}/print-all'
+    metadata:
+      custom: []
+      groupName: Checklist
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Print All Bills in Checklist'
+      description: |-
+        Generate a single PDF containing all bills for a specific bus departure.
+        This combines all bills into one PDF file to avoid multiple print dialogs.
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      bus_departures_id:
+        custom: []
+        name: bus_departures_id
+        description: 'The bus departure ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      bus_departures_id: 1
+    queryParameters:
+      date:
+        custom: []
+        name: date
+        description: 'The date to print bills for (Y-m-d). Defaults to today.'
+        required: false
+        example: '2025-12-15'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      copy:
+        custom: []
+        name: copy
+        description: "The copy type: 'customer', 'office', or 'combined'. Defaults to 'combined'."
+        required: false
+        example: combined
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      date: '2025-12-15'
+      copy: combined
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '(PDF file download)'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
