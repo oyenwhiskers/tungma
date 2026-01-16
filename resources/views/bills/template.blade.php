@@ -284,26 +284,22 @@
                         <tr>
                             <td>
                                 <div class="box {{ ($paymentDetails['method'] ?? '') == 'cash' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'cash')/@endif
-                                </div> CASH
+                                    @if(($paymentDetails['method'] ?? '') == 'cash')/@endif</div> CASH
                             </td>
                             <td>
                                 <div
                                     class="box {{ in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet']) ? 'checked' : '' }}">
-                                    @if(in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet']))/@endif
-                                </div> QR
+                                    @if(in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet']))/@endif</div> QR
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 <div class="box {{ ($paymentDetails['method'] ?? '') == 'cod' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'cod')/@endif
-                                </div> C.O.D
+                                    @if(($paymentDetails['method'] ?? '') == 'cod')/@endif</div> C.O.D
                             </td>
                             <td>
                                 <div class="box {{ ($paymentDetails['method'] ?? '') == 'bank' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'bank')/@endif
-                                </div> A/C
+                                    @if(($paymentDetails['method'] ?? '') == 'bank')/@endif</div> A/C
                             </td>
                         </tr>
                     </table>
@@ -373,13 +369,12 @@
                     @php
                         // Generate QR code with URL for E-Invoice using Endroid QR Code
                         // Data sent to frontend via query parameters
-                        $billData = $bill->toArray();
-                        // Ensure bill_id is included for backward compatibility if needed, though id is present
-                        if (!isset($billData['bill_id'])) {
-                            $billData['bill_id'] = $bill->id;
-                        }
-
-                        $qrData = url('https://einvoice.tungmaexpress.com.my') . '?' . http_build_query($billData);
+                        $qrData = url('https://einvoice.tungmaexpress.com.my') . '?' . http_build_query([
+                            'bill_id' => $bill->id,
+                            'bill_code' => $bill->bill_code,
+                            'amount' => $bill->amount,
+                            'date' => $bill->date,
+                        ]);
 
                         try {
                             $qrCode = \Endroid\QrCode\Builder\Builder::create()
