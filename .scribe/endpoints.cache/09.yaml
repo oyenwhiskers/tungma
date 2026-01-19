@@ -154,24 +154,26 @@ endpoints:
       sst_reg_number:
         custom: []
         name: sst_reg_number
-        description: 'The SST registration number.'
+        description: ''
         required: false
-        example: W10-1808-32000000
+        example: architecto
         type: string
         enumValues: []
-        exampleWasSpecified: true
+        exampleWasSpecified: false
         nullable: true
         deprecated: false
       msic_code:
         custom: []
         name: msic_code
-        description: 'The MSIC code(s). Can be multiple, comma separated.'
+        description: 'The MSIC codes.'
         required: false
-        example: '01111,62010'
-        type: string
+        example:
+          - '01111'
+          - '62010'
+        type: 'string[]'
         enumValues: []
         exampleWasSpecified: true
-        nullable: true
+        nullable: false
         deprecated: false
       address:
         custom: []
@@ -240,8 +242,10 @@ endpoints:
       identity_type: NRIC
       customer_ic: 900101-14-1234
       business_reg_number: '202301001234'
-      sst_reg_number: W10-1808-32000000
-      msic_code: '01111,62010'
+      sst_reg_number: architecto
+      msic_code:
+        - '01111'
+        - '62010'
       address: '123, Jalan Sultan'
       postcode: '50000'
       city: 'Kuala Lumpur'

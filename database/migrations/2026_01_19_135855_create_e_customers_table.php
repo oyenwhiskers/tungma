@@ -32,8 +32,7 @@ return new class extends Migration {
             $table->string('sst_reg_number', 20)->nullable();
 
             // MSIC Link (The Professional Way)
-            $table->text('msic_code')->nullable(); // Changed to text to support multiple codes (e.g. "01111,62010")
-            // $table->foreign('msic_code')->references('code')->on('msic_codes')->onUpdate('cascade'); // Removed FK to allow multiple code storage
+            // Moved to pivot table e_customer_msic_code
 
             // Address Details
             $table->string('address_line_1');

@@ -37,4 +37,9 @@ class ECustomer extends Model
     {
         return $this->belongsTo(Bill::class);
     }
+
+    public function msicCodes()
+    {
+        return $this->belongsToMany(MsicCode::class, 'e_customer_msic_code', 'e_customer_id', 'msic_code_id');
+    }
 }
