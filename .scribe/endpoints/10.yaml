@@ -31,8 +31,8 @@ endpoints:
       q:
         custom: []
         name: q
-        description: 'The search term (min 2 chars).'
-        required: true
+        description: 'The search term. Return all if empty.'
+        required: false
         example: '620'
         type: string
         enumValues: []

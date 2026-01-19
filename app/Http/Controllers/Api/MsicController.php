@@ -20,7 +20,7 @@ class MsicController extends Controller
      * Search for MSIC codes by digit or description.
      * Use this for frontend autocomplete/dropdowns.
      *
-     * @queryParam q string required The search term (min 2 chars). Example: 620
+     * @queryParam q string The search term. Return all if empty. Example: 620
      * 
      * @response [
      *  {
@@ -35,24 +35,20 @@ class MsicController extends Controller
      */
     public function search(Request $request): JsonResponse
     {
-        // 1. Get and sanitize the input
         $query = trim($request->get('q'));
+        $msicQuery = MsicCode::query();
 
-        // 2. Return empty if the query is too short (saves server resources)
-        if (strlen($query) < 2) {
-            return response()->json([]);
+        if (!empty($query)) {
+            $msicQuery->where(function ($q) use ($query) {
+                $q->where('code', 'LIKE', $query . '%')
+                    ->orWhere('description', 'LIKE', '%' . $query . '%');
+            })->limit(15);
         }
 
-        // 3. Execute search
-        // We search for codes starting with the number OR descriptions containing the text
-        $results = MsicCode::where('code', 'LIKE', $query . '%')
-            ->orWhere('description', 'LIKE', '%' . $query . '%')
-            ->orderBy('code', 'asc')
-            ->limit(15) // Maintain high performance by limiting results
+        $results = $msicQuery->orderBy('code', 'asc')
             ->toBase() // Return stdClass objects to prevent Eloquent from casting 'id' to integer
             ->get(['code as id', 'description as text']);
 
-        // 4. Return as standard JSON
         return response()->json($results);
     }
 }
