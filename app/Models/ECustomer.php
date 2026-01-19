@@ -20,6 +20,7 @@ class ECustomer extends Model
         'customer_ic',
         'business_reg_number',
         'sst_reg_number',
+        'msic_code',
         'address',
         'postcode',
         'city',
