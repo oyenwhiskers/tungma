@@ -1127,8 +1127,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "is_paid="\
     --form "is_collected="\
     --form "checked_by=2"\
-    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php1ADC.tmp" \
-    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\php1ADD.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php7469.tmp" \
+    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\php746A.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1491,7 +1491,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php1ADC.tmp</code></p>
+<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php7469.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
@@ -1503,7 +1503,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php1ADD.tmp</code></p>
+<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php746A.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>is_paid</code></b>&nbsp;&nbsp;
@@ -3894,7 +3894,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\tiber\AppData\Local\Temp\php1B2D.tmp" </code></pre></div>
+    --form "image=@C:\Users\tiber\AppData\Local\Temp\php74BB.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -4082,7 +4082,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\php1B2D.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\php74BB.tmp</code></p>
         </div>
         </form>
 
@@ -4508,6 +4508,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"customer_ic\": \"900101-14-1234\",
     \"business_reg_number\": \"202301001234\",
     \"sst_reg_number\": \"W10-1808-32000000\",
+    \"msic_code\": \"01111,62010\",
     \"address\": \"123, Jalan Sultan\",
     \"postcode\": \"50000\",
     \"city\": \"Kuala Lumpur\",
@@ -4540,6 +4541,7 @@ let body = {
     "customer_ic": "900101-14-1234",
     "business_reg_number": "202301001234",
     "sst_reg_number": "W10-1808-32000000",
+    "msic_code": "01111,62010",
     "address": "123, Jalan Sultan",
     "postcode": "50000",
     "city": "Kuala Lumpur",
@@ -4557,7 +4559,7 @@ fetch(url, {
 
 <span id="example-responses-POSTapi-submit-eform">
             <blockquote>
-            <p>Example response (201):</p>
+            <p>Example response (200):</p>
         </blockquote>
                 <pre>
 
@@ -4782,6 +4784,18 @@ You can check the Dev Tools console for debugging information.</code></pre>
                data-component="body">
     <br>
 <p>The SST registration number. Example: <code>W10-1808-32000000</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>msic_code</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="msic_code"                data-endpoint="POSTapi-submit-eform"
+               value="01111,62010"
+               data-component="body">
+    <br>
+<p>The MSIC code(s). Can be multiple, comma separated. Example: <code>01111,62010</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>address</code></b>&nbsp;&nbsp;

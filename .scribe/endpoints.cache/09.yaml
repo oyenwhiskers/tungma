@@ -162,6 +162,17 @@ endpoints:
         exampleWasSpecified: true
         nullable: true
         deprecated: false
+      msic_code:
+        custom: []
+        name: msic_code
+        description: 'The MSIC code(s). Can be multiple, comma separated.'
+        required: false
+        example: '01111,62010'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
       address:
         custom: []
         name: address
@@ -230,6 +241,7 @@ endpoints:
       customer_ic: 900101-14-1234
       business_reg_number: '202301001234'
       sst_reg_number: W10-1808-32000000
+      msic_code: '01111,62010'
       address: '123, Jalan Sultan'
       postcode: '50000'
       city: 'Kuala Lumpur'
@@ -239,7 +251,7 @@ endpoints:
     responses:
       -
         custom: []
-        status: 201
+        status: 200
         content: |-
           {
            "success": true,
