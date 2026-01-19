@@ -1,0 +1,68 @@
+name: 'MSIC Codes'
+description: |-
+
+  APIs for searching and retrieving MSIC (Malaysia Standard Industrial Classification) codes.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/msic/search
+    metadata:
+      custom: []
+      groupName: 'MSIC Codes'
+      groupDescription: |-
+
+        APIs for searching and retrieving MSIC (Malaysia Standard Industrial Classification) codes.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Search MSIC Codes'
+      description: |-
+        Search for MSIC codes by digit or description.
+        Use this for frontend autocomplete/dropdowns.
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      q:
+        custom: []
+        name: q
+        description: 'The search term (min 2 chars).'
+        required: true
+        example: '620'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanQueryParameters:
+      q: '620'
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          [
+           {
+               "id": "62010",
+               "text": "Computer programming activities"
+           },
+           {
+               "id": "62021",
+               "text": "Computer consultancy"
+           }
+          ]
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null

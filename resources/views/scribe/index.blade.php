@@ -166,6 +166,16 @@
                             </li>
                                                                         </ul>
                             </ul>
+                    <ul id="tocify-header-msic-codes" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="msic-codes">
+                    <a href="#msic-codes">MSIC Codes</a>
+                </li>
+                                    <ul id="tocify-subheader-msic-codes" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="msic-codes-GETapi-msic-search">
+                                <a href="#msic-codes-GETapi-msic-search">Search MSIC Codes</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
                     <ul id="tocify-header-profile-management" class="tocify-header">
                 <li class="tocify-item level-1" data-unique="profile-management">
                     <a href="#profile-management">Profile Management</a>
@@ -211,7 +221,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: January 16, 2026</li>
+        <li>Last updated: January 19, 2026</li>
     </ul>
 </div>
 
@@ -1117,8 +1127,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --form "is_paid="\
     --form "is_collected="\
     --form "checked_by=2"\
-    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\phpCFD1.tmp" \
-    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\phpCFD2.tmp" </code></pre></div>
+    --form "media_attachment=@C:\Users\tiber\AppData\Local\Temp\php2E0B.tmp" \
+    --form "payment_proof_attachment=@C:\Users\tiber\AppData\Local\Temp\php2E0C.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -1481,7 +1491,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpCFD1.tmp</code></p>
+<p>Optional image attachment (jpeg, jpg, png, gif, webp). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php2E0B.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>payment_proof_attachment</code></b>&nbsp;&nbsp;
@@ -1493,7 +1503,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\phpCFD2.tmp</code></p>
+<p>Optional payment proof document (image or pdf). Max 5MB. Example: <code>C:\Users\tiber\AppData\Local\Temp\php2E0C.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>is_paid</code></b>&nbsp;&nbsp;
@@ -3548,6 +3558,156 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                 </form>
 
+                <h1 id="msic-codes">MSIC Codes</h1>
+
+    <p>APIs for searching and retrieving MSIC (Malaysia Standard Industrial Classification) codes.</p>
+
+                                <h2 id="msic-codes-GETapi-msic-search">Search MSIC Codes</h2>
+
+<p>
+</p>
+
+<p>Search for MSIC codes by digit or description.
+Use this for frontend autocomplete/dropdowns.</p>
+
+<span id="example-requests-GETapi-msic-search">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://localhost:8000/api/msic/search?q=620" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://localhost:8000/api/msic/search"
+);
+
+const params = {
+    "q": "620",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-msic-search">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">[
+    {
+        &quot;id&quot;: &quot;62010&quot;,
+        &quot;text&quot;: &quot;Computer programming activities&quot;
+    },
+    {
+        &quot;id&quot;: &quot;62021&quot;,
+        &quot;text&quot;: &quot;Computer consultancy&quot;
+    }
+]</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-msic-search" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-msic-search"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-msic-search"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-msic-search" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-msic-search">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-msic-search" data-method="GET"
+      data-path="api/msic/search"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-msic-search', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-msic-search"
+                    onclick="tryItOut('GETapi-msic-search');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-msic-search"
+                    onclick="cancelTryOut('GETapi-msic-search');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-msic-search"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/msic/search</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-msic-search"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-msic-search"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>q</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="q"                data-endpoint="GETapi-msic-search"
+               value="620"
+               data-component="query">
+    <br>
+<p>The search term (min 2 chars). Example: <code>620</code></p>
+            </div>
+                </form>
+
                 <h1 id="profile-management">Profile Management</h1>
 
     <p>APIs for managing user profile</p>
@@ -3734,7 +3894,7 @@ Only provided fields will be updated. Role and company_id cannot be changed thro
     --header "Accept: application/json" \
     --form "username=johndoe"\
     --form "contact_number=+60123456789"\
-    --form "image=@C:\Users\tiber\AppData\Local\Temp\phpD09F.tmp" </code></pre></div>
+    --form "image=@C:\Users\tiber\AppData\Local\Temp\php2ECA.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -3922,7 +4082,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\phpD09F.tmp</code></p>
+<p>optional The user's profile image (max 5MB, allowed: jpeg, png, jpg, gif) Example: <code>C:\Users\tiber\AppData\Local\Temp\php2ECA.tmp</code></p>
         </div>
         </form>
 

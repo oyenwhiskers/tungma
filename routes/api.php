@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\BusDeparturesController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\CourierPolicyController;
 use App\Http\Controllers\Api\eFormController;
-use App\Http\Controllers\MsicController;
+use App\Http\Controllers\Api\MsicController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
