@@ -49,6 +49,7 @@ class MsicController extends Controller
             ->orWhere('description', 'LIKE', '%' . $query . '%')
             ->orderBy('code', 'asc')
             ->limit(15) // Maintain high performance by limiting results
+            ->toBase() // Return stdClass objects to prevent Eloquent from casting 'id' to integer
             ->get(['code as id', 'description as text']);
 
         // 4. Return as standard JSON
