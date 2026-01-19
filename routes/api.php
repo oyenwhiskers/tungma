@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\BusDeparturesController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\CourierPolicyController;
 use App\Http\Controllers\Api\eFormController;
+use App\Http\Controllers\MsicController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
@@ -61,3 +62,4 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // eForm routes
 Route::post('/submit-eform', [eFormController::class, 'store']);
+Route::get('/msic/search', [MsicController::class, 'search']);
