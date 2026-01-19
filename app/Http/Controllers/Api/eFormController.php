@@ -31,8 +31,7 @@ class eFormController extends Controller
      * @bodyParam identity_type string The type of identity document. Example: NRIC
      * @bodyParam customer_ic string The customer's IC number. Example: 900101-14-1234
      * @bodyParam business_reg_number string The business registration number. Example: 202301001234
-     * @bodyParam sst_reg_number string The SST registration number. Example: W10-1808-32000000
-     * @bodyParam msic_code string The MSIC code(s). Can be multiple, comma separated. Example: 01111,62010
+     * @bodyParam msic_code string[] The MSIC codes. Example: ["01111", "62010"]
      * @bodyParam address string required The address. Example: 123, Jalan Sultan
      * @bodyParam postcode string required The postcode. Example: 50000
      * @bodyParam city string required The city. Example: Kuala Lumpur
@@ -59,7 +58,8 @@ class eFormController extends Controller
             'customer_ic' => 'nullable|string',
             'business_reg_number' => 'nullable|string',
             'sst_reg_number' => 'nullable|string',
-            'msic_code' => 'nullable|string',
+            'msic_code' => 'nullable|array', // Accept array of strings
+            'msic_code.*' => 'string|exists:msic_codes,code', // Verify each code exists
             'address' => 'required|string',
             'postcode' => 'required|string',
             'city' => 'required|string',
@@ -67,10 +67,19 @@ class eFormController extends Controller
             'country' => 'required|string',
         ]);
 
-        ECustomer::updateOrCreate(
+        $eCustomer = ECustomer::updateOrCreate(
             ['bill_id' => $validated['bill_id']],
-            $validated
+            collect($validated)->except('msic_code')->toArray()
         );
+
+        if (!empty($validated['msic_code'])) {
+            // Get IDs for the codes
+            $ids = \App\Models\MsicCode::whereIn('code', $validated['msic_code'])->pluck('id');
+            $eCustomer->msicCodes()->sync($ids);
+        } else {
+            // If empty, detach all
+            $eCustomer->msicCodes()->detach();
+        }
 
         return response()->json([
             'success' => true,
