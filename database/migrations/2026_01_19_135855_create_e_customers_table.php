@@ -35,12 +35,11 @@ return new class extends Migration {
             // Moved to pivot table e_customer_msic_code
 
             // Address Details
-            $table->string('address_line_1');
-            $table->string('address_line_2')->nullable(); // Addresses usually need 2 lines
-            $table->string('postcode', 5);
+            $table->text('address'); // Consolidated address column
+            $table->string('postcode', 10); // Standardize postcode length
             $table->string('city');
             $table->string('state');
-            $table->string('country_code', 2)->default('MY'); // Using ISO codes (MY, SG, US) is better for APIs
+            $table->string('country')->default('Malaysia'); // Changed to match controller input
 
             $table->timestamps();
         });
