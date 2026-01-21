@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Bill;
 use App\Models\CashSale;
+use App\Models\Debtor;
 use Illuminate\Support\Facades\Log;
 
 class BillObserver
@@ -83,15 +84,23 @@ class BillObserver
     protected function createCashSaleFromBill(Bill $bill)
     {
         try {
+            // SCENARIO 1: Use Default Data (ID 1)
+            $defaultDebtor = Debtor::find(1);
+
+            if (!$defaultDebtor) {
+                Log::warning("Default Debtor (ID 1) not found. Skipping CashSale creation for Bill {$bill->id}");
+                return;
+            }
+
             // 1. Create Header
             $cashSale = CashSale::create([
                 'bill_id' => $bill->id,
                 'doc_no' => $bill->bill_code,
                 'doc_date' => $bill->date,
-                'debtor_code' => '300-W001', // Default per example
-                'debtor_name' => $bill->sender_name ?? 'Cash Customer', // Approximate mapping
+                'debtor_code' => $defaultDebtor->acc_no, // e.g. 300-1000
+                'debtor_name' => $defaultDebtor->company_name, // Default seeded name
                 'description' => $bill->description ?? 'CASH SALE',
-                'display_term' => 'C.O.D.',
+                'display_term' => $defaultDebtor->display_term ?? 'C.O.D.',
                 'ref' => null,
                 'sales_agent' => null,
             ]);

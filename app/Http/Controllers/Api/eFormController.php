@@ -57,6 +57,7 @@ class eFormController extends Controller
             'identity_type' => 'nullable|string',
             'customer_ic' => 'nullable|string',
             'business_reg_number' => 'nullable|string',
+            'old_business_reg_number' => 'nullable|string',
             'sst_reg_number' => 'nullable|string',
             'msic_code' => 'nullable|array', // Accept array of strings
             'msic_code.*' => 'string|exists:msic_codes,code', // Verify each code exists
@@ -80,6 +81,25 @@ class eFormController extends Controller
             // If empty, detach all
             $eCustomer->msicCodes()->detach();
         }
+
+        // --- SCENARIO 2: Manual Update of CashSale ---
+        $bill = \App\Models\Bill::with('cashSale')->find($validated['bill_id']);
+        
+        if ($bill && $bill->cashSale) {
+            $bill->cashSale->update([
+                'debtor_name' => $eCustomer->customer_name,
+                // Append TIN to description if beneficial, or keep original
+                // 'description' => $bill->cashSale->description . ' (TIN: ' . $eCustomer->tin_number . ')',
+            ]);
+
+            // Regenerate XML with new details
+            $xml = $bill->cashSale->generateXml();
+            $bill->cashSale->update(['generated_xml' => $xml]);
+            
+            // Optional: Trigger immediate send to AutoCount if desired
+            // AutoCountService::send($xml);
+        }
+        // ---------------------------------------------
 
         return response()->json([
             'success' => true,
