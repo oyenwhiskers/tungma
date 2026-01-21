@@ -79,4 +79,9 @@ class Bill extends Model
     {
         return $this->belongsTo(BusDepartures::class, 'bus_departures_id')->withTrashed();
     }
+
+    public function cashSale()
+    {
+        return $this->hasOne(CashSale::class);
+    }
 }
