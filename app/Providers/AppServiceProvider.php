@@ -42,5 +42,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('staff', function (User $user) {
             return $user->role === 'staff' || $user->role === 'admin' || $user->role === 'super_admin';
         });
+
+        Bill::observe(\App\Observers\BillObserver::class);
     }
 }
