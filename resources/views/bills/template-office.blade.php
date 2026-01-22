@@ -9,6 +9,20 @@
             margin: 20px;
         }
 
+        @font-face {
+            font-family: 'Noto Sans SC';
+            src: url('{{ public_path('fonts/static/NotoSansSC-Regular.ttf') }}') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'Noto Sans SC';
+            src: url('{{ public_path('fonts/static/NotoSansSC-Bold.ttf') }}') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,7 +30,7 @@
         }
 
         body {
-            font-family: 'notosanscjk', 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif;
+            font-family: 'DejaVu Sans', 'Helvetica', 'Arial', 'Noto Sans SC', sans-serif;
             font-size: 11px;
             color: #000;
             padding: 10px;
