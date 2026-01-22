@@ -33,7 +33,6 @@
             font-family: 'DejaVu Sans', 'Helvetica', 'Arial', 'Noto Sans SC', sans-serif;
             font-size: 11px;
             color: #000;
-            padding: 10px;
         }
 
         .bill-container {
