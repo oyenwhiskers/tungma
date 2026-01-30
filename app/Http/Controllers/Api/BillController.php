@@ -377,11 +377,8 @@ class BillController extends Controller
 
         $bill = Bill::create($data);
 
-        // Generate PDF immediately (Sync) because it is now fast enough (~2s)
-        \App\Jobs\GenerateBillPdf::dispatchSync($bill);
-        
-        // Reload to get the pdf_url
-        $bill->refresh();
+        // Dispatch PDF generation job (Async)
+        \App\Jobs\GenerateBillPdf::dispatch($bill);
 
         return response()->json([
             'message' => 'Bill created successfully',
@@ -662,10 +659,8 @@ class BillController extends Controller
 
         $bill->update($data);
 
-        // Generate PDF immediately (Sync)
-        \App\Jobs\GenerateBillPdf::dispatchSync($bill);
-        
-        $bill->refresh();
+        // Dispatch PDF generation job (Async)
+        \App\Jobs\GenerateBillPdf::dispatch($bill);
 
         return response()->json([
             'message' => 'Bill updated successfully',

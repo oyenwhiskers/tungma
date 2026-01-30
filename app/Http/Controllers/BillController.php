@@ -309,8 +309,8 @@ class BillController extends Controller
 
         $bill = Bill::create($data);
 
-        // Generate PDF immediately (Sync)
-        \App\Jobs\GenerateBillPdf::dispatchSync($bill);
+        // Dispatch PDF generation job (Async)
+        \App\Jobs\GenerateBillPdf::dispatch($bill);
         
         return redirect()->route('bills.index')->with('success', 'Bill created successfully');
     }
@@ -489,8 +489,8 @@ class BillController extends Controller
 
         $bill->update($data);
 
-        // Generate PDF immediately (Sync)
-        \App\Jobs\GenerateBillPdf::dispatchSync($bill);
+        // Dispatch PDF generation job (Async)
+        \App\Jobs\GenerateBillPdf::dispatch($bill);
 
         return redirect()->route('bills.show', $bill)->with('success', 'Bill updated successfully');
     }
