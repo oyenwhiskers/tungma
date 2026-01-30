@@ -369,8 +369,8 @@
                                     @if(($paymentDetails['method'] ?? '') == 'cod')/@endif</div> C.O.D
                             </td>
                             <td>
-                                <div class="box {{ ($paymentDetails['method'] ?? '') == 'bank' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'bank')/@endif</div> A/C
+                                <div class="box {{ ($paymentDetails['method'] ?? '') == 'bank_transfer' ? 'checked' : '' }}">
+                                    @if(($paymentDetails['method'] ?? '') == 'bank_transfer')/@endif</div> A/C
                             </td>
                         </tr>
                     </table>
