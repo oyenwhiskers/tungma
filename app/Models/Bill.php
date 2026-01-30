@@ -34,7 +34,8 @@ class Bill extends Model
         'status',
         'created_by',
         'checked_by',
-        'bus_departures_id'
+        'bus_departures_id',
+        'pdf_url'
     ];
 
     protected $casts = [

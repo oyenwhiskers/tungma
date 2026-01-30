@@ -226,6 +226,7 @@ class ChecklistController extends Controller
                 'payment_proof_attachment_url' => $bill->payment_proof_attachment
                     ? URL::to(Storage::url($bill->payment_proof_attachment))
                     : null,
+                'pdf_url' => $bill->pdf_url,
                 'from_company' => $bill->fromCompany ? [
                     'id' => $bill->fromCompany->id,
                     'name' => $bill->fromCompany->name,
@@ -380,7 +381,7 @@ class ChecklistController extends Controller
         $departureTime = $busDeparture ? str_replace(':', '', $busDeparture->departure_time) : 'unknown';
 
         // Generate PDF with all bills
-        $pdf = \PDF::loadView('bills.template-checklist-print', compact('bills', 'templateView', 'copyType'))
+        $pdf = \PDF::loadView('bills.template-checklist-print', compact('bills', 'templateView', 'copyType') + ['isPdf' => true])
             ->setPaper('a4', 'portrait');
 
         return $pdf->download('checklist-' . $date . '-' . $departureTime . '-' . $copyType . '.pdf');

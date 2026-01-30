@@ -307,7 +307,11 @@ class BillController extends Controller
             $data['bus_departures_id'] = null;
         }
 
-        Bill::create($data);
+        $bill = Bill::create($data);
+
+        // Generate PDF immediately (Sync)
+        \App\Jobs\GenerateBillPdf::dispatchSync($bill);
+        
         return redirect()->route('bills.index')->with('success', 'Bill created successfully');
     }
 
@@ -484,6 +488,10 @@ class BillController extends Controller
         $data['status'] = $checkedByValue ? 'Arrived' : 'In_transit';
 
         $bill->update($data);
+
+        // Generate PDF immediately (Sync)
+        \App\Jobs\GenerateBillPdf::dispatchSync($bill);
+
         return redirect()->route('bills.show', $bill)->with('success', 'Bill updated successfully');
     }
 
@@ -549,7 +557,7 @@ class BillController extends Controller
             : 'bills.template';
 
         // Generate PDF
-        $pdf = \PDF::loadView($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType'))
+        $pdf = \PDF::loadView($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType') + ['isPdf' => true])
             ->setPaper('a4', 'portrait');
 
         // If download parameter is set, download the PDF

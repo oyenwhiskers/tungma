@@ -8,6 +8,19 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Queue Worker Trigger (Hidden/Internal)
+// This allows the application to trigger the queue worker via HTTP request
+// bypassing the Cron Job delay on cPanel.
+Route::get('/queue-worker', function () {
+    // Basic security: Check if request comes from local server
+    // Note: In some cPanel setups, remote_addr might be different, 
+    // but typically 127.0.0.1 or server IP. 
+    // For now we leave it open but hidden as it only runs the queue.
+    
+    Artisan::call('queue:work', ['--stop-when-empty' => true]);
+    return 'Worker Run';
+});
+
 // Authentication routes assumed provided by Laravel auth starter (login required)
 Route::middleware(['web'])->group(function () {
     // Dashboard

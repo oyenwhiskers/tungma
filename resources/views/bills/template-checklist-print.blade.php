@@ -21,22 +21,22 @@
 
     @if($copyType === 'combined')
         {{-- Customer Copy --}}
-        @include('bills.template', ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => 'customer'])
+        @include('bills.template', ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => 'customer', 'isPdf' => $isPdf])
         
         @if($index < count($bills) - 1 || true)
             <div style="page-break-after: always;"></div>
         @endif
         
         {{-- Office Copy 1 --}}
-        @include('bills.template-office', ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => 'office'])
+        @include('bills.template-office', ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => 'office', 'isPdf' => $isPdf])
         
         <div style="page-break-after: always;"></div>
         
         {{-- Office Copy 2 --}}
-        @include('bills.template-office', ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => 'office'])
+        @include('bills.template-office', ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => 'office', 'isPdf' => $isPdf])
     @else
         {{-- Single copy type --}}
-        @include($templateView, ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => $copyType])
+        @include($templateView, ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => $copyType, 'isPdf' => $isPdf])
     @endif
 
     {{-- Page break between bills (except last) --}}

@@ -11,14 +11,14 @@
 
         @font-face {
             font-family: 'Noto Sans SC';
-            src: url('{{ public_path('fonts/static/NotoSansSC-Regular.ttf') }}') format('truetype');
+            src: url('{{ $isPdf ? public_path('fonts/static/NotoSansSC-Regular.ttf') : asset('fonts/static/NotoSansSC-Regular.ttf') }}') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'Noto Sans SC';
-            src: url('{{ public_path('fonts/static/NotoSansSC-Bold.ttf') }}') format('truetype');
+            src: url('{{ $isPdf ? public_path('fonts/static/NotoSansSC-Bold.ttf') : asset('fonts/static/NotoSansSC-Bold.ttf') }}') format('truetype');
             font-weight: bold;
             font-style: normal;
         }
@@ -286,7 +286,7 @@
                     </div>
                 </td>
                 <td class="logo-section">
-                    <img src="{{ public_path('images/logo.png') }}"
+                    <img src="{{ $isPdf ? public_path('images/logo.png') : asset('images/logo.png') }}"
                         style="width: 80px; margin-bottom: 5px; margin-left: -100px;">
                     <div style="font-size: 18px; font-weight: bold; letter-spacing: 4px; margin-left: -100px;">東 馬 快 車
                     </div>
@@ -332,15 +332,15 @@
             <tr>
                 <td class="data-content">
                     <div class="field-label">Sender Name:</div>
-                    <div class="field-value">{{ strtoupper($bill->sender_name ?? 'NAZMI') }}</div>
+                    <div class="field-value">{{ strtoupper($bill->sender_name ?? '') }}</div>
                     <div class="field-label">Contact No:</div>
-                    <div class="field-value">{{ $bill->sender_phone ?? '017-777 7777' }}</div>
+                    <div class="field-value">{{ $bill->sender_phone ?? '' }}</div>
                 </td>
                 <td class="data-content">
                     <div class="field-label">Receiver Name:</div>
-                    <div class="field-value">{{ strtoupper($bill->receiver_name ?? 'ROD') }}</div>
+                    <div class="field-value">{{ strtoupper($bill->receiver_name ?? '') }}</div>
                     <div class="field-label">Contact No:</div>
-                    <div class="field-value">{{ $bill->receiver_phone ?? '019-999 9999' }}</div>
+                    <div class="field-value">{{ $bill->receiver_phone ?? '' }}</div>
                 </td>
                 <td class="data-content">
                     <div class="field-label">DATE: {{ $bill->date ? $bill->date->format('d/m/Y') : '16/12/2025' }}</div>

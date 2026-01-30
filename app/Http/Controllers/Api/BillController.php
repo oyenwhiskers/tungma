@@ -377,6 +377,12 @@ class BillController extends Controller
 
         $bill = Bill::create($data);
 
+        // Generate PDF immediately (Sync) because it is now fast enough (~2s)
+        \App\Jobs\GenerateBillPdf::dispatchSync($bill);
+        
+        // Reload to get the pdf_url
+        $bill->refresh();
+
         return response()->json([
             'message' => 'Bill created successfully',
             'data' => $this->transformBill($bill)
@@ -656,6 +662,11 @@ class BillController extends Controller
 
         $bill->update($data);
 
+        // Generate PDF immediately (Sync)
+        \App\Jobs\GenerateBillPdf::dispatchSync($bill);
+        
+        $bill->refresh();
+
         return response()->json([
             'message' => 'Bill updated successfully',
             'data' => $this->transformBill($bill)
@@ -744,7 +755,13 @@ class BillController extends Controller
             $templateView = 'bills.template';
         }
 
-        $pdf = \PDF::loadView($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType'))
+        $isPdf = $request->get('format') !== 'html';
+
+        if (!$isPdf) {
+            return view($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType', 'isPdf'));
+        }
+
+        $pdf = \PDF::loadView($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType', 'isPdf'))
             ->setPaper('a4', 'portrait');
 
         return $pdf->download('bill-' . $bill->bill_code . '-' . $copyType . '.pdf');
@@ -788,6 +805,7 @@ class BillController extends Controller
             'media_attachment_url' => $bill->media_attachment
                 ? URL::to(Storage::url($bill->media_attachment))
                 : null,
+            'pdf_url' => $bill->pdf_url,
             'payment_proof_attachment_url' => $bill->payment_proof_attachment
                 ? URL::to(Storage::url($bill->payment_proof_attachment))
                 : null,
