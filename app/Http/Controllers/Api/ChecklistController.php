@@ -87,7 +87,7 @@ class ChecklistController extends Controller
 
             if ($total === 0) {
                 $status = 'no data';
-            } elseif ($checkedCount > 0) {
+            } elseif ($checkedCount === $total) {
                 $status = 'success';
             } else {
                 $status = 'pending';
@@ -266,6 +266,7 @@ class ChecklistController extends Controller
                 'created_at' => $bill->created_at ? $bill->created_at->toISOString() : null,
                 'updated_at' => $bill->updated_at ? $bill->updated_at->toISOString() : null,
                 'status' => $bill->checked_by ? 'Arrived' : 'In_transit',
+                'checked_by' => $bill->checked_by,
             ];
         });
 
@@ -285,10 +286,12 @@ class ChecklistController extends Controller
      *
      * Mark selected bills as checked/verified by the authenticated user.
      * Updates the `checked_by` field for the provided bill IDs.
+     * Also handles unchecking bills if provided.
      *
      * @group Checklist
      * @authenticated
      * @bodyParam bill_ids int[] required Array of Bill IDs that have been checked. Example: [1, 2, 3]
+     * @bodyParam unchecked_bill_ids int[] optional Array of Bill IDs that should be unchecked. Example: [4, 5]
      *
      * @response 200 {
      *    "success": true,
@@ -302,12 +305,15 @@ class ChecklistController extends Controller
     {
         $request->validate([
             'bill_ids' => 'nullable|array',
-            'bill_ids.*' => 'exists:bills,id'
+            'bill_ids.*' => 'exists:bills,id',
+            'unchecked_bill_ids' => 'nullable|array',
+            'unchecked_bill_ids.*' => 'exists:bills,id'
         ]);
 
         $user = $request->user();
         $userId = $user->id;
         $billIds = $request->input('bill_ids', []);
+        $uncheckedBillIds = $request->input('unchecked_bill_ids', []);
 
         // Admins and Super Admins are not allowed to tick/save the checklist
         if (in_array($user->role, ['admin', 'super_admin'])) {
@@ -327,6 +333,22 @@ class ChecklistController extends Controller
 
             $query->update([
                 'checked_by' => $userId
+            ]);
+        }
+
+        if (!empty($uncheckedBillIds)) {
+            $query = Bill::whereIn('id', $uncheckedBillIds);
+
+            // Filter by company visibility (sender OR receiver)
+            if ($user->role !== 'super_admin') {
+                $query->where(function ($q) use ($user) {
+                    $q->where('from_company_id', $user->company_id)
+                        ->orWhere('to_company_id', $user->company_id);
+                });
+            }
+
+            $query->update([
+                'checked_by' => null
             ]);
         }
 
