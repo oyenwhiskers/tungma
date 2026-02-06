@@ -186,6 +186,18 @@ class ChecklistController extends Controller
             });
         }
 
+        // Filter by from_company_id
+        if ($request->filled('from_company_id')) {
+            $query->where('from_company_id', $request->from_company_id);
+        }
+
+        // Filter by to_company_id
+        if ($request->filled('to_company_id')) {
+            $query->where('to_company_id', $request->to_company_id);
+        }
+
+
+
         $rawBills = $query->get();
         $busDeparture = $rawBills->first()?->busDeparture;
 

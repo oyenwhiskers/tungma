@@ -35,7 +35,7 @@ class ChecklistController extends Controller
 
         $bills = $query->get()->groupBy('bus_departures_id');
 
-        $rows = $bills->map(function ($items, $busDepartureId) {
+        $rows = $bills->map(function ($items, $busDepartureId) use ($targetDate) {
             $total = $items->count();
             $checkedCount = $items->whereNotNull('checked_by')->count();
 
@@ -58,7 +58,7 @@ class ChecklistController extends Controller
             return [
                 'bus_departures_id' => $busDepartureId,
                 'departure_time' => $departureTime,
-                'date' => $firstItem ? $firstItem->date : null,
+                'date' => $targetDate,
                 'status' => $status,
                 'checked_by' => $checkedItem && $checkedItem->checker
                     ? $checkedItem->checker->name
@@ -80,7 +80,8 @@ class ChecklistController extends Controller
         $user = auth()->user();
 
         // Get the date from query parameter or default to today
-        $date = $request->query('date', now()->toDateString());
+        $dateParam = $request->query('date', now()->toDateString());
+        $date = Carbon::parse($dateParam)->toDateString();
 
         // Start basic query
         $query = Bill::where('bus_departures_id', $bus_departures_id)
@@ -145,7 +146,7 @@ class ChecklistController extends Controller
         }
 
         return redirect()
-            ->route('checklists.index')
+            ->route('checklists.index', ['date' => $request->input('date')])
             ->with('status', 'Checklist saved successfully!');
     }
 }
