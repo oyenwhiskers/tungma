@@ -58,10 +58,25 @@ class TrackingController extends Controller
 
         $response = [
             'bill_code' => $bill->bill_code,
-            'status' => $bill->status,
-            'delivery_date' => $estimatedDeliveryDate,
+            'status' => ($bill->checked_by) 
+                ? 'Arrived' 
+                : (($bill->status && !in_array(strtolower(trim($bill->status)), ['pending', 'pending_'])) 
+                    ? str_replace('_', ' ', $bill->status) 
+                    : 'In transit'),
+            'date' => $bill->date->toDateString(),
+            'delivery_date' => $bill->checked_by ? $bill->updated_at->toDateString() : $estimatedDeliveryDate,
+            'origin' => [
+                'company' => $bill->fromCompany ? $bill->fromCompany->name : ($bill->company ? $bill->company->name : 'N/A'),
+                'location' => $bill->fromCompany ? $bill->fromCompany->based_in : ($bill->company ? $bill->company->based_in : 'N/A'),
+            ],
+            'destination' => [
+                'company' => $bill->toCompany ? $bill->toCompany->name : 'N/A',
+                'location' => $bill->toCompany ? $bill->toCompany->based_in : 'N/A',
+            ],
+            'sender' => $bill->sender_name ? Str::mask($bill->sender_name, '*', 1, -1) : 'N/A',
+            'receiver' => $bill->receiver_name ? Str::mask($bill->receiver_name, '*', 1, -1) : 'N/A',
+            'last_updated' => $bill->updated_at->toISOString(),
             'checked_by' => $bill->checker ? [
-                'id' => $bill->checker->id,
                 'name' => $bill->checker->name,
             ] : null,
         ];

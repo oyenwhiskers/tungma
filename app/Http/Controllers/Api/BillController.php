@@ -255,6 +255,7 @@ class BillController extends Controller
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
             'sender_phone' => 'nullable|string',
+            'debtor_code' => 'nullable|string|max:50',
             'receiver_name' => 'nullable|string',
             'receiver_phone' => 'nullable|string',
             'courier_policy_id' => [
@@ -370,12 +371,30 @@ class BillController extends Controller
             $data['is_collected'] = false;
         }
 
+        // Set status
+        if ($data['is_collected']) {
+            $data['status'] = 'Collected';
+        } elseif (!empty($data['checked_by'])) {
+            $data['status'] = 'Arrived';
+        } else {
+            $data['status'] = 'In_transit';
+        }
+
         // Handle bus_departures_id
         if (isset($data['bus_departures_id']) && $data['bus_departures_id'] === '') {
             $data['bus_departures_id'] = null;
         }
 
-        $bill = Bill::create($data);
+        // Set default debtor_code if not provided
+        if (empty($data['debtor_code'])) {
+            $data['debtor_code'] = '300-CASH';
+        }
+
+        try {
+            $bill = Bill::create($data);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to create bill: ' . $e->getMessage()], 500);
+        }
 
         // Dispatch PDF generation job (Async)
         \App\Jobs\GenerateBillPdf::dispatch($bill);
@@ -551,6 +570,7 @@ class BillController extends Controller
             'to_company_id' => 'nullable|exists:companies,id',
             'sender_name' => 'nullable|string',
             'sender_phone' => 'nullable|string',
+            'debtor_code' => 'nullable|string|max:50',
             'receiver_name' => 'nullable|string',
             'receiver_phone' => 'nullable|string',
             'courier_policy_id' => [
@@ -653,11 +673,23 @@ class BillController extends Controller
             $data['bus_departures_id'] = null;
         }
 
-        // Set status based on check
-        $checkedByValue = array_key_exists('checked_by', $data) ? $data['checked_by'] : $bill->checked_by;
-        $data['status'] = $checkedByValue ? 'Arrived' : 'In_transit';
+        // Set status
+        $isCollected = isset($data['is_collected']) ? filter_var($data['is_collected'], FILTER_VALIDATE_BOOLEAN) : $bill->is_collected;
+        $hasChecker = !empty($data['checked_by']) || (!array_key_exists('checked_by', $data) && $bill->checked_by);
 
-        $bill->update($data);
+        if ($isCollected) {
+            $data['status'] = 'Collected';
+        } elseif ($hasChecker) {
+            $data['status'] = 'Arrived';
+        } else {
+            $data['status'] = 'In_transit';
+        }
+
+        try {
+            $bill->update($data);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to update bill: ' . $e->getMessage()], 500);
+        }
 
         // Dispatch PDF generation job (Async)
         \App\Jobs\GenerateBillPdf::dispatch($bill);
@@ -757,7 +789,7 @@ class BillController extends Controller
         }
 
         $pdf = \PDF::loadView($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType', 'isPdf'))
-            ->setPaper('a4', 'portrait');
+            ->setPaper('a5', 'landscape');
 
         return $pdf->download('bill-' . $bill->bill_code . '-' . $copyType . '.pdf');
     }
@@ -824,6 +856,11 @@ class BillController extends Controller
             ] : null,
             'created_at' => $bill->created_at ? $bill->created_at->toISOString() : null,
             'updated_at' => $bill->updated_at ? $bill->updated_at->toISOString() : null,
+            'status' => ($bill->checked_by)
+                ? 'Arrived'
+                : (($bill->status && !in_array(strtolower(trim($bill->status)), ['pending', 'pending_']))
+                    ? str_replace('_', ' ', $bill->status)
+                    : 'In transit'),
         ];
     }
 }

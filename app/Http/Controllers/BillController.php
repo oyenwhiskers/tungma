@@ -135,6 +135,52 @@ class BillController extends Controller
         return view('bills.index', compact('bills', 'companies'));
     }
 
+    public function bulkAction(Request $request)
+    {
+        $request->validate([
+            'bill_ids' => 'required|array',
+            'bill_ids.*' => 'exists:bills,id',
+            'bulk_action' => 'required|string|in:mark_paid,mark_unpaid,mark_collected,mark_uncollected,delete'
+        ]);
+
+        $user = auth()->user();
+        $query = Bill::whereIn('id', $request->bill_ids);
+
+        // Ensure admin only modifies their company's bills
+        if ($user->role === 'admin') {
+            $query->where('company_id', $user->company_id);
+        }
+
+        $action = $request->bulk_action;
+        $count = $query->count();
+
+        if ($action === 'mark_paid') {
+            $query->update(['is_paid' => true]);
+            $message = "$count bills marked as Paid.";
+        } elseif ($action === 'mark_unpaid') {
+            $query->update(['is_paid' => false]);
+            $message = "$count bills marked as Unpaid.";
+        } elseif ($action === 'mark_collected') {
+            $query->update(['is_collected' => true, 'status' => 'Collected']);
+            $message = "$count bills marked as Collected.";
+        } elseif ($action === 'mark_uncollected') {
+            // Revert status to Arrived if there's a checker, else In_transit
+            $query->each(function($bill) {
+                $bill->update([
+                    'is_collected' => false,
+                    'status' => $bill->checked_by ? 'Arrived' : 'In_transit'
+                ]);
+            });
+            $message = "$count bills marked as Uncollected.";
+        } elseif ($action === 'delete') {
+            // Must retrieve to trigger soft deletes properly or mass delete
+            $query->delete();
+            $message = "$count bills deleted successfully.";
+        }
+
+        return redirect()->route('bills.index')->with('success', $message);
+    }
+
     public function create()
     {
         $user = auth()->user();
@@ -157,7 +203,16 @@ class BillController extends Controller
             $busDepartures = BusDepartures::with('company')->get();
         }
 
-        return view('bills.create', compact('companies', 'policies', 'users', 'busDepartures'));
+        // Load Customers and Receivers
+        if ($user->role === 'admin') {
+            $customers = \App\Models\Customer::where('company_id', $user->company_id)->orderBy('name')->get();
+            $receivers = \App\Models\Receiver::where('company_id', $user->company_id)->orderBy('name')->get();
+        } else {
+            $customers = \App\Models\Customer::orderBy('name')->get();
+            $receivers = \App\Models\Receiver::orderBy('name')->get();
+        }
+
+        return view('bills.create', compact('companies', 'policies', 'users', 'busDepartures', 'customers', 'receivers'));
     }
 
     public function store(Request $request)
@@ -286,8 +341,6 @@ class BillController extends Controller
 
         // Set created_by to current authenticated user
         $data['created_by'] = auth()->id();
-        $data['status'] = 'In_transit';
-
         // Handle is_paid (convert string to boolean if needed)
         if (isset($data['is_paid'])) {
             $data['is_paid'] = filter_var($data['is_paid'], FILTER_VALIDATE_BOOLEAN);
@@ -302,12 +355,25 @@ class BillController extends Controller
             $data['is_collected'] = false;
         }
 
+        // Set initial status
+        if ($data['is_collected']) {
+            $data['status'] = 'Collected';
+        } elseif (!empty($data['checked_by'])) {
+            $data['status'] = 'Arrived';
+        } else {
+            $data['status'] = 'In_transit';
+        }
+
         // Handle bus_departures_id - allow null (empty string becomes null)
         if (isset($data['bus_departures_id']) && $data['bus_departures_id'] === '') {
             $data['bus_departures_id'] = null;
         }
 
-        $bill = Bill::create($data);
+        try {
+            $bill = Bill::create($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to create bill. ' . $e->getMessage());
+        }
 
         // Dispatch PDF generation job (Async)
         \App\Jobs\GenerateBillPdf::dispatch($bill);
@@ -347,7 +413,16 @@ class BillController extends Controller
             $busDepartures = BusDepartures::with('company')->get();
         }
 
-        return view('bills.edit', compact('bill', 'companies', 'policies', 'users', 'busDepartures'));
+        // Load Customers and Receivers
+        if ($user->role === 'admin') {
+            $customers = \App\Models\Customer::where('company_id', $user->company_id)->orderBy('name')->get();
+            $receivers = \App\Models\Receiver::where('company_id', $user->company_id)->orderBy('name')->get();
+        } else {
+            $customers = \App\Models\Customer::orderBy('name')->get();
+            $receivers = \App\Models\Receiver::orderBy('name')->get();
+        }
+
+        return view('bills.edit', compact('bill', 'companies', 'policies', 'users', 'busDepartures', 'customers', 'receivers'));
     }
 
     public function update(Request $request, Bill $bill)
@@ -483,11 +558,23 @@ class BillController extends Controller
             $data['bus_departures_id'] = null;
         }
 
-        // Set status based on whether the bill has been checked
-        $checkedByValue = array_key_exists('checked_by', $data) ? $data['checked_by'] : $bill->checked_by;
-        $data['status'] = $checkedByValue ? 'Arrived' : 'In_transit';
+        // Set status
+        $isCollected = isset($data['is_collected']) ? filter_var($data['is_collected'], FILTER_VALIDATE_BOOLEAN) : $bill->is_collected;
+        $hasChecker = !empty($data['checked_by']) || (!array_key_exists('checked_by', $data) && $bill->checked_by);
 
-        $bill->update($data);
+        if ($isCollected) {
+            $data['status'] = 'Collected';
+        } elseif ($hasChecker) {
+            $data['status'] = 'Arrived';
+        } else {
+            $data['status'] = 'In_transit';
+        }
+
+        try {
+            $bill->update($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to update bill. ' . $e->getMessage());
+        }
 
         // Dispatch PDF generation job (Async)
         \App\Jobs\GenerateBillPdf::dispatch($bill);

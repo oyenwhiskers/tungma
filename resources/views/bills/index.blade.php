@@ -87,31 +87,136 @@
             </div>
 
             <div class="col-md-12">
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel"></i> Apply Filters
-                    </button>
-                    <a href="{{ route('bills.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle"></i> Clear
-                    </a>
-                    @if(request()->hasAny(['search', 'payment_status', 'company_id', 'payment_method', 'date']))
-                        <span class="align-self-center text-muted small ms-2">
-                            <i class="bi bi-info-circle"></i> {{ $bills->total() }} result(s) found
-                        </span>
-                    @endif
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Apply Filters
+                        </button>
+                        <a href="{{ route('bills.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </a>
+                        @if(request()->hasAny(['search', 'payment_status', 'company_id', 'payment_method', 'date']))
+                            <span class="align-self-center text-muted small ms-2">
+                                <i class="bi bi-info-circle"></i> {{ $bills->total() }} result(s) found
+                            </span>
+                        @endif
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exportAutoCountModal">
+                            <i class="bi bi-file-earmark-excel"></i> Export AutoCount
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>
     </div>
 </div>
 
+<!-- AutoCount Export Modal -->
+<div class="modal fade" id="exportAutoCountModal" tabindex="-1" aria-labelledby="exportAutoCountModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exportAutoCountModalLabel">
+            <i class="bi bi-file-earmark-excel text-success me-2"></i> Export to AutoCount
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted mb-3">Select the date for which you want to export all bills to AutoCount format.</p>
+        
+        @if(auth()->user()->role === 'super_admin')
+        <div class="mb-3">
+          <label for="export_company_id" class="form-label font-weight-bold">Select Company</label>
+          <select id="export_company_id" class="form-select">
+              <option value="all">All Companies</option>
+              @foreach($companies ?? \App\Models\Company::all() as $company)
+                  <option value="{{ $company->id }}">{{ $company->name }}</option>
+              @endforeach
+          </select>
+        </div>
+        @else
+        <input type="hidden" id="export_company_id" value="{{ auth()->user()->company_id }}">
+        @endif
+
+        <div class="mb-3">
+          <label for="export_date" class="form-label font-weight-bold">Select Date</label>
+          <input type="date" id="export_date" class="form-control" value="{{ date('Y-m-d') }}">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="btn-download-autocount" class="btn btn-success">
+            <i class="bi bi-download me-1"></i> Download Excel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@push('scripts')
+<script>
+document.getElementById('btn-download-autocount').addEventListener('click', function() {
+    const date = document.getElementById('export_date').value;
+    const companyId = document.getElementById('export_company_id') ? document.getElementById('export_company_id').value : '';
+    if (!date) {
+        alert('Please select a date first');
+        return;
+    }
+
+    const btn = this;
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+
+    // Redirect to download
+    const exportUrl = `{{ route('bills.export-autocount') }}?date=${date}&company_id=${companyId}`;
+    window.location.href = exportUrl;
+
+    // Reset button after a short delay
+    setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        
+        // Hide modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('exportAutoCountModal'));
+        if (modal) modal.hide();
+    }, 2000);
+});
+</script>
+@endpush
+
+
 <div class="tm-card tm-table mt-3">
     <div class="tm-card-body">
         @if($bills->count() > 0)
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Bill Code</th>
+        <form method="POST" action="{{ route('bills.bulk-action') }}" id="bulk-action-form">
+            @csrf
+            
+            <div class="d-flex justify-content-between align-items-center mb-3 px-3 pt-3">
+                <div class="d-flex align-items-center gap-2">
+                    <select name="bulk_action" class="form-select form-select-sm" style="width: 200px;" required>
+                        <option value="">Select Bulk Action...</option>
+                        <option value="mark_paid">Mark as Paid</option>
+                        <option value="mark_unpaid">Mark as Unpaid</option>
+                        <option value="mark_collected">Mark as Collected</option>
+                        <option value="mark_uncollected">Mark as Uncollected</option>
+                        <option value="delete">Delete Selected</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Apply this action to selected bills?');">
+                        Apply
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th width="4%" class="text-center">
+                                <input class="form-check-input" type="checkbox" id="checkAll">
+                            </th>
+                            <th>Bill Code</th>
                     <th>Date</th>
                     <th>Bus Departure</th>
                     <th>Amount</th>
@@ -125,6 +230,9 @@
             <tbody>
             @foreach($bills as $bill)
                 <tr>
+                    <td class="text-center">
+                        <input class="form-check-input row-check" type="checkbox" name="bill_ids[]" value="{{ $bill->id }}">
+                    </td>
                     <td>
                         <a href="{{ route('bills.show', $bill) }}" class="d-flex align-items-center gap-2">
                             <i class="bi bi-receipt"></i>
@@ -169,6 +277,8 @@
             @endforeach
             </tbody>
         </table>
+        </div>
+        </form>
         <div class="d-flex justify-content-between align-items-center mt-3">
             <div class="text-muted" style="font-size:13px;">
                 Showing {{ $bills->firstItem() ?? 0 }} to {{ $bills->lastItem() ?? 0 }} of {{ $bills->total() }} bills
@@ -187,4 +297,18 @@
         @endif
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkAll = document.getElementById('checkAll');
+        if(checkAll) {
+            checkAll.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.row-check');
+                checkboxes.forEach(cb => cb.checked = this.checked);
+            });
+        }
+    });
+</script>
+@endpush
 @endsection

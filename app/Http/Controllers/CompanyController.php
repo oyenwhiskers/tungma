@@ -36,8 +36,13 @@ class CompanyController extends Controller
             'sst_number' => 'nullable|string|max:255',
             'bill_id_prefix' => 'nullable|string|max:50|regex:/^[A-Za-z]+$/',
         ]);
-        Company::create($data);
-        return redirect()->route('companies.index');
+        try {
+            Company::create($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to create company. ' . $e->getMessage());
+        }
+
+        return redirect()->route('companies.index')->with('success', 'Company created successfully');
     }
 
     public function show(Company $company)
@@ -66,8 +71,13 @@ class CompanyController extends Controller
             'sst_number' => 'nullable|string|max:255',
             'bill_id_prefix' => 'nullable|string|max:50|regex:/^[A-Za-z]+$/',
         ]);
-        $company->update($data);
-        return redirect()->route('companies.show', $company);
+        try {
+            $company->update($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to update company. ' . $e->getMessage());
+        }
+
+        return redirect()->route('companies.show', $company)->with('success', 'Company updated successfully');
     }
 
     public function destroy(Company $company)

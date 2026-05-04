@@ -12,7 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bills', function (Blueprint $table) {
-            $table->dropColumn(['customer_info', 'customer_ic_number', 'customer_received_date']);
+            if (Schema::hasColumn('bills', 'customer_info')) {
+                $table->dropColumn('customer_info');
+            }
+            if (Schema::hasColumn('bills', 'customer_ic_number')) {
+                $table->dropColumn('customer_ic_number');
+            }
+            if (Schema::hasColumn('bills', 'customer_received_date')) {
+                $table->dropColumn('customer_received_date');
+            }
         });
     }
 

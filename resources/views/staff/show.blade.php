@@ -21,6 +21,11 @@
         <i class="bi bi-key"></i> Reset Password
       </button>
     </form>
+    @if(auth()->user()->role === 'superadmin')
+    <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+        <i class="bi bi-shield-lock"></i> Change Password
+    </button>
+    @endif
     <a href="{{ route('staff.edit', $staff) }}" class="btn btn-primary me-2">
         <i class="bi bi-pencil"></i> Edit
     </a>
@@ -277,4 +282,37 @@
     }
 }
 </style>
+</style>
+
+<!-- Change Password Modal -->
+@if(auth()->user()->role === 'superadmin')
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ route('password.forceChange', $staff) }}" method="POST">
+        @csrf
+        <div class="modal-header">
+          <h5 class="modal-title" id="changePasswordModalLabel">Change Password for {{ $staff->name }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="new_password" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="new_password" name="new_password" required minlength="8">
+          </div>
+          <div class="mb-3">
+            <label for="new_password_confirmation" class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="new_password_confirmation" name="new_password_confirmation" required minlength="8">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-warning">Change Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+@endif
+
 @endsection

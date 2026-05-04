@@ -269,12 +269,26 @@
               @enderror
 
               <div class="mt-3">
+                <div class="mb-2">
+                  <label class="form-label small">Preset Sender (Customer)</label>
+                  <select id="preset_sender" class="form-select form-select-sm">
+                    <option value="">-- Select Preset Customer --</option>
+                    @foreach($customers as $customer)
+                      <option value="{{ $customer->id }}" 
+                              data-company-id="{{ $customer->company_id }}"
+                              data-name="{{ $customer->name }}"
+                              data-phone="{{ $customer->contact_number }}">
+                        {{ $customer->name }}
+                      </option>
+                    @endforeach
+                  </select>
+                </div>
                 <div class="row g-2">
                   <div class="col-md-6">
                     <label class="form-label">
                       <i class="bi bi-person"></i> Sender Name
                     </label>
-                    <input type="text" name="sender_name" class="form-control @error('sender_name') is-invalid @enderror"
+                    <input type="text" name="sender_name" id="sender_name" class="form-control @error('sender_name') is-invalid @enderror"
                            value="{{ old('sender_name') }}" placeholder="Person sending the package">
                     @error('sender_name')
                       <div class="invalid-feedback">{{ $message }}</div>
@@ -285,7 +299,7 @@
                     <label class="form-label">
                       <i class="bi bi-telephone"></i> Sender Phone
                     </label>
-                    <input type="text" name="sender_phone" class="form-control @error('sender_phone') is-invalid @enderror"
+                    <input type="text" name="sender_phone" id="sender_phone" class="form-control @error('sender_phone') is-invalid @enderror"
                            value="{{ old('sender_phone') }}" placeholder="+60 12-345 6789">
                     @error('sender_phone')
                       <div class="invalid-feedback">{{ $message }}</div>
@@ -313,12 +327,26 @@
               @enderror
 
               <div class="mt-3">
+                <div class="mb-2">
+                  <label class="form-label small">Preset Receiver</label>
+                  <select id="preset_receiver" class="form-select form-select-sm">
+                    <option value="">-- Select Preset Receiver --</option>
+                    @foreach($receivers as $receiver)
+                      <option value="{{ $receiver->id }}"
+                              data-company-id="{{ $receiver->company_id }}"
+                              data-name="{{ $receiver->name }}"
+                              data-phone="{{ $receiver->contact_number }}">
+                        {{ $receiver->name }}
+                      </option>
+                    @endforeach
+                  </select>
+                </div>
                 <div class="row g-2">
                   <div class="col-md-6">
                     <label class="form-label">
                       <i class="bi bi-person-fill"></i> Receiver Name
                     </label>
-                    <input type="text" name="receiver_name" class="form-control @error('receiver_name') is-invalid @enderror"
+                    <input type="text" name="receiver_name" id="receiver_name" class="form-control @error('receiver_name') is-invalid @enderror"
                            value="{{ old('receiver_name') }}" placeholder="Person receiving the package">
                     @error('receiver_name')
                       <div class="invalid-feedback">{{ $message }}</div>
@@ -329,7 +357,7 @@
                     <label class="form-label">
                       <i class="bi bi-telephone-fill"></i> Receiver Phone
                     </label>
-                    <input type="text" name="receiver_phone" class="form-control @error('receiver_phone') is-invalid @enderror"
+                    <input type="text" name="receiver_phone" id="receiver_phone" class="form-control @error('receiver_phone') is-invalid @enderror"
                            value="{{ old('receiver_phone') }}" placeholder="+60 12-345 6789">
                     @error('receiver_phone')
                       <div class="invalid-feedback">{{ $message }}</div>
@@ -453,33 +481,72 @@
   (function(){
     const companySelect = document.getElementById('company_id');
     const policySelect = document.getElementById('courier_policy_id');
+    const presetSender = document.getElementById('preset_sender');
+    const presetReceiver = document.getElementById('preset_receiver');
 
     if (!companySelect || !policySelect) return;
 
-    function filterPolicies() {
+    function filterOptions() {
       // Get company ID - works for both select and hidden input
       const companyId = companySelect.value || companySelect.getAttribute('value');
-      if (!companyId) return;
-
+      
+      // Filter Policies
       [...policySelect.options].forEach((opt) => {
-        if (!opt.value) return; // skip placeholder
+        if (!opt.value) return; 
         const cid = opt.getAttribute('data-company-id');
         opt.hidden = companyId && cid !== companyId;
       });
-      // If selected option hidden, reset
-      const selected = policySelect.selectedOptions[0];
-      if (selected && selected.hidden) {
-        policySelect.value = '';
+      if (policySelect.selectedOptions[0]?.hidden) policySelect.value = '';
+
+      // Filter Preset Senders
+      if (presetSender) {
+        [...presetSender.options].forEach((opt) => {
+          if (!opt.value) return;
+          const cid = opt.getAttribute('data-company-id');
+          opt.hidden = companyId && cid && cid !== companyId;
+        });
+        if (presetSender.selectedOptions[0]?.hidden) presetSender.value = '';
       }
+
+      // Filter Preset Receivers
+      if (presetReceiver) {
+        [...presetReceiver.options].forEach((opt) => {
+          if (!opt.value) return;
+          const cid = opt.getAttribute('data-company-id');
+          opt.hidden = companyId && cid && cid !== companyId;
+        });
+        if (presetReceiver.selectedOptions[0]?.hidden) presetReceiver.value = '';
+      }
+    }
+
+    // Auto-fill Logic
+    if (presetSender) {
+      presetSender.addEventListener('change', function() {
+        const opt = this.selectedOptions[0];
+        if (opt.value) {
+          document.getElementById('sender_name').value = opt.getAttribute('data-name');
+          document.getElementById('sender_phone').value = opt.getAttribute('data-phone');
+        }
+      });
+    }
+
+    if (presetReceiver) {
+      presetReceiver.addEventListener('change', function() {
+        const opt = this.selectedOptions[0];
+        if (opt.value) {
+          document.getElementById('receiver_name').value = opt.getAttribute('data-name');
+          document.getElementById('receiver_phone').value = opt.getAttribute('data-phone');
+        }
+      });
     }
 
     // Only add change listener if it's a select element (super admin)
     if (companySelect.tagName === 'SELECT') {
-      companySelect.addEventListener('change', filterPolicies);
+      companySelect.addEventListener('change', filterOptions);
     }
 
     // Initial filter (works for both admin and super admin)
-    filterPolicies();
+    filterOptions();
   })();
 
   // Product form management

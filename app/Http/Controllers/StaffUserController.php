@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class StaffUserController extends Controller
 {
@@ -34,9 +35,9 @@ class StaffUserController extends Controller
         $user = auth()->user();
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'contact_number' => 'nullable|string',
+            'username' => ['required', 'string', 'max:255', Rule::unique('users')->withoutTrashed()],
+            'email' => ['required', 'email', Rule::unique('users')->withoutTrashed()],
+            'contact_number' => ['nullable', 'string', Rule::unique('users')->withoutTrashed()],
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|string',
             'ic_number' => 'nullable|string',
@@ -50,9 +51,15 @@ class StaffUserController extends Controller
             $data['company_id'] = $user->company_id;
         }
         $data['role'] = 'staff';
-        $data['password'] = bcrypt($data['password']);
-        User::create($data);
-        return redirect()->route('staff.index');
+        // Password is automatically hashed by the User model's 'password' => 'hashed' cast
+
+        try {
+            User::create($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to create staff. ' . $e->getMessage());
+        }
+
+        return redirect()->route('staff.index')->with('success', 'Staff created successfully');
     }
 
     public function show(User $staff)
@@ -88,9 +95,9 @@ class StaffUserController extends Controller
         }
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $staff->id,
-            'contact_number' => 'nullable|string',
+            'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($staff->id)->withoutTrashed()],
+            'email' => ['required', 'email', Rule::unique('users')->ignore($staff->id)->withoutTrashed()],
+            'contact_number' => ['nullable', 'string', Rule::unique('users')->ignore($staff->id)->withoutTrashed()],
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|string',
             'ic_number' => 'nullable|string',
@@ -102,8 +109,13 @@ class StaffUserController extends Controller
         if ($user->role === 'admin') {
             $data['company_id'] = $staff->company_id;
         }
-        $staff->update($data);
-        return redirect()->route('staff.show', $staff);
+        try {
+            $staff->update($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to update staff. ' . $e->getMessage());
+        }
+
+        return redirect()->route('staff.show', $staff)->with('success', 'Staff updated successfully');
     }
 
     public function destroy(User $staff)

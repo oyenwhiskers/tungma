@@ -41,8 +41,13 @@ class CourierPolicyController extends Controller
         if ($user->role === 'admin') {
             abort_unless($data['company_id'] == $user->company_id, 403);
         }
-        CourierPolicy::create($data);
-        return redirect()->route('policies.index');
+        try {
+            CourierPolicy::create($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to create policy. ' . $e->getMessage());
+        }
+
+        return redirect()->route('policies.index')->with('success', 'Policy created successfully');
     }
 
     public function show(CourierPolicy $policy)
@@ -75,8 +80,13 @@ class CourierPolicyController extends Controller
             'description' => 'nullable|string',
             'company_id' => 'required|exists:companies,id',
         ]);
-        $policy->update($data);
-        return redirect()->route('policies.show', $policy);
+        try {
+            $policy->update($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to update policy. ' . $e->getMessage());
+        }
+
+        return redirect()->route('policies.show', $policy)->with('success', 'Policy updated successfully');
     }
 
     public function destroy(CourierPolicy $policy)

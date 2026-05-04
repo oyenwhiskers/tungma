@@ -500,24 +500,14 @@
                         <i class="bi bi-house"></i> Dashboard
                     </a>
 
-                    @if(auth()->check() && auth()->user()->role === 'super_admin')
-                        <a href="{{ route('companies.index') }}"
-                            class="{{ request()->routeIs('companies.*') ? 'active' : '' }}">
-                            <i class="bi bi-building"></i> Companies
-                        </a>
-                        <a href="{{ route('admins.index') }}" class="{{ request()->routeIs('admins.*') ? 'active' : '' }}">
-                            <i class="bi bi-person-badge"></i> Admins
-                        </a>
-                    @endif
+                    <div class="tm-nav-divider"></div>
+                    <div class="small text-muted px-3 mb-2 text-uppercase fw-bold" style="font-size: 10px;">Management</div>
 
-                    <a href="{{ route('staff.index') }}" class="{{ request()->routeIs('staff.*') ? 'active' : '' }}">
-                        <i class="bi bi-people"></i> Staff
-                    </a>
-                    <a href="{{ route('policies.index') }}" class="{{ request()->routeIs('policies.*') ? 'active' : '' }}">
-                        <i class="bi bi-file-earmark-text"></i> Policies
-                    </a>
                     <a href="{{ route('bills.index') }}" class="{{ request()->routeIs('bills.*') ? 'active' : '' }}">
                         <i class="bi bi-receipt"></i> Bills
+                    </a>
+                    <a href="{{ route('e-invoice.index') }}" class="{{ request()->routeIs('e-invoice.*') ? 'active' : '' }}">
+                        <i class="bi bi-file-earmark-check"></i> E-Invoice Req
                     </a>
                     <a href="{{ route('checklists.index') }}"
                         class="{{ request()->routeIs('checklists.*') ? 'active' : '' }}">
@@ -532,6 +522,41 @@
                     @endif
 
                     <div class="tm-nav-divider"></div>
+                    <div class="small text-muted px-3 mb-2 text-uppercase fw-bold" style="font-size: 10px;">Master Data</div>
+                    
+                    @if(auth()->check() && (auth()->user()->role === 'super_admin' || auth()->user()->role === 'admin'))
+                    <a href="{{ route('customers.index') }}" class="{{ request()->routeIs('customers.*') ? 'active' : '' }}">
+                        <i class="bi bi-people"></i> Customers (Senders)
+                    </a>
+                    <a href="{{ route('receivers.index') }}" class="{{ request()->routeIs('receivers.*') ? 'active' : '' }}">
+                        <i class="bi bi-person-vcard"></i> Receivers (Presets)
+                    </a>
+                    @endif
+
+                    <a href="{{ route('policies.index') }}" class="{{ request()->routeIs('policies.*') ? 'active' : '' }}">
+                        <i class="bi bi-file-earmark-text"></i> Courier Policies
+                    </a>
+
+                    <div class="tm-nav-divider"></div>
+                    <div class="small text-muted px-3 mb-2 text-uppercase fw-bold" style="font-size: 10px;">Staff & Admin</div>
+
+                    <a href="{{ route('staff.index') }}" class="{{ request()->routeIs('staff.*') ? 'active' : '' }}">
+                        <i class="bi bi-people"></i> Staff Members
+                    </a>
+
+                    @if(auth()->check() && auth()->user()->role === 'super_admin')
+                        <a href="{{ route('companies.index') }}"
+                            class="{{ request()->routeIs('companies.*') ? 'active' : '' }}">
+                            <i class="bi bi-building"></i> Companies
+                        </a>
+                        <a href="{{ route('admins.index') }}" class="{{ request()->routeIs('admins.*') ? 'active' : '' }}">
+                            <i class="bi bi-person-badge"></i> System Admins
+                        </a>
+                    @endif
+
+                    <div class="tm-nav-divider"></div>
+                    <div class="small text-muted px-3 mb-2 text-uppercase fw-bold" style="font-size: 10px;">System</div>
+
                     <a href="{{ route('analytics.index') }}"
                         class="{{ request()->routeIs('analytics.*') ? 'active' : '' }}">
                         <i class="bi bi-graph-up"></i> Analytics
@@ -539,7 +564,7 @@
 
                     @if(auth()->check() && auth()->user()->role === 'super_admin')
                         <a href="{{ route('backup.index') }}" class="{{ request()->routeIs('backup.*') ? 'active' : '' }}">
-                            <i class="bi bi-file-earmark-text"></i> Backup & Restore
+                            <i class="bi bi-cloud-arrow-down"></i> Backup & Restore
                         </a>
                     @endif
                     
@@ -551,11 +576,7 @@
                     @endif
 
                     <a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                        <i class="bi bi-person-circle"></i> Profile
-                    </a>
-                @else
-                    <a href="{{ route('login') }}">
-                        <i class="bi bi-box-arrow-in-right"></i> Login
+                        <i class="bi bi-person-circle"></i> My Profile
                     </a>
                 @endauth
             </nav>
@@ -573,7 +594,32 @@
         </aside>
         <main class="tm-content">
             @if(session('status'))
-                <div class="alert alert-success">{{ session('status') }}</div>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('status') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+            @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             @endif
             @yield('content')
         </main>

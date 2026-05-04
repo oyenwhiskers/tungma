@@ -12,8 +12,8 @@ class StorageController extends Controller
     {
         $paths = [
             'logs' => storage_path('logs'),
-            'bill_attachments' => storage_path('app/public/bills'),
-            'profile_images' => storage_path('app/public/profiles'),
+            'bill_attachments' => public_path('storage/bills'),
+            'profile_images' => public_path('storage/profiles'),
         ];
 
         $metrics = [];
@@ -44,8 +44,8 @@ class StorageController extends Controller
         $target = $request->target;
         $map = [
             'logs' => storage_path('logs'),
-            'bill_attachments' => storage_path('app/public/bills'),
-            'profile_images' => storage_path('app/public/profiles'),
+            'bill_attachments' => public_path('storage/bills'),
+            'profile_images' => public_path('storage/profiles'),
         ];
 
         $path = $map[$target];

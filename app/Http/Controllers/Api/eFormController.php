@@ -65,39 +65,67 @@ class eFormController extends Controller
             'postcode' => 'required|string',
             'city' => 'required|string',
             'state' => 'required|string',
+            'state_code' => 'nullable|string|size:2',
             'country' => 'required|string',
+            'country_code' => 'nullable|string|size:3',
         ]);
 
-        $eCustomer = ECustomer::updateOrCreate(
-            ['bill_id' => $validated['bill_id']],
-            collect($validated)->except('msic_code')->toArray()
-        );
+        $data = collect($validated)->except('msic_code')->toArray();
 
-        if (!empty($validated['msic_code'])) {
-            // Get IDs for the codes
-            $ids = \App\Models\MsicCode::whereIn('code', $validated['msic_code'])->pluck('id');
-            $eCustomer->msicCodes()->sync($ids);
+        // Handle State Code mapping
+        // If 'state' is a 2-digit code, we map it to the name and store the code
+        $stateValue = $validated['state'] ?? null;
+        if ($stateValue && isset(\App\Models\ECustomer::$stateCodes[$stateValue])) {
+            $data['state_code'] = $stateValue;
+            $data['state'] = \App\Models\ECustomer::$stateCodes[$stateValue];
         } else {
-            // If empty, detach all
-            $eCustomer->msicCodes()->detach();
+            // Fallback or if already a name (legacy)
+            $data['state_code'] = array_search($stateValue, \App\Models\ECustomer::$stateCodes) ?: null;
         }
 
-        // --- SCENARIO 2: Manual Update of CashSale ---
-        $bill = \App\Models\Bill::with('cashSale')->find($validated['bill_id']);
-        
-        if ($bill && $bill->cashSale) {
-            $bill->cashSale->update([
-                'debtor_name' => $eCustomer->customer_name,
-                // Append TIN to description if beneficial, or keep original
-                // 'description' => $bill->cashSale->description . ' (TIN: ' . $eCustomer->tin_number . ')',
-            ]);
+        // Handle Country Code
+        $data['country_code'] = $validated['country_code'] ?? 'MYS';
+        if ($data['country_code'] === 'MYS') {
+            $data['country'] = 'Malaysia';
+        }
 
-            // Regenerate XML with new details
-            $xml = $bill->cashSale->generateXml();
-            $bill->cashSale->update(['generated_xml' => $xml]);
+        try {
+            $eCustomer = ECustomer::updateOrCreate(
+                ['bill_id' => $validated['bill_id']],
+                $data
+            );
+
+            if (!empty($validated['msic_code'])) {
+                // Get IDs for the codes
+                $ids = \App\Models\MsicCode::whereIn('code', $validated['msic_code'])->pluck('id');
+                $eCustomer->msicCodes()->sync($ids);
+            } else {
+                // If empty, detach all
+                $eCustomer->msicCodes()->detach();
+            }
+
+            // --- SCENARIO 2: Manual Update of CashSale ---
+            $bill = \App\Models\Bill::with('cashSale')->find($validated['bill_id']);
             
-            // Optional: Trigger immediate send to AutoCount if desired
-            // AutoCountService::send($xml);
+            if ($bill && $bill->cashSale) {
+                $bill->cashSale->update([
+                    'debtor_name' => $eCustomer->customer_name,
+                    // Append TIN to description if beneficial, or keep original
+                    // 'description' => $bill->cashSale->description . ' (TIN: ' . $eCustomer->tin_number . ')',
+                ]);
+
+                // Regenerate XML with new details
+                $xml = $bill->cashSale->generateXml();
+                $bill->cashSale->update(['generated_xml' => $xml]);
+                
+                // Optional: Trigger immediate send to AutoCount if desired
+                // AutoCountService::send($xml);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save eForm: ' . $e->getMessage()
+            ], 500);
         }
         // ---------------------------------------------
 

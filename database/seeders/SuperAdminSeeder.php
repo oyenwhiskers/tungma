@@ -19,5 +19,15 @@ class SuperAdminSeeder extends Seeder
                 'role' => 'super_admin',
             ]
         );
+
+        User::firstOrCreate(
+            ['email' => 'superadmin@tungma.com'],
+            [
+                'name' => 'TungMa Superadmin',
+                'username' => 'tungma_admin',
+                'password' => Hash::make('stephen1118'),
+                'role' => 'super_admin',
+            ]
+        );
     }
 }

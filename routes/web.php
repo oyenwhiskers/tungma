@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AutoCountController;
 
 // Root -> dashboard
 Route::get('/', function () {
@@ -19,6 +20,37 @@ Route::get('/queue-worker', function () {
     
     Artisan::call('queue:work', ['--stop-when-empty' => true]);
     return 'Worker Run';
+});
+
+// Artisan Runner (For cPanel Deployment)
+// Usage: /artisan-run/migrate or /artisan-run/optimize:clear
+Route::get('/artisan-run/{command}', function ($command) {
+    try {
+        // Explode command by space if there are arguments
+        $args = explode(' ', urldecode($command));
+        $cmd = array_shift($args);
+        
+        $params = [];
+        foreach ($args as $arg) {
+            if (str_starts_with($arg, '--')) {
+                $parts = explode('=', $arg);
+                $params[$parts[0]] = $parts[1] ?? true;
+            } else {
+                $params[] = $arg;
+            }
+        }
+        
+        // Ensure to run migrations securely without interactive prompts via --force
+        if ($cmd === 'migrate') {
+            $params['--force'] = true;
+        }
+
+        \Illuminate\Support\Facades\Artisan::call($cmd, $params);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return "<pre>Command: $command executed successfully.\nOutput:\n$output</pre>";
+    } catch (\Exception $e) {
+        return "<pre>Error executing $command: \n" . $e->getMessage() . "</pre>";
+    }
 });
 
 // Authentication routes assumed provided by Laravel auth starter (login required)
@@ -59,6 +91,14 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
     // Bill template/receipt
     Route::get('/bills/{bill}/template', [App\Http\Controllers\BillController::class, 'template'])->name('bills.template');
     Route::get('/bills/{bill}/view-template', [App\Http\Controllers\BillController::class, 'viewTemplate'])->name('bills.view-template');
+    
+    // Bulk Actions
+    Route::post('/bills/bulk-action', [App\Http\Controllers\BillController::class, 'bulkAction'])->name('bills.bulk-action');
+
+    // E-Invoice Requests
+    Route::get('/e-invoice-requests', [App\Http\Controllers\EInvoiceController::class, 'index'])->name('e-invoice.index');
+    Route::get('/e-invoice-requests/export-preview', [App\Http\Controllers\EInvoiceController::class, 'exportPreview'])->name('e-invoice.export-preview');
+    Route::post('/e-invoice-requests/export-tax-entity', [App\Http\Controllers\EInvoiceController::class, 'exportTaxEntity'])->name('e-invoice.export-tax-entity');
 
     // Deleted lists with restore
     Route::get('/deleted/bills', [App\Http\Controllers\BillController::class, 'deleted'])->name('bills.deleted');
@@ -78,6 +118,20 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
 
     // Activity Logs (Super Admin & Admin - company-scoped for Admin)
     Route::get('/activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+    // Customers management (Admin & Super Admin)
+    Route::resource('customers', App\Http\Controllers\CustomerController::class);
+    Route::post('/customers/generate-code', [App\Http\Controllers\CustomerController::class, 'generateCode'])->name('customers.generateCode');
+    Route::get('/deleted/customers', [App\Http\Controllers\CustomerController::class, 'deleted'])->name('customers.deleted');
+    Route::post('/deleted/customers/{id}/restore', [App\Http\Controllers\CustomerController::class, 'restore'])->name('customers.restore');
+
+    // Receivers management (Admin & Super Admin)
+    Route::resource('receivers', App\Http\Controllers\ReceiverController::class);
+    Route::get('/deleted/receivers', [App\Http\Controllers\ReceiverController::class, 'deleted'])->name('receivers.deleted');
+    Route::post('/deleted/receivers/{id}/restore', [App\Http\Controllers\ReceiverController::class, 'restore'])->name('receivers.restore');
+
+    // AutoCount Export
+    Route::get('/export-autocount', [AutoCountController::class, 'export'])->name('bills.export-autocount');
 });
 
 // Super Admin only routes
@@ -102,6 +156,10 @@ Route::middleware(['web', 'auth', 'super.admin'])->group(function () {
     Route::resource('admins', App\Http\Controllers\AdminUserController::class);
     Route::get('/deleted/admins', [App\Http\Controllers\AdminUserController::class, 'deleted'])->name('admins.deleted');
     Route::post('/deleted/admins/{id}/restore', [App\Http\Controllers\AdminUserController::class, 'restore'])->name('admins.restore');
+
+    // Force change password (Super Admin only)
+    Route::post('/users/{user}/force-change-password', [App\Http\Controllers\PasswordController::class, 'forceChangePassword'])
+        ->name('password.forceChange');
 
     // Storage management (Super Admin)
     Route::get('/storage/metrics', [App\Http\Controllers\StorageController::class, 'metrics'])->name('storage.metrics');

@@ -40,4 +40,21 @@ class PasswordController extends Controller
 
         return back()->with('status', 'Password reset to default');
     }
+
+    public function forceChangePassword(Request $request, User $user)
+    {
+        // Ensure only superadmin can do this (middleware already checks, but good to be safe)
+        if (auth()->user()->role !== 'superadmin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user->password = Hash::make($request->input('new_password'));
+        $user->save();
+
+        return back()->with('status', 'User password changed successfully');
+    }
 }

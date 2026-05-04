@@ -38,10 +38,22 @@ class BusDeparturesController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->all();
-        $data['company_id'] = auth()->user()->company_id;
-        BusDepartures::create($data);
-        return redirect()->route('bus-departures.index');
+        $data = $request->validate([
+            'departure_time' => 'required',
+            'company_id' => 'nullable|exists:companies,id',
+        ]);
+
+        if (auth()->user()->role === 'admin') {
+            $data['company_id'] = auth()->user()->company_id;
+        }
+
+        try {
+            BusDepartures::create($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to create bus departure. ' . $e->getMessage());
+        }
+
+        return redirect()->route('bus-departures.index')->with('success', 'Bus departure created successfully');
     }
 
     /**
@@ -59,8 +71,19 @@ class BusDeparturesController extends Controller
     public function update(Request $request, string $id)
     {
         $busDeparture = BusDepartures::findOrFail($id);
-        $busDeparture->update($request->all());
-        return redirect()->route('bus-departures.index');
+        
+        $data = $request->validate([
+            'departure_time' => 'required',
+            'company_id' => 'nullable|exists:companies,id',
+        ]);
+
+        try {
+            $busDeparture->update($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to update bus departure. ' . $e->getMessage());
+        }
+
+        return redirect()->route('bus-departures.index')->with('success', 'Bus departure updated successfully');
     }
 
     /**

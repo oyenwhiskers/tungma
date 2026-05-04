@@ -6,7 +6,7 @@
     <title>Bill {{ $bill->bill_code }} - Office Copy</title>
     <style>
         @page {
-            margin: 20px;
+            margin: 25px;
         }
 
         @font-face {
@@ -31,14 +31,29 @@
 
         body {
             font-family: 'DejaVu Sans', 'Helvetica', 'Arial', 'Noto Sans SC', sans-serif;
-            font-size: 11px;
+            font-size: 8px;
             color: #000;
+            padding: 0;
+            margin: 0;
         }
 
         .bill-container {
-            width: 100%;
-            border: 2px solid #000;
+            width: 98%;
+            margin: 0 auto;
+            border: 1.5px solid #000;
             position: relative;
+            padding: 2px;
+            z-index: 10;
+        }
+
+        .cutting-line {
+            position: absolute;
+            top: 148.5mm;
+            left: -25px;
+            right: -25px;
+            border-top: 1px dashed #888;
+            height: 1px;
+            z-index: 1;
         }
 
         table {
@@ -53,14 +68,14 @@
 
         /* Header Specifics */
         .company-info {
-            padding: 10px;
+            padding: 2px;
             border: none;
             width: 40%;
             vertical-align: top;
         }
 
         .logo-section {
-            padding: 5px;
+            padding: 2px;
             text-align: center;
             border: none;
             width: 30%;
@@ -68,7 +83,7 @@
         }
 
         .payment-section {
-            padding: 10px;
+            padding: 2px;
             text-align: center;
             border: none;
             width: 30%;
@@ -76,24 +91,24 @@
         }
 
         .company-name {
-            font-size: 18px;
+            font-size: 10px;
             font-weight: 900;
         }
 
         .sst-no {
-            font-size: 10px;
-            margin-top: 2px;
+            font-size: 8px;
+            margin-top: 1px;
         }
 
         .cash-sales-badge {
             background: #1a1a1a;
             color: #fff;
-            padding: 8px 25px;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 10px;
             font-weight: bold;
             display: inline-block;
-            margin-bottom: 10px;
+            margin-bottom: 2px;
         }
 
         /* Checkbox Styling */
@@ -105,22 +120,22 @@
 
         .cb-table td {
             border: none;
-            padding: 4px 8px;
+            padding: 1px 2px;
             text-align: left;
             vertical-align: middle;
         }
 
         .box {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #000;
+            width: 10px;
+            height: 10px;
+            border: 1px solid #000;
             display: inline-block;
-            margin-right: 5px;
+            margin-right: 2px;
             vertical-align: middle;
             text-align: center;
-            line-height: 14px;
+            line-height: 8px;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 8px;
         }
 
         .box.checked {
@@ -132,58 +147,57 @@
         .label-cell {
             text-align: center;
             font-weight: bold;
-            font-size: 14px;
-            padding: 12px;
+            font-size: 8px;
+            padding: 2px;
             text-transform: uppercase;
         }
 
         .cs-no {
-            font-size: 14px;
+            font-size: 8px;
             color: #000;
         }
 
         .cs-val {
             color: #d00;
-            font-size: 18px;
+            font-size: 10px;
         }
 
         .data-content {
-            padding: 12px;
-            height: 110px;
+            padding: 2px;
         }
 
         .field-label {
-            font-size: 11px;
-            margin-bottom: 2px;
+            font-size: 8px;
+            margin-bottom: 1px;
         }
 
         .field-value {
-            font-size: 15px;
+            font-size: 9px;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 2px;
         }
 
         /* Main Content */
         .desc-cell {
-            padding: 15px;
+            padding: 2px;
             width: 37%;
         }
 
         .total-cell {
-            padding: 15px;
+            padding: 2px;
             width: 33%;
             text-align: center;
         }
 
         .qr-cell {
-            padding: 10px;
+            padding: 2px;
             width: 30%;
             text-align: center;
         }
 
         /* CONSIGNEE Section */
         .consignee-section {
-            border: 2px solid #000;
+            border: 1px solid #000;
             padding: 0;
             width: 30%;
         }
@@ -191,34 +205,33 @@
         .consignee-header {
             text-align: center;
             font-weight: bold;
-            font-size: 14px;
-            padding: 8px;
-            border-bottom: 2px solid #000;
+            font-size: 8px;
+            padding: 2px;
+            border-bottom: 1px solid #000;
         }
 
         .consignee-top {
-            padding: 10px;
+            padding: 2px;
             border-bottom: 1px solid #000;
         }
 
         .consignee-field {
             display: flex;
-            margin-bottom: 8px;
+            margin-bottom: 2px;
         }
 
         .consignee-label {
-            width: 50px;
-            font-size: 11px;
+            width: 30px;
+            font-size: 8px;
         }
 
         .consignee-input {
             flex: 1;
             border-bottom: 1px solid #000;
-            min-height: 18px;
         }
 
         .consignee-bottom {
-            padding: 10px;
+            padding: 2px;
         }
 
         .consignee-sign {
@@ -227,20 +240,20 @@
         }
 
         .consignee-sign-label {
-            width: 50px;
-            font-size: 11px;
+            width: 30px;
+            font-size: 8px;
         }
 
         .consignee-sign-space {
             flex: 1;
             border-bottom: 1px solid #000;
-            min-height: 40px;
+            min-height: 15px;
         }
 
         .total-amount {
-            font-size: 32px;
+            font-size: 24px;
             font-weight: bold;
-            margin: 15px 0;
+            margin: 10px 0;
         }
 
         .description-item {
@@ -316,7 +329,16 @@
 
 <body>
 
+    <div class="cutting-line"></div>
+
     <div class="bill-container">
+        @php
+            $logoPath = public_path('images/logo.png');
+            $logoBase64 = '';
+            if (file_exists($logoPath)) {
+                $logoBase64 = base64_encode(file_get_contents($logoPath));
+            }
+        @endphp
         <!-- <div class="copy-label">OFFICE & RECEIVER COPY</div> -->
         <table style="border: none; border-bottom: 2px solid #000;">
             <tr>
@@ -343,7 +365,7 @@
                     </div>
                 </td>
                 <td class="logo-section">
-                    <img src="{{ $isPdf ? public_path('images/logo.png') : asset('images/logo.png') }}"
+                    <img src="data:image/png;base64,{{ $logoBase64 }}"
                         style="width: 80px; margin-bottom: 5px; margin-left: -100px;">
                     <div style="font-size: 18px; font-weight: bold; letter-spacing: 4px; margin-left: -100px;">東 馬 快 車
                     </div>
@@ -355,22 +377,27 @@
                         <tr>
                             <td>
                                 <div class="box {{ ($paymentDetails['method'] ?? '') == 'cash' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'cash')/@endif</div> CASH
+                                    @if(($paymentDetails['method'] ?? '') == 'cash')/@endif
+                                </div> CASH
                             </td>
                             <td>
                                 <div
                                     class="box {{ in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet']) ? 'checked' : '' }}">
-                                    @if(in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet']))/@endif</div> QR
+                                    @if(in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet']))/@endif
+                                </div> QR
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 <div class="box {{ ($paymentDetails['method'] ?? '') == 'cod' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'cod')/@endif</div> C.O.D
+                                    @if(($paymentDetails['method'] ?? '') == 'cod')/@endif
+                                </div> C.O.D
                             </td>
                             <td>
-                                <div class="box {{ ($paymentDetails['method'] ?? '') == 'bank_transfer' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'bank_transfer')/@endif</div> A/C
+                                <div
+                                    class="box {{ ($paymentDetails['method'] ?? '') == 'bank_transfer' ? 'checked' : '' }}">
+                                    @if(($paymentDetails['method'] ?? '') == 'bank_transfer')/@endif
+                                </div> A/C
                             </td>
                         </tr>
                     </table>
@@ -381,9 +408,12 @@
         <table>
             <tr>
                 <td class="label-cell" style="width: 37%;">FROM {{ strtoupper($bill->fromCompany->name ?? 'N/A') }}</td>
-                <td class="label-cell" style="width: 33%;">TO {{ strtoupper($bill->toCompany->name ?? 'N/A') }}</td>
+                <td class="label-cell" style="width: 33%; font-size: 10px;">TO
+                    {{ strtoupper($bill->toCompany->address ?? 'N/A') }}</td>
                 <td class="label-cell" style="width: 30%; text-align: left;">
-                    <span class="cs-no">CS No. D:</span> <span class="cs-val">{{ $bill->bill_code }}</span>
+                    <span class="cs-no">CS No. D:</span> <span class="cs-val">{{ $bill->bill_code }}</span><br>
+                    <span style="font-size: 10px; font-weight: normal; text-transform: none;">Created by:
+                        {{ $bill->creator->name ?? 'System' }}</span>
                 </td>
             </tr>
             <tr>
@@ -401,12 +431,8 @@
                 </td>
                 <td class="data-content">
                     <div class="field-label">DATE: {{ $bill->date ? $bill->date->format('d/m/Y') : '16/12/2025' }}</div>
-                    <div style="height: 30px;"></div>
-                    <div style="margin-top: 25px;">
-                        <div class="field-label">TIME FROM SDK: {{ $bill->busDeparture->departure_time ?? 'N/A' }}</div>
-                    </div>
-                    <div style="height: 30px;"></div>
-                    <div style="margin-top: 15px; font-size: 8px; font-weight: bold;">
+                    <div class="field-label">TIME FROM SDK: {{ $bill->busDeparture->departure_time ?? 'N/A' }}</div>
+                    <div style="font-size: 8px; font-weight: bold;">
                         ESTIMATED TO ARRIVE IN 7 HOURS<br>
                         <span style="font-weight: normal;">(BUSINESS HOUR: 7am - 8pm)</span>
                     </div>

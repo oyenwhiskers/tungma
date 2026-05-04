@@ -43,6 +43,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('bus-departures', [BusDeparturesController::class, 'index']);
     Route::get('companies', [CompanyController::class, 'index']);
     Route::get('courier-policies', [CourierPolicyController::class, 'index']);
+    Route::get('customers', [\App\Http\Controllers\Api\CustomerController::class, 'index']);
+    Route::get('receivers', [\App\Http\Controllers\Api\ReceiverController::class, 'index']);
 
 });
 

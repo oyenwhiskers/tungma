@@ -130,8 +130,18 @@
             </a>
           </div>
           <div class="col-md-4">
-            <a class="btn btn-outline-secondary w-100 text-start" href="{{ route('bills.create') }}">
+            <a class="btn btn-primary w-100 text-start" href="{{ route('bills.create') }}">
               <i class="bi bi-receipt"></i> New Bill
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a class="btn btn-outline-secondary w-100 text-start" href="{{ route('customers.create') }}">
+              <i class="bi bi-person-plus"></i> New Customer
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a class="btn btn-outline-secondary w-100 text-start" href="{{ route('receivers.create') }}">
+              <i class="bi bi-person-vcard"></i> New Receiver
             </a>
           </div>
           <div class="col-md-4">

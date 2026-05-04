@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bills', function (Blueprint $table) {
-            $table->date('customer_received_date')->nullable()->after('customer_ic_number');
-        });
+        if (!Schema::hasColumn('bills', 'customer_received_date')) {
+            Schema::table('bills', function (Blueprint $table) {
+                $table->date('customer_received_date')->nullable()->after('customer_ic_number');
+            });
+        }
     }
 
     /**

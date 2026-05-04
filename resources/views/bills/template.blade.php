@@ -6,7 +6,7 @@
     <title>Bill {{ $bill->bill_code }}</title>
     <style>
         @page {
-            margin: 20px;
+            margin: 25px; /* Reduced from 40px to pull content up */
         }
 
         @font-face {
@@ -31,13 +31,29 @@
 
         body {
             font-family: 'DejaVu Sans', 'Helvetica', 'Arial', 'Noto Sans SC', sans-serif;
-            font-size: 11px;
+            font-size: 8px; /* Shrunk further to 8px */
             color: #000;
+            padding: 0;
+            margin: 0;
         }
 
         .bill-container {
-            width: 100%;
+            width: 98%;
+            margin: 0 auto;
+            border: 1.5px solid #000;
             position: relative;
+            padding: 2px;
+            z-index: 10;
+        }
+
+        .cutting-line {
+            position: absolute;
+            top: 148.5mm; /* Restore to center of A4 */
+            left: -25px;  /* Offset new 25px margin */
+            right: -25px;
+            border-top: 1px dashed #888;
+            height: 1px;
+            z-index: 1;
         }
 
         table {
@@ -131,8 +147,8 @@
         .label-cell {
             text-align: center;
             font-weight: bold;
-            font-size: 14px;
-            padding: 12px;
+            font-size: 12px;
+            padding: 6px;
             text-transform: uppercase;
         }
 
@@ -147,8 +163,7 @@
         }
 
         .data-content {
-            padding: 12px;
-            height: 110px;
+            padding: 3px;
         }
 
         .field-label {
@@ -157,19 +172,19 @@
         }
 
         .field-value {
-            font-size: 15px;
+            font-size: 13px; /* Slightly smaller */
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 2px; /* Reduced from 12px */
         }
 
         /* Main Content */
         .desc-cell {
-            padding: 15px;
+            padding: 10px;
             width: 37%;
         }
 
         .total-cell {
-            padding: 15px;
+            padding: 10px;
             width: 33%;
             text-align: center;
         }
@@ -181,9 +196,9 @@
         }
 
         .total-amount {
-            font-size: 32px;
+            font-size: 20px; /* Shrunk total font */
             font-weight: bold;
-            margin: 15px 0;
+            margin: 5px 0;
         }
 
         .description-item {
@@ -221,10 +236,10 @@
         .policy-box {
             background: #000;
             color: #fff;
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 9px;
-            line-height: 1.4;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 8px;
+            line-height: 1.2;
         }
 
         .policy-right {
@@ -259,7 +274,16 @@
 
 <body>
 
+    <div class="cutting-line"></div>
+
     <div class="bill-container">
+        @php
+            $logoPath = public_path('images/logo.png');
+            $logoBase64 = '';
+            if (file_exists($logoPath)) {
+                $logoBase64 = base64_encode(file_get_contents($logoPath));
+            }
+        @endphp
         <!-- <div class="copy-label">CUSTOMER COPY</div> -->
         <table style="border: none; border-bottom: 2px solid #000;">
             <tr>
@@ -286,7 +310,7 @@
                     </div>
                 </td>
                 <td class="logo-section">
-                    <img src="{{ $isPdf ? public_path('images/logo.png') : asset('images/logo.png') }}"
+                    <img src="data:image/png;base64,{{ $logoBase64 }}"
                         style="width: 80px; margin-bottom: 5px; margin-left: -100px;">
                     <div style="font-size: 18px; font-weight: bold; letter-spacing: 4px; margin-left: -100px;">東 馬 快 車
                     </div>
@@ -324,9 +348,10 @@
         <table>
             <tr>
                 <td class="label-cell" style="width: 37%;">FROM {{ strtoupper($bill->fromCompany->name ?? 'N/A') }}</td>
-                <td class="label-cell" style="width: 33%;">TO {{ strtoupper($bill->toCompany->name ?? 'N/A') }}</td>
+                <td class="label-cell" style="width: 33%; font-size: 10px;">TO {{ strtoupper($bill->toCompany->address ?? 'N/A') }}</td>
                 <td class="label-cell" style="width: 30%; text-align: left;">
-                    <span class="cs-no">CS No. D:</span> <span class="cs-val">{{ $bill->bill_code }}</span>
+                    <span class="cs-no">CS No. D:</span> <span class="cs-val">{{ $bill->bill_code }}</span><br>
+                    <span style="font-size: 10px; font-weight: normal; text-transform: none;">Created by: {{ $bill->creator->name ?? 'System' }}</span>
                 </td>
             </tr>
             <tr>
@@ -344,12 +369,8 @@
                 </td>
                 <td class="data-content">
                     <div class="field-label">DATE: {{ $bill->date ? $bill->date->format('d/m/Y') : '16/12/2025' }}</div>
-                    <div style="height: 30px;"></div>
-                    <div style="margin-top: 25px;">
-                        <div class="field-label">TIME FROM SDK: {{ $bill->busDeparture->departure_time ?? 'N/A' }}</div>
-                    </div>
-                    <div style="height: 30px;"></div>
-                    <div style="margin-top: 15px; font-size: 8px; font-weight: bold;">
+                    <div class="field-label">TIME FROM SDK: {{ $bill->busDeparture->departure_time ?? 'N/A' }}</div>
+                    <div style="font-size: 8px; font-weight: bold;">
                         ESTIMATED TO ARRIVE IN 7 HOURS<br>
                         <span style="font-weight: normal;">(BUSINESS HOUR: 7am - 8pm)</span>
                     </div>
@@ -394,7 +415,7 @@
                             $qrCode = \Endroid\QrCode\Builder\Builder::create()
                                 ->writer(new \Endroid\QrCode\Writer\PngWriter())
                                 ->data($qrData)
-                                ->size(100)
+                                ->size(120)
                                 ->margin(2)
                                 ->build();
                             $qrCodeBase64 = $qrCode->getDataUri();
@@ -403,15 +424,15 @@
                             $qrCode = \Endroid\QrCode\Builder\Builder::create()
                                 ->writer(new \Endroid\QrCode\Writer\SvgWriter())
                                 ->data($qrData)
-                                ->size(100)
+                                ->size(120)
                                 ->margin(2)
                                 ->build();
                             $qrCodeBase64 = $qrCode->getDataUri();
                         }
                     @endphp
-                    <img src="{{ $qrCodeBase64 }}" style="width: 90px; display: block; margin: 0 auto;">
-                    <div style="font-size: 8px; font-weight: bold; margin-top: 5px;">
-                        Scan here for E-Invoice<br>Submit within 3 days
+                    <img src="{{ $qrCodeBase64 }}" style="width: 80px; display: block; margin: 0 auto;">
+                    <div style="font-size: 7px; font-weight: bold; margin-top: 2px;">
+                        Scan for E-Invoice
                     </div>
                 </td>
             </tr>

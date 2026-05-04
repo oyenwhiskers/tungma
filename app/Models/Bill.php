@@ -13,6 +13,7 @@ class Bill extends Model
 
     protected $fillable = [
         'bill_code',
+        'debtor_code',
         'date',
         'amount',
         'description',
@@ -84,5 +85,10 @@ class Bill extends Model
     public function cashSale()
     {
         return $this->hasOne(CashSale::class);
+    }
+
+    public function eCustomer()
+    {
+        return $this->hasOne(ECustomer::class);
     }
 }

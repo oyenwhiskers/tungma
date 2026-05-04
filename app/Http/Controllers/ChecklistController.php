@@ -132,12 +132,9 @@ class ChecklistController extends Controller
         if (!empty($billIds)) {
             $query = Bill::whereIn('id', $billIds);
 
-            // Filter by company visibility (sender OR receiver)
+            // Filter by company visibility (only receiver can check)
             if ($user->role !== 'super_admin') {
-                $query->where(function ($q) use ($user) {
-                    $q->where('from_company_id', $user->company_id)
-                        ->orWhere('to_company_id', $user->company_id);
-                });
+                $query->where('to_company_id', $user->company_id);
             }
 
             $query->update([

@@ -11,6 +11,7 @@ use App\Models\CourierPolicy;
 use App\Policies\CompanyPolicy;
 use App\Policies\BillPolicy;
 use App\Policies\CourierPolicyPolicy;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
+
         // Register policies (if AuthServiceProvider not present)
         Gate::policy(Company::class, CompanyPolicy::class);
         Gate::policy(Bill::class, BillPolicy::class);

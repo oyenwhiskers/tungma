@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AdminUserController extends Controller
 {
@@ -22,9 +23,9 @@ class AdminUserController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'contact_number' => 'nullable|string',
+            'username' => ['required', 'string', 'max:255', Rule::unique('users')->withoutTrashed()],
+            'email' => ['required', 'email', Rule::unique('users')->withoutTrashed()],
+            'contact_number' => ['nullable', 'string', Rule::unique('users')->withoutTrashed()],
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|string',
             'ic_number' => 'nullable|string',
@@ -34,9 +35,15 @@ class AdminUserController extends Controller
             'password' => 'required|string|min:8',
         ]);
         $data['role'] = 'admin';
-        $data['password'] = bcrypt($data['password']);
-        User::create($data);
-        return redirect()->route('admins.index');
+        // Password is automatically hashed by the User model's 'password' => 'hashed' cast
+
+        try {
+            User::create($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to create admin. ' . $e->getMessage());
+        }
+
+        return redirect()->route('admins.index')->with('success', 'Admin created successfully');
     }
 
     public function show(User $admin)
@@ -56,9 +63,9 @@ class AdminUserController extends Controller
         abort_unless($admin->role === 'admin', 404);
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $admin->id,
-            'contact_number' => 'nullable|string',
+            'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($admin->id)->withoutTrashed()],
+            'email' => ['required', 'email', Rule::unique('users')->ignore($admin->id)->withoutTrashed()],
+            'contact_number' => ['nullable', 'string', Rule::unique('users')->ignore($admin->id)->withoutTrashed()],
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|string',
             'ic_number' => 'nullable|string',
@@ -66,8 +73,13 @@ class AdminUserController extends Controller
             'company_id' => 'nullable|exists:companies,id',
             'start_date' => 'nullable|date',
         ]);
-        $admin->update($data);
-        return redirect()->route('admins.show', $admin);
+        try {
+            $admin->update($data);
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Failed to update admin. ' . $e->getMessage());
+        }
+
+        return redirect()->route('admins.show', $admin)->with('success', 'Admin updated successfully');
     }
 
     public function destroy(User $admin)
