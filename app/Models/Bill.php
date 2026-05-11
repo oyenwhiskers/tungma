@@ -43,6 +43,8 @@ class Bill extends Model
         'date' => 'date',
         'amount' => 'decimal:2',
         'policy_snapshot' => 'array',
+        'payment_details' => 'array',
+        'sst_details' => 'array',
         'is_paid' => 'boolean',
         'is_collected' => 'boolean',
     ];

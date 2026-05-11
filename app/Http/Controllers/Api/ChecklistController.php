@@ -321,35 +321,39 @@ class ChecklistController extends Controller
             return response()->json(['message' => 'You are not authorized to update the checklist.'], 403);
         }
 
+        $checkedCount   = 0;
+        $uncheckedCount = 0;
+
         if (!empty($billIds)) {
             $query = Bill::whereIn('id', $billIds);
-
-            // Filter by company visibility (only receiver can check)
             if ($user->role !== 'super_admin') {
                 $query->where('to_company_id', $user->company_id);
             }
-
-            $query->update([
-                'checked_by' => $userId
-            ]);
+            $checkedCount = $query->update(['checked_by' => $userId]);
         }
 
         if (!empty($uncheckedBillIds)) {
             $query = Bill::whereIn('id', $uncheckedBillIds);
-
-            // Filter by company visibility (only receiver can uncheck)
             if ($user->role !== 'super_admin') {
                 $query->where('to_company_id', $user->company_id);
             }
+            $uncheckedCount = $query->update(['checked_by' => null]);
+        }
 
-            $query->update([
-                'checked_by' => null
-            ]);
+        $totalUpdated = $checkedCount + $uncheckedCount;
+
+        if ($totalUpdated === 0 && (!empty($billIds) || !empty($uncheckedBillIds))) {
+            return response()->json([
+                'success'       => false,
+                'updated_count' => 0,
+                'message'       => 'No bills were updated. Only the receiving branch can tick bills assigned to them.',
+            ], 403);
         }
 
         return response()->json([
-            'success' => true,
-            'message' => 'Checklist saved successfully!'
+            'success'       => true,
+            'updated_count' => $totalUpdated,
+            'message'       => 'Checklist saved successfully!',
         ]);
     }
 
@@ -373,17 +377,19 @@ class ChecklistController extends Controller
         $date = $request->query('date', now()->toDateString());
         $copyType = $request->query('copy', 'combined');
 
+        \Log::info('Checklist Print Request', ['bus_departures_id' => $bus_departures_id, 'copy' => $copyType]);
+
         $query = Bill::where('bus_departures_id', $bus_departures_id)
             ->whereDate('date', $date)
             ->with(['busDeparture', 'fromCompany', 'toCompany', 'company', 'courierPolicy', 'creator', 'checker']);
 
         // Filter by company visibility
-        if ($user->role !== 'super_admin') {
-            $query->where(function ($q) use ($user) {
-                $q->where('from_company_id', $user->company_id)
-                    ->orWhere('to_company_id', $user->company_id);
-            });
-        }
+        // if ($user->role !== 'super_admin') {
+        //     $query->where(function ($q) use ($user) {
+        //         $q->where('from_company_id', $user->company_id)
+        //             ->orWhere('to_company_id', $user->company_id);
+        //     });
+        // }
 
         $bills = $query->get();
 
@@ -397,13 +403,8 @@ class ChecklistController extends Controller
             $copyType = 'combined';
         }
 
-        if ($copyType === 'combined') {
-            $templateView = 'bills.template-combined';
-        } elseif ($copyType === 'office' || $copyType === 'receiver') {
-            $templateView = 'bills.template-office';
-        } else {
-            $templateView = 'bills.template';
-        }
+        // We use template-checklist-print as the main wrapper for all types
+        $templateView = 'bills.template-checklist-print';
 
         // Get bus departure info for filename
         $busDeparture = $bills->first()->busDeparture;

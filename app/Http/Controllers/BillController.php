@@ -266,14 +266,18 @@ class BillController extends Controller
         }
 
         // Ensure bill_code is unique (in case of race condition)
+        $company = Company::find($data['company_id']);
+        $prefix = $company->bill_id_prefix;
+
+        // Ensure bill_code is unique (in case of race condition)
         while (Bill::where('bill_code', $data['bill_code'])->exists()) {
             // If collision occurs, increment and try again
-            $company = Company::find($data['company_id']);
             $latestBill = Bill::where('company_id', $data['company_id'])
                 ->orderBy('id', 'desc')
                 ->first();
 
-            $prefix = $company->bill_id_prefix;
+            if (!$latestBill) break;
+
             $numberPart = substr($latestBill->bill_code, strlen($prefix));
             if (preg_match('/^(\d+)/', $numberPart, $matches)) {
                 $nextNumber = (int) $matches[1] + 1;

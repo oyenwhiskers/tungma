@@ -1,12 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
+@if(!isset($omitLayout) || !$omitLayout)
+    <!DOCTYPE html>
+    <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Bill {{ $bill->bill_code }}</title>
+    <head>
+        <meta charset="UTF-8">
+        <title>Bill {{ $bill->bill_code }}</title>
+@endif
     <style>
         @page {
-            margin: 25px; /* Reduced from 40px to pull content up */
+            margin: 10px;
         }
 
         @font-face {
@@ -29,27 +31,36 @@
             box-sizing: border-box;
         }
 
+        html,
         body {
-            font-family: 'DejaVu Sans', 'Helvetica', 'Arial', 'Noto Sans SC', sans-serif;
-            font-size: 8px; /* Shrunk further to 8px */
-            color: #000;
-            padding: 0;
+            height: 100%;
             margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif;
+            font-size: 8px;
+            color: #000;
         }
 
         .bill-container {
-            width: 98%;
+            width: 97%;
             margin: 0 auto;
-            border: 1.5px solid #000;
+            height: 145mm;
+            border-top: 1.5px solid #000;
+            border-right: 1.5px solid #000;
+            border-bottom: 1.5px solid #000;
+            border-left: 1.5px solid #000;
             position: relative;
-            padding: 2px;
-            z-index: 10;
+            padding: 2px 0;
+            box-sizing: border-box;
         }
 
         .cutting-line {
             position: absolute;
-            top: 148.5mm; /* Restore to center of A4 */
-            left: -25px;  /* Offset new 25px margin */
+            top: 148.5mm;
+            left: -25px;
             right: -25px;
             border-top: 1px dashed #888;
             height: 1px;
@@ -57,8 +68,10 @@
         }
 
         table {
-            width: 100%;
+            width: 98%;
+            margin: 0 auto;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         td {
@@ -68,9 +81,9 @@
 
         /* Header Specifics */
         .company-info {
-            padding: 10px;
+            padding: 5px;
             border: none;
-            width: 40%;
+            width: 35%;
             vertical-align: top;
         }
 
@@ -83,15 +96,15 @@
         }
 
         .payment-section {
-            padding: 10px;
+            padding: 5px;
             text-align: center;
             border: none;
-            width: 30%;
-            vertical-align: middle;
+            width: 35%;
+            vertical-align: top;
         }
 
         .company-name {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 900;
         }
 
@@ -103,12 +116,12 @@
         .cash-sales-badge {
             background: #1a1a1a;
             color: #fff;
-            padding: 8px 25px;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 6px 20px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: bold;
             display: inline-block;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         /* Checkbox Styling */
@@ -147,7 +160,7 @@
         .label-cell {
             text-align: center;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 10px;
             padding: 6px;
             text-transform: uppercase;
         }
@@ -163,7 +176,7 @@
         }
 
         .data-content {
-            padding: 3px;
+            padding: 5px;
         }
 
         .field-label {
@@ -172,9 +185,9 @@
         }
 
         .field-value {
-            font-size: 13px; /* Slightly smaller */
+            font-size: 11px;
             font-weight: bold;
-            margin-bottom: 2px; /* Reduced from 12px */
+            margin-bottom: 2px;
         }
 
         /* Main Content */
@@ -190,13 +203,13 @@
         }
 
         .qr-cell {
-            padding: 10px;
+            padding: 15px 10px;
             width: 30%;
             text-align: center;
         }
 
         .total-amount {
-            font-size: 20px; /* Shrunk total font */
+            font-size: 20px;
             font-weight: bold;
             margin: 5px 0;
         }
@@ -205,6 +218,8 @@
             font-size: 14px;
             font-weight: bold;
             margin-bottom: 5px;
+            max-height: 45mm;
+            overflow: hidden;
         }
 
         /* Footer */
@@ -270,27 +285,21 @@
             letter-spacing: 2px;
         }
     </style>
-</head>
+    @if(!isset($omitLayout) || !$omitLayout)
+        </head>
 
-<body>
+        <body>
+    @endif
 
     <div class="cutting-line"></div>
 
     <div class="bill-container">
-        @php
-            $logoPath = public_path('images/logo.png');
-            $logoBase64 = '';
-            if (file_exists($logoPath)) {
-                $logoBase64 = base64_encode(file_get_contents($logoPath));
-            }
-        @endphp
-        <!-- <div class="copy-label">CUSTOMER COPY</div> -->
         <table style="border: none; border-bottom: 2px solid #000;">
             <tr>
                 <td class="company-info">
                     <div class="company-name">{{ $bill->company->name }} <span
                             style="font-size: 10px;">({{ $bill->company->registration_number }})</span></div>
-                    <div style="font-size: 10px; line-height: 1.4;">
+                    <div style="font-size: 9px; line-height: 1.2;">
                         @php
                             $addressWords = preg_split('/\s+/', $bill->company->address ?? '');
                             $firstLine = implode(' ', array_slice($addressWords, 0, 5));
@@ -298,23 +307,24 @@
                             $thirdLine = implode(' ', array_slice($addressWords, 10, 5));
                             $remainingLine = implode(' ', array_slice($addressWords, 15, 5));
                         @endphp
-                        {{ $firstLine }}<br>
-                        {{ $secondLine }}<br>
-                        {{ $thirdLine }}<br>
-                        {{ $remainingLine }}
-                        SDK COURIER TEL: 089-228904<br>
-                        K.K. TEL: 012-8832277, 016-5839239<br>
+                        {{ $firstLine }} {{ $secondLine }} {{ $thirdLine }} {{ $remainingLine }}<br>
+                        SDK COURIER TEL: 089-228904 | K.K. TEL: 012-8832277, 016-5839239<br>
                         SST NO: {{ $bill->company->sst_number }}<br>
-                        Trace your parcel at: <br>
-                        <strong>tracking.tungmaexpress.com.my</strong>
+                        Trace your parcel at: <strong>tracking.tungmaexpress.com.my</strong>
                     </div>
                 </td>
                 <td class="logo-section">
-                    <img src="data:image/png;base64,{{ $logoBase64 }}"
-                        style="width: 80px; margin-bottom: 5px; margin-left: -100px;">
-                    <div style="font-size: 18px; font-weight: bold; letter-spacing: 4px; margin-left: -100px;">東 馬 快 車
+                    @php
+                        $logoPath = public_path('images/logo.png');
+                        $logoBase64 = '';
+                        if (file_exists($logoPath)) {
+                            $logoBase64 = base64_encode(file_get_contents($logoPath));
+                        }
+                    @endphp
+                    <img src="data:image/png;base64,{{ $logoBase64 }}" style="width: 80px; margin-bottom: 2px;">
+                    <div style="font-size: 20px; font-weight: bold; letter-spacing: 2px;">東 馬 快 車
                     </div>
-                    <div style="font-size: 14px; font-weight: bold; margin-left: -100px;">TUNG MA EXPRESS</div>
+                    <div style="font-size: 11px; font-weight: bold;">TUNG MA EXPRESS</div>
                 </td>
                 <td class="payment-section">
                     <div class="cash-sales-badge">CASH SALES</div>
@@ -322,22 +332,27 @@
                         <tr>
                             <td>
                                 <div class="box {{ ($paymentDetails['method'] ?? '') == 'cash' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'cash')/@endif</div> CASH
+                                    @if(($paymentDetails['method'] ?? '') == 'cash')/@endif
+                                </div> CASH
                             </td>
                             <td>
                                 <div
-                                    class="box {{ in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet']) ? 'checked' : '' }}">
-                                    @if(in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet']))/@endif</div> QR
+                                    class="box {{ in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet', 'qr_pay']) ? 'checked' : '' }}">
+                                    @if(in_array($paymentDetails['method'] ?? '', ['qr', 'e_wallet', 'qr_pay']))/@endif
+                                </div> QR
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 <div class="box {{ ($paymentDetails['method'] ?? '') == 'cod' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'cod')/@endif</div> C.O.D
+                                    @if(($paymentDetails['method'] ?? '') == 'cod')/@endif
+                                </div> C.O.D
                             </td>
                             <td>
-                                <div class="box {{ ($paymentDetails['method'] ?? '') == 'bank_transfer' ? 'checked' : '' }}">
-                                    @if(($paymentDetails['method'] ?? '') == 'bank_transfer')/@endif</div> A/C
+                                <div
+                                    class="box {{ in_array($paymentDetails['method'] ?? '', ['bank_transfer', 'bank']) ? 'checked' : '' }}">
+                                    @if(in_array($paymentDetails['method'] ?? '', ['bank_transfer', 'bank']))/@endif
+                                </div> A/C
                             </td>
                         </tr>
                     </table>
@@ -347,11 +362,16 @@
 
         <table>
             <tr>
-                <td class="label-cell" style="width: 37%;">FROM {{ strtoupper($bill->fromCompany->name ?? 'N/A') }}</td>
-                <td class="label-cell" style="width: 33%; font-size: 10px;">TO {{ strtoupper($bill->toCompany->address ?? 'N/A') }}</td>
+                <td class="label-cell" style="width: 37%;">FROM
+                    {{ strtoupper($bill->fromCompany->name ?? $bill->fromCompany->based_in ?? 'N/A') }}
+                </td>
+                <td class="label-cell" style="width: 33%; font-size: 10px;">TO
+                    {{ strtoupper($bill->toCompany->address ?? $bill->toCompany->based_in ?? 'N/A') }}
+                </td>
                 <td class="label-cell" style="width: 30%; text-align: left;">
                     <span class="cs-no">CS No. D:</span> <span class="cs-val">{{ $bill->bill_code }}</span><br>
-                    <span style="font-size: 10px; font-weight: normal; text-transform: none;">Created by: {{ $bill->creator->name ?? 'System' }}</span>
+                    <span style="font-size: 10px; font-weight: normal; text-transform: none;">Created by:
+                        {{ $bill->creator->name ?? 'System' }}</span>
                 </td>
             </tr>
             <tr>
@@ -403,7 +423,6 @@
                 <td class="qr-cell">
                     @php
                         // Generate QR code with URL for E-Invoice using Endroid QR Code
-                        // Data sent to frontend via query parameters
                         $qrData = url('https://einvoice.tungmaexpress.com.my') . '?' . http_build_query([
                             'bill_id' => $bill->id,
                             'bill_code' => $bill->bill_code,
@@ -420,7 +439,6 @@
                                 ->build();
                             $qrCodeBase64 = $qrCode->getDataUri();
                         } catch (\Exception $e) {
-                            // Fallback to SVG if PNG fails
                             $qrCode = \Endroid\QrCode\Builder\Builder::create()
                                 ->writer(new \Endroid\QrCode\Writer\SvgWriter())
                                 ->data($qrData)
@@ -430,34 +448,40 @@
                             $qrCodeBase64 = $qrCode->getDataUri();
                         }
                     @endphp
-                    <img src="{{ $qrCodeBase64 }}" style="width: 80px; display: block; margin: 0 auto;">
+                    <img src="{{ $qrCodeBase64 }}" style="width: 95px; display: block; margin: 0 auto;">
                     <div style="font-size: 7px; font-weight: bold; margin-top: 2px;">
                         Scan for E-Invoice
                     </div>
                 </td>
             </tr>
-        </table>
-
-        <table class="policy-disclaimer-section" style="width: 100%; border: none;">
             <tr>
-                <td class="policy-left" style="border: none;">
-                    <div class="policy-box">
-                        @php
-                            $policySnapshot = $bill->policy_snapshot;
-                            if (is_string($policySnapshot)) {
-                                $policySnapshot = json_decode($policySnapshot, true);
-                            }
-                        @endphp
-                        {{ $policySnapshot['description'] ?? '' }}
-                    </div>
-                </td>
-                <td class="policy-right" style="border: none;">
-                    Kiriman barang / surat mesti dituntut dalam masa 1 bulan lepas itu tidak ditanggung. Pihak Syarikat
-                    tidak bertanggungjawab terhadap hilang wang / duit dalam kiriman sampul surat.
+                <td colspan="3" style="border: none; padding: 0;">
+                    <table class="policy-disclaimer-section" style="width: 100%; border: none;">
+                        <tr>
+                            <td class="policy-left" style="border: none; padding: 2px 5px;">
+                                <div class="policy-box" style="font-size: 8px; padding: 2px 4px;">
+                                    @php
+                                        $policySnapshot = $bill->policy_snapshot;
+                                        if (is_string($policySnapshot)) {
+                                            $policySnapshot = json_decode($policySnapshot, true);
+                                        }
+                                    @endphp
+                                    {{ $policySnapshot['description'] ?? '' }}
+                                </div>
+                            </td>
+                            <td class="policy-right" style="border: none; padding: 2px 5px; font-size: 8px;">
+                                Kiriman barang / surat mesti dituntut dalam masa 1 bulan lepas itu tidak ditanggung.
+                                Pihak Syarikat
+                                tidak bertanggungjawab terhadap hilang wang / duit dalam kiriman sampul surat.
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         </table>
     </div>
-</body>
+@if(!isset($omitLayout) || !$omitLayout)
+        </body>
 
-</html>
+        </html>
+    @endif

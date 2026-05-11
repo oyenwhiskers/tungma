@@ -31,9 +31,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('bills', [BillController::class, 'index']);
     Route::get('bills/{id}', [BillController::class, 'show']);
     Route::post('bills', [BillController::class, 'store']);
+    Route::post('bills/{id}/attachments', [BillController::class, 'uploadAttachments']); // lightweight background upload
     Route::delete('bills/{id}', [BillController::class, 'destroy']);
     Route::get('bills/{id}/template', [BillController::class, 'template']);
     Route::get('dashboard', [DashboardController::class, 'index']);
+    Route::get('dashboard/personal', [DashboardController::class, 'personalSummary']);
     Route::get('dashboard/daily', [DashboardController::class, 'dailyAnalytic']);
     Route::get('dashboard/monthly', [DashboardController::class, 'monthlyAnalytic']);
     Route::get('checklists', [ChecklistController::class, 'index']);

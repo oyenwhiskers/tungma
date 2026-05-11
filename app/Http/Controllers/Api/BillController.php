@@ -282,13 +282,16 @@ class BillController extends Controller
         }
 
         // Ensure bill_code is unique
+        $company = Company::find($data['company_id']);
+        $prefix = $company->bill_id_prefix;
+        
         while (Bill::where('bill_code', $data['bill_code'])->exists()) {
-            $company = Company::find($data['company_id']);
             $latestBill = Bill::where('company_id', $data['company_id'])
                 ->orderBy('id', 'desc')
                 ->first();
 
-            $prefix = $company->bill_id_prefix;
+            if (!$latestBill) break;
+
             $numberPart = substr($latestBill->bill_code, strlen($prefix));
             if (preg_match('/^(\d+)/', $numberPart, $matches)) {
                 $nextNumber = (int) $matches[1] + 1;
@@ -301,18 +304,18 @@ class BillController extends Controller
 
         // Build payment_details JSON
         if ($request->payment_method || $request->payment_date) {
-            $data['payment_details'] = json_encode([
+            $data['payment_details'] = [
                 'method' => $request->payment_method,
                 'date' => $request->payment_date,
-            ]);
+            ];
         }
 
         // Build sst_details JSON
         if ($request->sst_rate || $request->sst_amount) {
-            $data['sst_details'] = json_encode([
+            $data['sst_details'] = [
                 'rate' => $request->sst_rate,
                 'amount' => $request->sst_amount,
-            ]);
+            ];
         }
 
         // Auto-select company's policy if not provided
@@ -327,13 +330,13 @@ class BillController extends Controller
         if (!empty($data['courier_policy_id'])) {
             $policy = CourierPolicy::find($data['courier_policy_id']);
             if ($policy) {
-                $data['policy_snapshot'] = json_encode([
+                $data['policy_snapshot'] = [
                     'id' => $policy->id,
                     'name' => $policy->name,
                     'description' => $policy->description,
                     'company_id' => $policy->company_id,
                     'company_name' => optional($policy->company)->name,
-                ]);
+                ];
             }
         }
 
@@ -487,9 +490,13 @@ class BillController extends Controller
             return response()->json(['message' => 'User does not have an associated company'], 403);
         }
 
-        // Strictly scope to user's company and include soft-deleted bills
+        // Allow viewing if user's company is the owner, sender, or receiver of the bill
         $bill = Bill::withTrashed()
-            ->where('company_id', $user->company_id)
+            ->where(function ($q) use ($user) {
+                $q->where('company_id', $user->company_id)
+                  ->orWhere('from_company_id', $user->company_id)
+                  ->orWhere('to_company_id', $user->company_id);
+            })
             ->where('id', $id)
             ->first();
 
@@ -591,18 +598,18 @@ class BillController extends Controller
 
         // Build payment_details JSON
         if ($request->payment_method || $request->payment_date) {
-            $data['payment_details'] = json_encode([
+            $data['payment_details'] = [
                 'method' => $request->payment_method,
                 'date' => $request->payment_date,
-            ]);
+            ];
         }
 
         // Build sst_details JSON
         if ($request->sst_rate || $request->sst_amount) {
-            $data['sst_details'] = json_encode([
+            $data['sst_details'] = [
                 'rate' => $request->sst_rate,
                 'amount' => $request->sst_amount,
-            ]);
+            ];
         }
 
         // If company changed and policy no longer matches, auto-adjust
@@ -623,13 +630,13 @@ class BillController extends Controller
         if (!empty($data['courier_policy_id'])) {
             $policy = CourierPolicy::find($data['courier_policy_id']);
             if ($policy) {
-                $data['policy_snapshot'] = json_encode([
+                $data['policy_snapshot'] = [
                     'id' => $policy->id,
                     'name' => $policy->name,
                     'description' => $policy->description,
                     'company_id' => $policy->company_id,
                     'company_name' => optional($policy->company)->name,
-                ]);
+                ];
             }
         } else {
             $data['policy_snapshot'] = null;
@@ -701,6 +708,71 @@ class BillController extends Controller
     }
 
     /**
+     * Upload Attachments
+     *
+     * Upload or replace media_attachment and payment_proof_attachment on an existing bill.
+     * This is a lightweight endpoint that only accepts files — call it after bill creation
+     * in the background so the user does not have to wait.
+     *
+     * @group Bills
+     * @authenticated
+     * @urlParam id integer required The ID of the bill. Example: 1
+     * @bodyParam media_attachment file Optional item photo (jpeg, jpg, png, gif, webp). Max 5MB.
+     * @bodyParam payment_proof_attachment file Optional payment proof (jpeg, jpg, png, gif, webp, pdf). Max 5MB.
+     */
+    public function uploadAttachments(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user || !$user->company_id) {
+            return response()->json(['message' => 'User does not have an associated company'], 403);
+        }
+
+        $bill = Bill::where('company_id', $user->company_id)->findOrFail($id);
+
+        $request->validate([
+            'media_attachment'          => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+            'payment_proof_attachment'  => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
+        ]);
+
+        $updated = [];
+
+        if ($request->hasFile('media_attachment')) {
+            // Delete old file
+            if ($bill->media_attachment && Storage::disk('public')->exists($bill->media_attachment)) {
+                Storage::disk('public')->delete($bill->media_attachment);
+            }
+            $file = $request->file('media_attachment');
+            $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bills', $filename, 'public');
+            $updated['media_attachment'] = $path;
+        }
+
+        if ($request->hasFile('payment_proof_attachment')) {
+            // Delete old file
+            if ($bill->payment_proof_attachment && Storage::disk('public')->exists($bill->payment_proof_attachment)) {
+                Storage::disk('public')->delete($bill->payment_proof_attachment);
+            }
+            $file = $request->file('payment_proof_attachment');
+            $filename = time() . '_proof_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bills', $filename, 'public');
+            $updated['payment_proof_attachment'] = $path;
+        }
+
+        if (!empty($updated)) {
+            $bill->update($updated);
+            // Re-generate PDF with the new attachments
+            \App\Jobs\GenerateBillPdf::dispatch($bill->fresh());
+        }
+
+        return response()->json([
+            'message' => 'Attachments uploaded successfully',
+            'data'    => $this->transformBill($bill->fresh()),
+        ]);
+    }
+
+
+    /**
      * Delete Bill
      *
      * Void (soft delete) the specified bill.
@@ -714,6 +786,7 @@ class BillController extends Controller
      * }
      */
     public function destroy(Request $request, $id): JsonResponse
+
     {
         $user = $request->user();
 
@@ -749,7 +822,11 @@ class BillController extends Controller
         }
 
         $bill = Bill::withTrashed()
-            ->where('company_id', $user->company_id)
+            ->where(function ($q) use ($user) {
+                $q->where('company_id', $user->company_id)
+                    ->orWhere('from_company_id', $user->company_id)
+                    ->orWhere('to_company_id', $user->company_id);
+            })
             ->where('id', $id)
             ->firstOrFail();
 
@@ -789,7 +866,7 @@ class BillController extends Controller
         }
 
         $pdf = \PDF::loadView($templateView, compact('bill', 'sstDetails', 'paymentDetails', 'copyType', 'isPdf'))
-            ->setPaper('a5', 'landscape');
+            ->setPaper('a4', 'portrait');
 
         return $pdf->download('bill-' . $bill->bill_code . '-' . $copyType . '.pdf');
     }
@@ -818,7 +895,7 @@ class BillController extends Controller
             'bill_code' => $bill->bill_code,
             'date' => $bill->date ? ($bill->date instanceof \Carbon\Carbon ? $bill->date->format('Y-m-d') : $bill->date) : null,
             'bus_departures_id' => $bill->bus_departures_id,
-            'departure_time' => $bill->busDeparture?->departure_time,
+            'departure_time' => ($bill->busDeparture ? $bill->busDeparture->departure_time : null),
             'amount' => (float) $bill->amount,
             'description' => $bill->description,
             'sender_name' => $bill->sender_name,

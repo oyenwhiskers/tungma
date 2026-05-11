@@ -159,7 +159,7 @@ use Illuminate\Support\Str;
                     <div class="info-value">
                       @if($bill->payment_details)
                         @php
-                          $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details;
+                          $payment = $bill->payment_details ?? [];
                           $method = $payment['method'] ?? null;
                           $methodLabels = [
                             'cash' => 'Cash',
@@ -184,7 +184,7 @@ use Illuminate\Support\Str;
                     </div>
                     <div class="info-value">
                       @if($bill->payment_details)
-                        @php $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details; @endphp
+                        @php $payment = $bill->payment_details ?? []; @endphp
                         {{ isset($payment['date']) ? \Carbon\Carbon::parse($payment['date'])->format('M d, Y') : '—' }}
                       @else
                         —
@@ -285,7 +285,7 @@ use Illuminate\Support\Str;
                     </div>
                     <div class="info-value">
                       @if($bill->sst_details)
-                        @php $sst = is_string($bill->sst_details) ? json_decode($bill->sst_details, true) : $bill->sst_details; @endphp
+                        @php $sst = $bill->sst_details ?? []; @endphp
                         <div>
                           @if(isset($sst['rate']))<div>Rate: {{ $sst['rate'] }}%</div>@endif
                           @if(isset($sst['amount']))<div>Amount: RM {{ number_format($sst['amount'], 2) }}</div>@endif

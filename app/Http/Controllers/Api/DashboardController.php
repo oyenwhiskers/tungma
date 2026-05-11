@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Bill;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @group Dashboard API
@@ -39,17 +40,98 @@ class DashboardController extends Controller
      *     }
      * }
      */
-    public function index()
+    public function index(Request $request)
     {
+        $user  = $request->user();
+        $today = Carbon::today();
+        $now   = Carbon::now();
+
+        // ── 1. My Today's Summary (current user only) ──────────────────────
+        $myBillsToday = Bill::whereDate('date', $today)
+            ->where('created_by', $user->id)
+            ->get(['amount', 'payment_details']);
+
+        $cashAmount = 0;
+        $bankTransferAmount = 0;
+        $codAmount = 0;
+        $eWalletAmount = 0;
+
+        foreach ($myBillsToday as $bill) {
+            $details = $bill->payment_details;
+            if (is_string($details)) {
+                $details = json_decode($details, true);
+            }
+            
+            $method = strtolower($details['method'] ?? '');
+            $amount = (float) $bill->amount;
+
+            if ($method === 'cash') {
+                $cashAmount += $amount;
+            } elseif ($method === 'bank_transfer') {
+                $bankTransferAmount += $amount;
+            } elseif ($method === 'cod') {
+                $codAmount += $amount;
+            } elseif ($method === 'e_wallet') {
+                $eWalletAmount += $amount;
+            }
+        }
+
+        $data = [
+            'my_today' => [
+                'bill_count'   => $myBillsToday->count(),
+                'total_amount' => (float) ($myBillsToday->sum('amount') - $codAmount),
+                'cash_amount'  => $cashAmount,
+                'bank_transfer_amount' => $bankTransferAmount,
+                'cod_amount'   => $codAmount,
+                'e_wallet_amount' => $eWalletAmount,
+                'date'         => $today->toDateString(),
+            ],
+            'role' => $user->role,
+        ];
+
+        // ── 2. Company & Global scope (Only for Admin/Super Admin) ──────────
+        if ($user->isAdmin() || $user->isSuperAdmin()) {
+            $companyId = $user->company_id;
+
+            $companyBillsToday    = Bill::where('company_id', $companyId)->whereDate('created_at', $today)->count();
+            $companyVoidToday     = Bill::onlyTrashed()->where('company_id', $companyId)->whereDate('deleted_at', $today)->count();
+            $companyBillsMonth    = Bill::where('company_id', $companyId)->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count();
+            $companyVoidMonth     = Bill::onlyTrashed()->where('company_id', $companyId)->whereMonth('deleted_at', $now->month)->whereYear('deleted_at', $now->year)->count();
+            $companyAmountToday   = (float) Bill::where('company_id', $companyId)->whereDate('created_at', $today)->sum('amount');
+            $companyAmountMonth   = (float) Bill::where('company_id', $companyId)->whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->sum('amount');
+
+            $globalBillsToday  = Bill::whereDate('created_at', $today)->count();
+            $globalVoidToday   = Bill::onlyTrashed()->whereDate('deleted_at', $today)->count();
+            $globalBillsMonth  = Bill::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->count();
+            $globalVoidMonth   = Bill::onlyTrashed()->whereMonth('deleted_at', $now->month)->whereYear('deleted_at', $now->year)->count();
+            $globalAmountToday = (float) Bill::whereDate('created_at', $today)->sum('amount');
+            $globalAmountMonth = (float) Bill::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->sum('amount');
+
+            $data['company'] = [
+                'bills_created_today'        => $companyBillsToday,
+                'void_bills_today'            => $companyVoidToday,
+                'total_bills_this_month'      => $companyBillsMonth,
+                'total_void_bills_this_month' => $companyVoidMonth,
+                'amount_today'                => $companyAmountToday,
+                'amount_this_month'           => $companyAmountMonth,
+            ];
+
+            $data['global'] = [
+                'bills_created_today'        => $globalBillsToday,
+                'void_bills_today'            => $globalVoidToday,
+                'total_bills_this_month'      => $globalBillsMonth,
+                'total_void_bills_this_month' => $globalVoidMonth,
+                'amount_today'                => $globalAmountToday,
+                'amount_this_month'           => $globalAmountMonth,
+            ];
+        } else {
+            $data['company'] = null;
+            $data['global'] = null;
+        }
+
         return response()->json([
             'success' => true,
-            'data' => [
-                'total_bills' => Bill::count(),
-                'void_bills_today' => Bill::onlyTrashed()->whereDate('deleted_at', Carbon::today())->count(),
-                'bills_created_today' => Bill::whereDate('created_at', Carbon::today())->count(),
-                'total_void_bills_this_month' => Bill::onlyTrashed()->whereMonth('deleted_at', Carbon::now()->month)->whereYear('deleted_at', Carbon::now()->year)->count(),
-                'total_bills_this_month' => Bill::whereMonth('created_at', Carbon::now()->month)->whereYear('created_at', Carbon::now()->year)->count(),
-            ],
+            'data' => $data,
         ]);
     }
 
@@ -172,4 +254,61 @@ class DashboardController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Get personal summary for a specific date.
+     *
+     * @group Dashboard
+     * @authenticated
+     * @header Authorization Bearer {token}
+     * @queryParam date string The date (Y-m-d). Defaults to today. Example: 2025-12-14
+     */
+    public function personalSummary(Request $request)
+    {
+        $user = $request->user();
+        $date = $request->has('date') ? Carbon::parse($request->date) : Carbon::today();
+
+        $bills = Bill::whereDate('date', $date)
+            ->where('created_by', $user->id)
+            ->get(['amount', 'payment_details']);
+
+        $cashAmount = 0;
+        $bankTransferAmount = 0;
+        $codAmount = 0;
+        $eWalletAmount = 0;
+
+        foreach ($bills as $bill) {
+            $details = $bill->payment_details;
+            if (is_string($details)) {
+                $details = json_decode($details, true);
+            }
+            
+            $method = strtolower($details['method'] ?? '');
+            $amount = (float) $bill->amount;
+
+            if ($method === 'cash') {
+                $cashAmount += $amount;
+            } elseif ($method === 'bank_transfer') {
+                $bankTransferAmount += $amount;
+            } elseif ($method === 'cod') {
+                $codAmount += $amount;
+            } elseif ($method === 'e_wallet') {
+                $eWalletAmount += $amount;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'bill_count'   => $bills->count(),
+                'total_amount' => (float) ($bills->sum('amount') - $codAmount),
+                'cash_amount'  => $cashAmount,
+                'bank_transfer_amount' => $bankTransferAmount,
+                'cod_amount'   => $codAmount,
+                'e_wallet_amount' => $eWalletAmount,
+                'date'         => $date->toDateString(),
+            ],
+        ]);
+    }
+
 }
