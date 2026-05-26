@@ -375,7 +375,7 @@
         <table>
             <tr>
                 <td class="label-cell" style="width: 37%;">FROM
-                    {{ strtoupper($bill->fromCompany->name ?? $bill->fromCompany->based_in ?? 'N/A') }}
+                    {{ strtoupper($bill->fromCompany->based_in ?? 'N/A') }}
                 </td>
                 <td class="label-cell" style="width: 33%;">TO
                     {{ strtoupper($bill->toCompany->based_in ?? 'N/A') }}

@@ -64,8 +64,8 @@
                                             style="cursor: pointer;"
                                             data-bill="{{ json_encode([
                                                 'bill_code' => $bill->bill_code,
-                                                'from' => $bill->fromCompany->name ?? 'N/A',
-                                                'to' => $bill->toCompany->name ?? 'N/A',
+                                                'from' => $bill->fromCompany->based_in ?? 'N/A',
+                                                'to' => $bill->toCompany->based_in ?? 'N/A',
                                                 'amount' => number_format($bill->amount, 2),
                                                 'description' => $bill->description,
                                                 'sender_name' => $bill->sender_name,
@@ -87,10 +87,10 @@
                                                 <strong>{{ $bill->bill_code }}</strong>
                                             </td>
                                             <td>
-                                                <div class="fw-bold">{{ $bill->fromCompany->name ?? 'N/A' }}</div>
+                                                <div class="fw-bold">{{ $bill->fromCompany->based_in ?? 'N/A' }}</div>
                                             </td>
                                             <td>
-                                                <div class="fw-bold">{{ $bill->toCompany->name ?? 'N/A' }}</div>
+                                                <div class="fw-bold">{{ $bill->toCompany->based_in ?? 'N/A' }}</div>
                                             </td>
                                             <td>RM {{ number_format($bill->amount, 2) }}</td>
                                             <td>

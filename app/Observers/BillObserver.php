@@ -68,6 +68,8 @@ class BillObserver
     {
         if ($bill->cashSale()->onlyTrashed()->exists()) {
             $bill->cashSale()->restore();
+        } elseif (!$bill->cashSale()->exists()) {
+            $this->createCashSaleFromBill($bill);
         }
     }
 

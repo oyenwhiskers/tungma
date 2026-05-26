@@ -59,13 +59,15 @@ class ChecklistController extends Controller
         $query = Bill::whereDate('date', $targetDate)
             ->with(['checker', 'busDeparture']);
 
-        /* Removed company filter to allow all staff to see all checklists */
-        // if ($user->role !== 'super_admin') {
-        //     $query->where(function ($q) use ($user) {
-        //         $q->where('from_company_id', $user->company_id)
-        //             ->orWhere('to_company_id', $user->company_id);
-        //     });
-        // }
+        // Filter by checklist type (incoming/outgoing)
+        if ($request->filled('type') && $user && $user->company_id) {
+            $type = $request->type;
+            if ($type === 'incoming') {
+                $query->where('to_company_id', $user->company_id);
+            } elseif ($type === 'outgoing') {
+                $query->where('from_company_id', $user->company_id);
+            }
+        }
 
         // Search functionality
         if ($request->filled('search')) {
@@ -166,15 +168,15 @@ class ChecklistController extends Controller
             ->whereDate('date', $date)
             ->with(['busDeparture', 'fromCompany', 'toCompany', 'company', 'courierPolicy', 'creator', 'checker']);
 
-        // Filter by company visibility:
-        // Users can see a bill if they belong to 'from_company' OR 'to_company'
-        /* Removed company filter to allow all staff to see all checklists */
-        // if ($user->role !== 'super_admin') {
-        //     $query->where(function ($q) use ($user) {
-        //         $q->where('from_company_id', $user->company_id)
-        //             ->orWhere('to_company_id', $user->company_id);
-        //     });
-        // }
+        // Filter by checklist type (incoming/outgoing)
+        if ($request->filled('type') && $user && $user->company_id) {
+            $type = $request->type;
+            if ($type === 'incoming') {
+                $query->where('to_company_id', $user->company_id);
+            } elseif ($type === 'outgoing') {
+                $query->where('from_company_id', $user->company_id);
+            }
+        }
 
         // Search functionality
         if ($request->filled('search')) {

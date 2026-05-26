@@ -45,32 +45,45 @@ class BillController extends Controller
             throw new \Exception('Company does not have a bill ID prefix set. Please set a prefix in company settings.');
         }
 
-        // Find the latest bill for this company
+        $prefix = $company->bill_id_prefix;
+
+        // Find the latest bill for this company that matches the new format
         $latestBill = Bill::withTrashed()->where('company_id', $companyId)
+            ->where('bill_code', 'like', $prefix . '-%')
             ->orderBy('id', 'desc')
             ->first();
 
+        $nextAlphabet = 'A';
         $nextNumber = 1;
 
         if ($latestBill && !empty($latestBill->bill_code)) {
-            // Extract the number part from the latest bill code
-            $prefix = $company->bill_id_prefix;
             $latestCode = $latestBill->bill_code;
+            $expectedPrefix = $prefix . '-';
 
             // Remove the prefix from the beginning of the code
-            if (str_starts_with($latestCode, $prefix)) {
-                $numberPart = substr($latestCode, strlen($prefix));
-                // Extract numeric part (handle cases where there might be non-numeric characters)
-                if (preg_match('/^(\d+)/', $numberPart, $matches)) {
-                    $nextNumber = (int) $matches[1] + 1;
+            if (str_starts_with($latestCode, $expectedPrefix)) {
+                $suffix = substr($latestCode, strlen($expectedPrefix));
+                // Extract alphabet and numeric parts
+                if (preg_match('/^([A-Z]+)(\d+)$/', $suffix, $matches)) {
+                    $alphabet = $matches[1];
+                    $number = (int) $matches[2];
+
+                    if ($number < 99999) {
+                        $nextNumber = $number + 1;
+                        $nextAlphabet = $alphabet;
+                    } else {
+                        $nextNumber = 1;
+                        $nextAlphabet = $alphabet;
+                        $nextAlphabet++; // Rolls over A->B, Z->AA, ZZ->AAA
+                    }
                 }
             }
         }
 
-        // Pad to minimum 6 digits
-        $paddedNumber = str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+        // Pad to minimum 5 digits
+        $paddedNumber = str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
 
-        return $company->bill_id_prefix . $paddedNumber;
+        return $prefix . '-' . $nextAlphabet . $paddedNumber;
     }
 
     /**
@@ -151,6 +164,16 @@ class BillController extends Controller
         // Filter by date
         if ($request->filled('date')) {
             $query->whereDate('date', $request->date);
+        }
+
+        // Filter by month
+        if ($request->filled('month')) {
+            $query->whereMonth('date', $request->month);
+        }
+
+        // Filter by year
+        if ($request->filled('year')) {
+            $query->whereYear('date', $request->year);
         }
 
         // Filter by payment method
@@ -286,19 +309,30 @@ class BillController extends Controller
         $prefix = $company->bill_id_prefix;
         
         while (Bill::where('bill_code', $data['bill_code'])->exists()) {
-            $latestBill = Bill::where('company_id', $data['company_id'])
-                ->orderBy('id', 'desc')
-                ->first();
+            $latestCode = $data['bill_code'];
+            $expectedPrefix = $prefix . '-';
 
-            if (!$latestBill) break;
+            if (str_starts_with($latestCode, $expectedPrefix)) {
+                $suffix = substr($latestCode, strlen($expectedPrefix));
+                if (preg_match('/^([A-Z]+)(\d+)$/', $suffix, $matches)) {
+                    $alphabet = $matches[1];
+                    $number = (int) $matches[2];
 
-            $numberPart = substr($latestBill->bill_code, strlen($prefix));
-            if (preg_match('/^(\d+)/', $numberPart, $matches)) {
-                $nextNumber = (int) $matches[1] + 1;
-                $paddedNumber = str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
-                $data['bill_code'] = $prefix . $paddedNumber;
+                    if ($number < 99999) {
+                        $nextNumber = $number + 1;
+                        $nextAlphabet = $alphabet;
+                    } else {
+                        $nextNumber = 1;
+                        $nextAlphabet = $alphabet;
+                        $nextAlphabet++;
+                    }
+                    $paddedNumber = str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+                    $data['bill_code'] = $prefix . '-' . $nextAlphabet . $paddedNumber;
+                } else {
+                    $data['bill_code'] .= '_dup';
+                }
             } else {
-                break; // Safety break
+                $data['bill_code'] .= '_dup';
             }
         }
 

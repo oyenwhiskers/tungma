@@ -79,7 +79,7 @@ class DashboardController extends Controller
         $data = [
             'my_today' => [
                 'bill_count'   => $myBillsToday->count(),
-                'total_amount' => (float) ($myBillsToday->sum('amount') - $codAmount),
+                'total_amount' => (float) ($cashAmount + $bankTransferAmount + $eWalletAmount),
                 'cash_amount'  => $cashAmount,
                 'bank_transfer_amount' => $bankTransferAmount,
                 'cod_amount'   => $codAmount,
@@ -301,7 +301,7 @@ class DashboardController extends Controller
             'success' => true,
             'data' => [
                 'bill_count'   => $bills->count(),
-                'total_amount' => (float) ($bills->sum('amount') - $codAmount),
+                'total_amount' => (float) ($cashAmount + $bankTransferAmount + $eWalletAmount),
                 'cash_amount'  => $cashAmount,
                 'bank_transfer_amount' => $bankTransferAmount,
                 'cod_amount'   => $codAmount,
