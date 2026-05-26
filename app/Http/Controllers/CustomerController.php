@@ -124,9 +124,11 @@ class CustomerController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('debtor_code', 'like', "%{$search}%")
                   ->orWhere('contact_number', 'like', "%{$search}%");
+            });
         }
 
         $customers = $query->latest('deleted_at')->paginate(15)->withQueryString();

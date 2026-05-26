@@ -73,7 +73,7 @@ class EInvoiceController extends Controller
 
         // Apply date filter
         if ($request->filled('date')) {
-            $query->whereDate('date_time', $request->date);
+            $query->whereDate('created_at', $request->date);
         }
 
         // Apply status filter
@@ -127,5 +127,16 @@ class EInvoiceController extends Controller
         $filename = 'TaxEntity_Import_' . now()->format('Ymd') . '.xlsx';
         
         return Excel::download(new TaxEntityExport($customersToExport), $filename);
+    }
+
+    /**
+     * Toggle the exported status of a specific e-invoice request.
+     */
+    public function toggleStatus($id)
+    {
+        $eCustomer = ECustomer::findOrFail($id);
+        $eCustomer->update(['is_exported' => !$eCustomer->is_exported]);
+        
+        return redirect()->back()->with('success', 'Status updated successfully.');
     }
 }

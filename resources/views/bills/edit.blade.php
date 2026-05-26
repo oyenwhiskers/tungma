@@ -23,8 +23,15 @@ use Illuminate\Support\Facades\Storage;
 </div>
 
 @php
-  $payment = is_string($bill->payment_details) ? json_decode($bill->payment_details, true) : $bill->payment_details;
-  $sst = is_string($bill->sst_details) ? json_decode($bill->sst_details, true) : $bill->sst_details;
+  $payment = $bill->payment_details;
+  if (is_string($payment)) $payment = json_decode($payment, true);
+  if (is_string($payment)) $payment = json_decode($payment, true);
+  $payment = is_array($payment) ? $payment : [];
+
+  $sst = $bill->sst_details;
+  if (is_string($sst)) $sst = json_decode($sst, true);
+  if (is_string($sst)) $sst = json_decode($sst, true);
+  $sst = is_array($sst) ? $sst : [];
 @endphp
 
 <div class="row g-3">

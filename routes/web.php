@@ -56,7 +56,7 @@ Route::get('/artisan-run/{command}', function ($command) {
 // Authentication routes assumed provided by Laravel auth starter (login required)
 Route::middleware(['web'])->group(function () {
     // Dashboard
-    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 
     // Minimal auth
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -97,6 +97,7 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
 
     // E-Invoice Requests
     Route::get('/e-invoice-requests', [App\Http\Controllers\EInvoiceController::class, 'index'])->name('e-invoice.index');
+    Route::post('/e-invoice-requests/{id}/toggle-status', [App\Http\Controllers\EInvoiceController::class, 'toggleStatus'])->name('e-invoice.toggle-status');
     Route::get('/e-invoice-requests/export-preview', [App\Http\Controllers\EInvoiceController::class, 'exportPreview'])->name('e-invoice.export-preview');
     Route::post('/e-invoice-requests/export-tax-entity', [App\Http\Controllers\EInvoiceController::class, 'exportTaxEntity'])->name('e-invoice.export-tax-entity');
 

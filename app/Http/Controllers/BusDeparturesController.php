@@ -38,9 +38,17 @@ class BusDeparturesController extends Controller
      */
     public function store(Request $request)
     {
+        $companyId = auth()->user()->role === 'admin' ? auth()->user()->company_id : $request->company_id;
         $data = $request->validate([
-            'departure_time' => 'required',
+            'departure_time' => [
+                'required',
+                \Illuminate\Validation\Rule::unique('bus_departures')->where(function ($query) use ($companyId) {
+                    return $query->where('company_id', $companyId);
+                })
+            ],
             'company_id' => 'nullable|exists:companies,id',
+        ], [
+            'departure_time.unique' => 'This departure time already exists for this company.'
         ]);
 
         if (auth()->user()->role === 'admin') {
@@ -72,9 +80,17 @@ class BusDeparturesController extends Controller
     {
         $busDeparture = BusDepartures::findOrFail($id);
         
+        $companyId = auth()->user()->role === 'admin' ? auth()->user()->company_id : $request->company_id;
         $data = $request->validate([
-            'departure_time' => 'required',
+            'departure_time' => [
+                'required',
+                \Illuminate\Validation\Rule::unique('bus_departures')->ignore($busDeparture->id)->where(function ($query) use ($companyId) {
+                    return $query->where('company_id', $companyId);
+                })
+            ],
             'company_id' => 'nullable|exists:companies,id',
+        ], [
+            'departure_time.unique' => 'This departure time already exists for this company.'
         ]);
 
         try {

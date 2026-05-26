@@ -290,18 +290,18 @@ class BillController extends Controller
 
         // Build payment_details JSON
         if ($request->payment_method || $request->payment_date) {
-            $data['payment_details'] = json_encode([
+            $data['payment_details'] = [
                 'method' => $request->payment_method,
                 'date' => $request->payment_date,
-            ]);
+            ];
         }
 
         // Build sst_details JSON
         if ($request->sst_rate || $request->sst_amount) {
-            $data['sst_details'] = json_encode([
+            $data['sst_details'] = [
                 'rate' => $request->sst_rate,
                 'amount' => $request->sst_amount,
-            ]);
+            ];
         }
 
         // Auto-select company's policy if not provided
@@ -316,13 +316,13 @@ class BillController extends Controller
         if (!empty($data['courier_policy_id'])) {
             $policy = CourierPolicy::find($data['courier_policy_id']);
             if ($policy) {
-                $data['policy_snapshot'] = json_encode([
+                $data['policy_snapshot'] = [
                     'id' => $policy->id,
                     'name' => $policy->name,
                     'description' => $policy->description,
                     'company_id' => $policy->company_id,
                     'company_name' => optional($policy->company)->name,
-                ]);
+                ];
             }
         }
 
@@ -472,18 +472,18 @@ class BillController extends Controller
 
         // Build payment_details JSON
         if ($request->payment_method || $request->payment_date) {
-            $data['payment_details'] = json_encode([
+            $data['payment_details'] = [
                 'method' => $request->payment_method,
                 'date' => $request->payment_date,
-            ]);
+            ];
         }
 
         // Build sst_details JSON
         if ($request->sst_rate || $request->sst_amount) {
-            $data['sst_details'] = json_encode([
+            $data['sst_details'] = [
                 'rate' => $request->sst_rate,
                 'amount' => $request->sst_amount,
-            ]);
+            ];
         }
 
         // If company changed and policy no longer matches, auto-adjust
@@ -504,13 +504,13 @@ class BillController extends Controller
         if (!empty($data['courier_policy_id'])) {
             $policy = CourierPolicy::find($data['courier_policy_id']);
             if ($policy) {
-                $data['policy_snapshot'] = json_encode([
+                $data['policy_snapshot'] = [
                     'id' => $policy->id,
                     'name' => $policy->name,
                     'description' => $policy->description,
                     'company_id' => $policy->company_id,
                     'company_name' => optional($policy->company)->name,
-                ]);
+                ];
             }
         } else {
             $data['policy_snapshot'] = null;

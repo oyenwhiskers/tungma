@@ -40,10 +40,21 @@ class ReceiverController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
+        $companyId = $user->role === 'admin' ? $user->company_id : $request->company_id;
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('receivers')->where(function ($query) use ($companyId, $request) {
+                    return $query->where('company_id', $companyId)
+                                 ->where('contact_number', $request->contact_number);
+                })
+            ],
             'contact_number' => 'nullable|string|max:255',
             'company_id' => $user->role === 'super_admin' ? 'required|exists:companies,id' : 'nullable',
+        ], [
+            'name.unique' => 'A receiver with this name and contact number already exists in this company.'
         ]);
 
         if ($user->role === 'admin') {
@@ -75,10 +86,21 @@ class ReceiverController extends Controller
             abort(403);
         }
 
+        $companyId = $user->role === 'admin' ? $user->company_id : $request->company_id;
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('receivers')->ignore($receiver->id)->where(function ($query) use ($companyId, $request) {
+                    return $query->where('company_id', $companyId)
+                                 ->where('contact_number', $request->contact_number);
+                })
+            ],
             'contact_number' => 'nullable|string|max:255',
             'company_id' => $user->role === 'super_admin' ? 'required|exists:companies,id' : 'nullable',
+        ], [
+            'name.unique' => 'A receiver with this name and contact number already exists in this company.'
         ]);
 
         if ($user->role === 'admin') {

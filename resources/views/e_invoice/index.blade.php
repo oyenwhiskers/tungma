@@ -46,8 +46,8 @@
           @endif
 
           <div class="mb-3">
-            <label class="form-label font-weight-bold">Select Date</label>
-            <input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}">
+            <label class="form-label font-weight-bold">Select Date (Optional)</label>
+            <input type="date" name="date" class="form-control" value="">
           </div>
 
           <div class="mb-3">
@@ -141,6 +141,12 @@
                         <div class="fw-bold text-end pe-4">{{ number_format($bill->amount, 2) }}</div>
                     </td>
                     <td class="text-end">
+                        <form action="{{ route('e-invoice.toggle-status', $bill->eCustomer->id) }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-sm {{ $bill->eCustomer->is_exported ? 'btn-outline-warning' : 'btn-outline-success' }}" title="{{ $bill->eCustomer->is_exported ? 'Mark as Pending' : 'Mark as Reviewed/Done' }}">
+                                <i class="bi {{ $bill->eCustomer->is_exported ? 'bi-arrow-counterclockwise' : 'bi-check2-all' }}"></i>
+                            </button>
+                        </form>
                         <a href="{{ route('bills.show', $bill) }}" class="btn btn-sm btn-outline-secondary" title="View Bill">
                             <i class="bi bi-eye"></i>
                         </a>

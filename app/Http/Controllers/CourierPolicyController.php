@@ -33,9 +33,18 @@ class CourierPolicyController extends Controller
     {
         $user = auth()->user();
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('courier_policies')->where(function ($query) use ($request) {
+                    return $query->where('company_id', $request->company_id);
+                })
+            ],
             'description' => 'nullable|string',
             'company_id' => 'required|exists:companies,id',
+        ], [
+            'name.unique' => 'A policy with this name already exists for the selected company.'
         ]);
         // Force admin to create policies only for their company
         if ($user->role === 'admin') {
@@ -76,9 +85,18 @@ class CourierPolicyController extends Controller
     public function update(Request $request, CourierPolicy $policy)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('courier_policies')->ignore($policy->id)->where(function ($query) use ($request) {
+                    return $query->where('company_id', $request->company_id);
+                })
+            ],
             'description' => 'nullable|string',
             'company_id' => 'required|exists:companies,id',
+        ], [
+            'name.unique' => 'A policy with this name already exists for the selected company.'
         ]);
         try {
             $policy->update($data);

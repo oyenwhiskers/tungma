@@ -245,7 +245,10 @@ document.getElementById('btn-download-autocount').addEventListener('click', func
                     <td>{{ $bill->company?->name ?? '—' }}</td>
                     <td>
                         @php
-                            $payment = $bill->payment_details ?? [];
+                            $payment = $bill->payment_details;
+                            if (is_string($payment)) $payment = json_decode($payment, true);
+                            if (is_string($payment)) $payment = json_decode($payment, true);
+                            $payment = $payment ?: [];
                             $method = $payment['method'] ?? null;
                             $methodLabels = [
                                 'cash' => 'Cash',

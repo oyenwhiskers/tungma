@@ -5,19 +5,19 @@
     <meta charset="UTF-8">
     <style>
         @page {
-            margin: 10mm 5mm 5mm 5mm;
+            margin: 10px;
         }
 
         @font-face {
             font-family: 'Noto Sans SC';
-            src: url('{{ public_path('fonts/static/NotoSansSC-Regular.ttf') }}') format('truetype');
+            src: url('{{ $isPdf ? public_path('fonts/static/NotoSansSC-Regular.ttf') : asset('fonts/static/NotoSansSC-Regular.ttf') }}') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'Noto Sans SC';
-            src: url('{{ public_path('fonts/static/NotoSansSC-Bold.ttf') }}') format('truetype');
+            src: url('{{ $isPdf ? public_path('fonts/static/NotoSansSC-Bold.ttf') : asset('fonts/static/NotoSansSC-Bold.ttf') }}') format('truetype');
             font-weight: bold;
             font-style: normal;
         }
@@ -28,41 +28,35 @@
             box-sizing: border-box;
         }
 
+        html,
         body {
+            height: 100%;
             margin: 0;
             padding: 0;
+        }
+
+        body {
             font-family: 'Noto Sans SC', 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif;
-            font-size: 8px;
+            font-size: 7.5px;
             color: #000;
         }
 
-        .page-break {
-            page-break-after: always;
-        }
-
-        .page-break:last-child {
-            page-break-after: auto;
-        }
-
-        /* Shared Bill Styles */
         .bill-container {
             width: 97%;
             margin: 0 auto;
-            height: 142mm;
-            /* Default height */
+            height: 134mm;
             border-top: 1.5px solid #000;
             border-right: 1.5px solid #000;
             border-bottom: 1.5px solid #000;
             border-left: 1.5px solid #000;
             position: relative;
-            padding: 2px 0;
+            padding: 4px 0;
             box-sizing: border-box;
         }
 
-        /* Specifically for 2-copy mode to prevent page spill */
         .cutting-line {
             position: absolute;
-            top: 148.5mm;
+            top: 138mm;
             left: -25px;
             right: -25px;
             border-top: 1px dashed #888;
@@ -82,45 +76,52 @@
             border: 1px solid #000;
         }
 
+        /* Header Specifics */
         .company-info {
-            padding: 3px;
+            padding: 0 5px;
             border: none;
             width: 35%;
             vertical-align: top;
         }
 
         .logo-section {
-            padding: 3px;
+            padding: 0 5px;
             text-align: center;
             border: none;
             width: 30%;
-            vertical-align: middle;
+            vertical-align: top;
         }
 
         .payment-section {
-            padding: 3px;
+            padding: 0 5px;
             text-align: center;
             border: none;
             width: 35%;
-            vertical-align: middle;
+            vertical-align: top;
         }
 
         .company-name {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 900;
+        }
+
+        .sst-no {
+            font-size: 8px;
+            margin-top: 1px;
         }
 
         .cash-sales-badge {
             background: #1a1a1a;
             color: #fff;
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-size: 10px;
+            padding: 4px 14px;
+            border-radius: 5px;
+            font-size: 12px;
             font-weight: bold;
             display: inline-block;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
+        /* Checkbox Styling */
         .cb-table {
             border: none;
             margin: 0 auto;
@@ -135,16 +136,16 @@
         }
 
         .box {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #000;
+            width: 14px;
+            height: 14px;
+            border: 1.5px solid #000;
             display: inline-block;
-            margin-right: 5px;
+            margin-right: 4px;
             vertical-align: middle;
             text-align: center;
-            line-height: 14px;
+            line-height: 11px;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 12px;
         }
 
         .box.checked {
@@ -152,46 +153,49 @@
             color: #fff;
         }
 
+        /* Route & Details Section */
         .label-cell {
             text-align: center;
+            vertical-align: middle;
             font-weight: bold;
             font-size: 10px;
-            padding: 4px;
+            padding: 2px 3px;
             text-transform: uppercase;
         }
 
         .cs-no {
-            font-size: 14px;
+            font-size: 12px;
             color: #000;
         }
 
         .cs-val {
-            color: #d00;
-            font-size: 18px;
+            color: #000;
+            font-size: 15px;
         }
 
         .data-content {
-            padding: 3px;
+            padding: 2px 5px;
         }
 
         .field-label {
-            font-size: 11px;
-            margin-bottom: 2px;
+            font-size: 10px;
+            margin-bottom: 0;
         }
 
         .field-value {
             font-size: 11px;
             font-weight: bold;
-            margin-bottom: 2px;
+            margin-bottom: 0;
         }
 
+        /* Main Content */
         .desc-cell {
-            padding: 5px;
+            padding: 4px;
             width: 37%;
         }
 
         .total-cell {
-            padding: 5px;
+            padding: 4px;
             width: 33%;
             text-align: center;
         }
@@ -203,9 +207,9 @@
         }
 
         .total-amount {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            margin: 2px 0;
+            margin: 5px 0;
         }
 
         .description-item {
@@ -216,10 +220,70 @@
             overflow: hidden;
         }
 
-        .policy-disclaimer-section {
-            padding: 5px 10px;
+        /* CONSIGNEE Section */
+        .consignee-section {
+            border: 1px solid #000;
+            padding: 0;
+            width: 30%;
+        }
+
+        .consignee-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 10px;
+            padding: 2px;
+            border-bottom: 1px solid #000;
+        }
+
+        .consignee-top {
+            padding: 2px;
+        }
+
+        .consignee-field {
+            display: flex;
+            margin-bottom: 1px;
+        }
+
+        .consignee-label {
+            width: 45px;
+            font-size: 9px;
+            padding-left: 5px;
+        }
+
+        .consignee-bottom {
+            padding: 2px;
+        }
+
+        .consignee-sign {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .consignee-sign-label {
+            width: 45px;
+            font-size: 10px;
+            padding-left: 5px;
+        }
+
+        /* Footer */
+        .black-footer {
+            background: #000;
+            color: #fff;
+            padding: 8px 12px;
             font-size: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .footer-disclaimer {
+            width: 45%;
             line-height: 1.2;
+        }
+
+        .policy-disclaimer-section {
+            padding: 10px 15px;
+            font-size: 9px;
+            line-height: 1.4;
         }
 
         .policy-left {
@@ -240,9 +304,17 @@
             width: 50%;
             text-align: left;
             vertical-align: top;
-            padding-left: 10px;
-            font-size: 8px;
-            line-height: 1.2;
+            padding-left: 15px;
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        .copy-labels {
+            text-align: center;
+            padding: 5px;
+            font-size: 10px;
+            font-weight: bold;
+            word-spacing: 15px;
         }
 
         .copy-label {
@@ -254,50 +326,6 @@
             color: #fff;
             text-transform: uppercase;
             letter-spacing: 2px;
-        }
-
-        /* Office Template Specifics */
-        .consignee-section {
-            border: 1px solid #000;
-            padding: 0;
-            width: 30%;
-        }
-
-        .consignee-header {
-            text-align: center;
-            font-weight: bold;
-            font-size: 10px;
-            padding: 2px;
-            border-bottom: 1px solid #000;
-        }
-
-        .consignee-top {
-            padding: 2px;
-            border-bottom: 1px solid #000;
-        }
-
-        .consignee-field {
-            display: flex;
-            margin-bottom: 2px;
-        }
-
-        .consignee-label {
-            width: 40px;
-            font-size: 10px;
-        }
-
-        .consignee-bottom {
-            padding: 4px;
-        }
-
-        .consignee-sign {
-            display: flex;
-            align-items: flex-start;
-        }
-
-        .consignee-sign-label {
-            width: 40px;
-            font-size: 10px;
         }
     </style>
 </head>
@@ -339,11 +367,11 @@
                 @php 
                     $view = in_array($copyType, ['office', 'receiver', 'book']) ? 'bills.template-office' : 'bills.template';
                 @endphp
-                                                                                @include($view, ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => $copyType, 'isPdf' => true, 'omitLayout' => true])
-                                                                               </div>
+                                                                                        @include($view, ['bill' => $bill, 'sstDetails' => $sstDetails, 'paymentDetails' => $paymentDetails, 'copyType' => $copyType, 'isPdf' => true, 'omitLayout' => true])
+                                                                                       </div>
 
 
-        @endif
+         @endif
     @endforeach
 </body>
 </html>

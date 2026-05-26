@@ -159,7 +159,10 @@ use Illuminate\Support\Str;
                     <div class="info-value">
                       @if($bill->payment_details)
                         @php
-                          $payment = $bill->payment_details ?? [];
+                          $payment = $bill->payment_details;
+                          if (is_string($payment)) $payment = json_decode($payment, true);
+                          if (is_string($payment)) $payment = json_decode($payment, true);
+                          $payment = is_array($payment) ? $payment : [];
                           $method = $payment['method'] ?? null;
                           $methodLabels = [
                             'cash' => 'Cash',
@@ -184,7 +187,12 @@ use Illuminate\Support\Str;
                     </div>
                     <div class="info-value">
                       @if($bill->payment_details)
-                        @php $payment = $bill->payment_details ?? []; @endphp
+                        @php 
+                          $payment = $bill->payment_details;
+                          if (is_string($payment)) $payment = json_decode($payment, true);
+                          if (is_string($payment)) $payment = json_decode($payment, true);
+                          $payment = is_array($payment) ? $payment : [];
+                        @endphp
                         {{ isset($payment['date']) ? \Carbon\Carbon::parse($payment['date'])->format('M d, Y') : '—' }}
                       @else
                         —
