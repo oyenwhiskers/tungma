@@ -400,9 +400,27 @@ class ChecklistController extends Controller
         }
 
         // Determine template based on copy type
-        $validCopyTypes = ['customer', 'office', 'receiver', 'book', 'combined'];
+        $validCopyTypes = ['customer', 'office', 'receiver', 'book', 'combined', 'poc'];
         if (!in_array($copyType, $validCopyTypes)) {
             $copyType = 'combined';
+        }        if ($copyType === 'poc') {
+            // Determine terminal name
+            $terminal = 'ALL';
+            if ($user && $user->company) {
+                $terminal = $user->company->based_in;
+            } else {
+                $firstBill = $bills->first();
+                $terminal = $firstBill->fromCompany->based_in ?? 'ALL';
+            }
+
+            $firstBill = $bills->first();
+            $fromTerminal = $firstBill->fromCompany->based_in ?? 'ALL';
+            $toTerminal = $firstBill->toCompany->based_in ?? 'ALL';
+
+            $pdf = \PDF::loadView('checklists.print', compact('bills', 'date', 'terminal', 'fromTerminal', 'toTerminal') + ['isPdf' => true])
+                ->setPaper('a4', 'landscape');
+
+            return $pdf->download('poc-checklist-' . $date . '.pdf');
         }
 
         // We use template-checklist-print as the main wrapper for all types

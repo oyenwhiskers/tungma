@@ -599,6 +599,7 @@ use Illuminate\Support\Facades\Storage;
     const sstRateInput = document.getElementById('sst_rate');
     const sstAmountInput = document.getElementById('sst_amount');
     const form = document.querySelector('form');
+    let isInitialLoading = true;
 
     if (!productsContainer || !addProductBtn) return;
 
@@ -711,7 +712,69 @@ use Illuminate\Support\Facades\Storage;
       return JSON.stringify(productsArray);
     }
 
+    function showToast(message, type = 'success') {
+      let container = document.getElementById('toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'position-fixed bottom-0 end-0 p-3';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'toast show align-items-center text-white border-0 mb-2';
+      toast.style.background = type === 'success' ? '#10b981' : (type === 'danger' ? '#ef4444' : '#6b6b6b');
+      toast.style.borderRadius = '8px';
+      toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      toast.style.minWidth = '250px';
+      toast.style.transition = 'all 0.3s ease';
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
+      toast.setAttribute('aria-atomic', 'true');
+
+      toast.innerHTML = `
+        <div class="d-flex p-3">
+          <div class="toast-body flex-grow-1 font-medium" style="font-size: 13px; font-weight: 500;">
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white m-auto" data-bs-dismiss="toast" aria-label="Close" style="font-size: 10px;"></button>
+        </div>
+      `;
+
+      container.appendChild(toast);
+
+      // Close button handler
+      toast.querySelector('.btn-close').addEventListener('click', () => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      });
+
+      // Auto dismiss after 3 seconds
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.style.opacity = '0';
+          setTimeout(() => {
+            if (toast.parentNode) toast.remove();
+          }, 300);
+        }
+      }, 3000);
+    }
+
+    function removeProductItem(item) {
+      if (!item) return;
+      item.remove();
+      updateRemoveButtons();
+      updateDescription();
+      showToast('Product item removed.', 'danger');
+    }
+
     addProductBtn.addEventListener('click', function() {
+      const currentItems = productsContainer.querySelectorAll('.product-item');
+      if (currentItems.length >= 4) {
+        alert('Maximum of 4 items allowed per bill. Please create a new bill for additional items.');
+        return;
+      }
       const newItem = document.createElement('div');
       newItem.className = 'product-item mb-3 p-3 border rounded';
       newItem.setAttribute('data-index', productIndex);
@@ -760,19 +823,19 @@ use Illuminate\Support\Facades\Storage;
 
       // Add remove event listener
       newItem.querySelector('.remove-product').addEventListener('click', function() {
-        newItem.remove();
-        updateRemoveButtons();
-        updateDescription();
+        removeProductItem(newItem);
       });
+
+      if (!isInitialLoading) {
+        showToast(`Product item added successfully! (${currentItems.length + 1}/4)`);
+      }
     });
 
     // Remove product event delegation
     productsContainer.addEventListener('click', function(e) {
       if (e.target.closest('.remove-product')) {
         const item = e.target.closest('.product-item');
-        item.remove();
-        updateRemoveButtons();
-        updateDescription();
+        removeProductItem(item);
       }
     });
 
@@ -882,6 +945,7 @@ use Illuminate\Support\Facades\Storage;
         // Ignore
       }
     }
+    isInitialLoading = false;
   })();
   </script>
 @endpush

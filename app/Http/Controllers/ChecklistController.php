@@ -18,30 +18,42 @@ class ChecklistController extends Controller
         $targetDate = $date
             ? Carbon::parse($date)->toDateString()
             : now()->toDateString();
+            
+        $type = $request->query('type', 'all'); // 'all', 'ongoing', 'ingoing'
 
         $user = auth()->user();
 
         // Filter by company if user is admin or staff
         $query = Bill::whereDate('date', $targetDate)
-            ->with(['checker', 'busDeparture']);
+            ->with(['checker', 'busDeparture', 'fromCompany', 'toCompany']);
 
-        // Filter by company visibility (sender OR receiver)
+        // Filter by company visibility and type (ongoing = outgoing, ingoing = incoming)
         if ($user->role !== 'super_admin') {
-            $query->where(function ($q) use ($user) {
-                $q->where('from_company_id', $user->company_id)
-                    ->orWhere('to_company_id', $user->company_id);
-            });
+            if ($type === 'ongoing') {
+                $query->where('from_company_id', $user->company_id);
+            } elseif ($type === 'ingoing') {
+                $query->where('to_company_id', $user->company_id);
+            } else {
+                $query->where(function ($q) use ($user) {
+                    $q->where('from_company_id', $user->company_id)
+                        ->orWhere('to_company_id', $user->company_id);
+                });
+            }
+        } else {
+            if ($type === 'ongoing') {
+                $query->whereColumn('from_company_id', '!=', 'to_company_id');
+            }
         }
 
         $bills = $query->get()->groupBy('bus_departures_id');
 
-        $rows = $bills->map(function ($items, $busDepartureId) use ($targetDate) {
+        $rows = $bills->map(function ($items, $busDepartureId) use ($targetDate, $user) {
             $total = $items->count();
             $checkedCount = $items->whereNotNull('checked_by')->count();
 
             if ($total === 0) {
                 $status = 'no data';
-            } elseif ($checkedCount > 0) {
+            } elseif ($checkedCount === $total) {
                 $status = 'success';
             } else {
                 $status = 'pending';
@@ -55,11 +67,28 @@ class ChecklistController extends Controller
                 ? $firstItem->busDeparture->departure_time
                 : null;
 
+            // Determine if outgoing/ingoing for the current user
+            $direction = 'Both';
+            if ($user->role !== 'super_admin') {
+                $hasOutgoing = $items->contains('from_company_id', $user->company_id);
+                $hasIncoming = $items->contains('to_company_id', $user->company_id);
+                if ($hasOutgoing && !$hasIncoming) {
+                    $direction = 'Ongoing (Outgoing)';
+                } elseif (!$hasOutgoing && $hasIncoming) {
+                    $direction = 'Ingoing (Incoming)';
+                }
+            } else {
+                $direction = 'All Routing';
+            }
+
             return [
                 'bus_departures_id' => $busDepartureId,
                 'departure_time' => $departureTime,
                 'date' => $targetDate,
                 'status' => $status,
+                'total' => $total,
+                'checked_count' => $checkedCount,
+                'direction' => $direction,
                 'checked_by' => $checkedItem && $checkedItem->checker
                     ? $checkedItem->checker->name
                     : '-',
@@ -68,7 +97,8 @@ class ChecklistController extends Controller
 
         return view('checklists.index', [
             'rows' => $rows->values(),
-            'date' => $targetDate
+            'date' => $targetDate,
+            'type' => $type
         ]);
     }
 
@@ -82,19 +112,25 @@ class ChecklistController extends Controller
         // Get the date from query parameter or default to today
         $dateParam = $request->query('date', now()->toDateString());
         $date = Carbon::parse($dateParam)->toDateString();
+        $type = $request->query('type', 'all');
 
         // Start basic query
         $query = Bill::where('bus_departures_id', $bus_departures_id)
             ->whereDate('date', $date)
-            ->with(['busDeparture', 'fromCompany', 'toCompany']);
+            ->with(['busDeparture', 'fromCompany', 'toCompany', 'checker']);
 
-        // Filter by company visibility:
-        // Users can see a bill if they belong to 'from_company' OR 'to_company'
+        // Filter by company visibility and type
         if ($user->role !== 'super_admin') {
-            $query->where(function ($q) use ($user) {
-                $q->where('from_company_id', $user->company_id)
-                    ->orWhere('to_company_id', $user->company_id);
-            });
+            if ($type === 'ongoing') {
+                $query->where('from_company_id', $user->company_id);
+            } elseif ($type === 'ingoing') {
+                $query->where('to_company_id', $user->company_id);
+            } else {
+                $query->where(function ($q) use ($user) {
+                    $q->where('from_company_id', $user->company_id)
+                        ->orWhere('to_company_id', $user->company_id);
+                });
+            }
         }
 
         $bills = $query->get();
@@ -104,7 +140,8 @@ class ChecklistController extends Controller
             'bus_departures_id' => $bus_departures_id,
             'departure_time' => $busDeparture?->departure_time,
             'date' => $date,
-            'bills' => $bills
+            'bills' => $bills,
+            'type' => $type
         ]);
     }
 
@@ -114,37 +151,101 @@ class ChecklistController extends Controller
     public function save(Request $request)
     {
         $request->validate([
+            'bus_departures_id' => 'required',
+            'date' => 'required|date',
             'bill_ids' => 'nullable|array',
             'bill_ids.*' => 'exists:bills,id'
         ]);
 
         $userId = auth()->user()->id;
         $billIds = $request->input('bill_ids', []);
+        $busDepartureId = $request->input('bus_departures_id');
+        $date = Carbon::parse($request->input('date'))->toDateString();
 
         $user = auth()->user();
 
-        // Admins and Super Admins are not allowed to tick/save the checklist
-        if (in_array($user->role, ['admin', 'super_admin'])) {
-            abort(403, 'You are not authorized to update the checklist.');
+        // Get all bills in this checklist context
+        $allBillsQuery = Bill::where('bus_departures_id', $busDepartureId)
+            ->whereDate('date', $date);
+
+        // Filter by company visibility
+        if ($user->role !== 'super_admin') {
+            $allBillsQuery->where(function($q) use ($user) {
+                $q->where('from_company_id', $user->company_id)
+                  ->orWhere('to_company_id', $user->company_id);
+            });
         }
 
-        // Get all bills for this checklist
-        if (!empty($billIds)) {
-            $query = Bill::whereIn('id', $billIds);
+        $allBills = $allBillsQuery->get();
 
-            // Filter by company visibility (only receiver can check)
-            if ($user->role !== 'super_admin') {
-                $query->where('to_company_id', $user->company_id);
+        foreach ($allBills as $bill) {
+            if (in_array($bill->id, $billIds)) {
+                $bill->update(['checked_by' => $userId]);
+            } else {
+                $bill->update(['checked_by' => null]);
             }
-
-            $query->update([
-                'checked_by' => $userId
-            ]);
         }
 
         return redirect()
-            ->route('checklists.index', ['date' => $request->input('date')])
+            ->route('checklists.index', [
+                'date' => $request->input('date'),
+                'type' => $request->input('type', 'all')
+            ])
             ->with('status', 'Checklist saved successfully!');
+    }
+
+    /**
+     * Print Proof of Collection (POC) Checklist
+     */
+    public function print($bus_departures_id, Request $request)
+    {
+        $user = auth()->user();
+        $date = $request->query('date', now()->toDateString());
+        $type = $request->query('type', 'all');
+
+        $query = Bill::where('bus_departures_id', $bus_departures_id)
+            ->whereDate('date', $date)
+            ->with(['busDeparture', 'fromCompany', 'toCompany', 'checker', 'company']);
+
+        if ($user->role !== 'super_admin') {
+            if ($type === 'ongoing') {
+                $query->where('from_company_id', $user->company_id);
+            } elseif ($type === 'ingoing') {
+                $query->where('to_company_id', $user->company_id);
+            } else {
+                $query->where(function ($q) use ($user) {
+                    $q->where('from_company_id', $user->company_id)
+                        ->orWhere('to_company_id', $user->company_id);
+                });
+            }
+        }
+
+        $bills = $query->get();
+
+        if ($bills->isEmpty()) {
+            return back()->with('error', 'No bills found for this checklist.');
+        }
+        // Determine terminal name
+        $terminal = 'ALL';
+        if ($user->role !== 'super_admin' && $user->company) {
+            $terminal = $user->company->based_in;
+        } else {
+            $firstBill = $bills->first();
+            if ($type === 'ongoing') {
+                $terminal = $firstBill->fromCompany->based_in ?? 'ALL';
+            } else {
+                $terminal = $firstBill->toCompany->based_in ?? 'ALL';
+            }
+        }
+
+        $firstBill = $bills->first();
+        $fromTerminal = $firstBill->fromCompany->based_in ?? 'ALL';
+        $toTerminal = $firstBill->toCompany->based_in ?? 'ALL';
+
+        $pdf = \PDF::loadView('checklists.print', compact('bills', 'date', 'type', 'terminal', 'fromTerminal', 'toTerminal') + ['isPdf' => true])
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('poc-checklist-' . $date . '.pdf');
     }
 }
 

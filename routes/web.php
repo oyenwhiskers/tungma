@@ -115,6 +115,7 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
     // Checklists (Super Admin & Admin can view)
     Route::get('/checklists', [App\Http\Controllers\ChecklistController::class, 'index'])->name('checklists.index');
     Route::get('/checklists/{bus_departures_id}', [App\Http\Controllers\ChecklistController::class, 'show'])->name('checklists.show');
+    Route::get('/checklists/{bus_departures_id}/print', [App\Http\Controllers\ChecklistController::class, 'print'])->name('checklists.print');
     Route::post('/checklists/save', [App\Http\Controllers\ChecklistController::class, 'save'])->name('checklists.save');
 
     // Activity Logs (Super Admin & Admin - company-scoped for Admin)

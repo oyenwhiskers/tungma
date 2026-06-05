@@ -266,8 +266,17 @@ class BillController extends Controller
             'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
             'is_paid' => 'nullable|boolean',
             'is_collected' => 'nullable|boolean',
-            'checked_by' => 'nullable|exists:users,id',
         ]);
+
+        // Decode description JSON to check item count
+        if ($request->filled('description')) {
+            $descArr = json_decode($request->description, true);
+            if (is_array($descArr) && count($descArr) > 4) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['description' => 'Maximum of 4 items allowed per bill. Please create a new bill for additional items.']);
+            }
+        }
 
         // Auto-generate bill code using company prefix and running number
         try {
@@ -414,7 +423,7 @@ class BillController extends Controller
         if ($user->role === 'admin' && $user->company_id !== $bill->company_id) {
             abort(403, 'You can only view bills from your company');
         }
-        $bill->load('fromCompany', 'toCompany', 'busDeparture');
+        $bill->load('fromCompany', 'toCompany', 'busDeparture', 'creator', 'checker');
         return view('bills.show', compact('bill'));
     }
 
@@ -490,8 +499,17 @@ class BillController extends Controller
             'payment_proof_attachment' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:5120',
             'is_paid' => 'nullable|boolean',
             'is_collected' => 'nullable|boolean',
-            'checked_by' => 'nullable|exists:users,id',
         ]);
+
+        // Decode description JSON to check item count
+        if ($request->filled('description')) {
+            $descArr = json_decode($request->description, true);
+            if (is_array($descArr) && count($descArr) > 4) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['description' => 'Maximum of 4 items allowed per bill. Please create a new bill for additional items.']);
+            }
+        }
 
         // Build payment_details JSON
         if ($request->payment_method || $request->payment_date) {

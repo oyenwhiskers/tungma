@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use ZipArchive;
 
 class BackupController extends Controller
@@ -34,7 +35,7 @@ class BackupController extends Controller
         // Calculate storage metrics
         $metrics = [
             'backups' => $this->getDirSize(storage_path('app' . DIRECTORY_SEPARATOR . 'backups')),
-            'media' => $this->getDirSize(storage_path('app' . DIRECTORY_SEPARATOR . 'public')),
+            'media' => $this->getDirSize(public_path('storage')),
             'logs' => $this->getDirSize(storage_path('logs')),
         ];
         
@@ -89,7 +90,36 @@ class BackupController extends Controller
                 mkdir($backupDir, 0755, true);
             }
 
-            // Step 1: Generate JSON data
+            // Step 1: Export all database tables
+            $tables = [
+                'users',
+                'companies',
+                'courier_policies',
+                'bus_departures',
+                'customers',
+                'receivers',
+                'debtors',
+                'e_customers',
+                'msic_codes',
+                'tax_entities',
+                'cash_sales',
+                'cash_sale_details',
+                'bills',
+                'activity_logs',
+            ];
+
+            $databaseData = [];
+            foreach ($tables as $table) {
+                if (Schema::hasTable($table)) {
+                    $databaseData[$table] = DB::table($table)->get()->map(function ($row) {
+                        return (array) $row;
+                    })->toArray();
+                }
+            }
+
+            $jsonData = json_encode($databaseData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+            // Step 2: Backwards compatibility - Generate old bills_data.json
             $bills = Bill::with(['company', 'courierPolicy'])
                 ->withTrashed()
                 ->get();
@@ -116,20 +146,21 @@ class BackupController extends Controller
                 ];
             });
 
-            $jsonData = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            $billsJsonData = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-            // Step 2: Create ZIP with JSON and media
+            // Step 3: Create ZIP with JSONs and media
             $zip = new ZipArchive();
             
             if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
                 throw new \Exception('Failed to create ZIP file');
             }
 
-            // Add JSON data file to ZIP
-            $zip->addFromString('bills_data.json', $jsonData);
+            // Add JSON files to ZIP
+            $zip->addFromString('database_data.json', $jsonData);
+            $zip->addFromString('bills_data.json', $billsJsonData);
 
-            // Add all media files from storage/app/public/
-            $mediaFolder = storage_path('app' . DIRECTORY_SEPARATOR . 'public');
+            // Add all media files from public/storage/
+            $mediaFolder = public_path('storage');
             
             if (file_exists($mediaFolder)) {
                 $mediaFiles = $this->backupService->getFilesRecursive($mediaFolder);
@@ -140,7 +171,6 @@ class BackupController extends Controller
                 }
             }
 
-            $totalFiles = $zip->numFiles;
             $zip->close();
 
             return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(false);
@@ -222,7 +252,7 @@ class BackupController extends Controller
     {
         try {
             // MODIFY HERE: Change folder path if needed
-            $sourceFolder = storage_path('app' . DIRECTORY_SEPARATOR . 'public');
+            $sourceFolder = public_path('storage');
             $zipFilename = 'public_media_' . date('Y-m-d_His') . '.zip';
             $backupDir = storage_path('app' . DIRECTORY_SEPARATOR . 'backups');
             $zipPath = $backupDir . DIRECTORY_SEPARATOR . $zipFilename;
@@ -295,9 +325,37 @@ class BackupController extends Controller
             $skippedCount = 0;
 
             DB::beginTransaction();
+            Schema::disableForeignKeyConstraints();
 
             foreach ($data as $record) {
                 try {
+                    // Recreate missing company if referenced
+                    if (!empty($record['company_id'])) {
+                        $companyExists = DB::table('companies')->where('id', $record['company_id'])->exists();
+                        if (!$companyExists) {
+                            DB::table('companies')->insert([
+                                'id' => $record['company_id'],
+                                'name' => $record['company_name'] ?? 'Restored Company ' . $record['company_id'],
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }
+
+                    // Recreate missing courier policy if referenced
+                    if (!empty($record['courier_policy_id'])) {
+                        $policyExists = DB::table('courier_policies')->where('id', $record['courier_policy_id'])->exists();
+                        if (!$policyExists) {
+                            DB::table('courier_policies')->insert([
+                                'id' => $record['courier_policy_id'],
+                                'name' => $record['courier_policy_name'] ?? 'Restored Policy ' . $record['courier_policy_id'],
+                                'company_id' => $record['company_id'] ?? null,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }
+
                     // Check if bill exists by ID or bill_code
                     $existing = Bill::withTrashed()->find($record['id']);
 
@@ -365,6 +423,8 @@ class BackupController extends Controller
             DB::rollBack();
             Log::error('Data import failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to import data: ' . $e->getMessage());
+        } finally {
+            Schema::enableForeignKeyConstraints();
         }
     }
 
@@ -382,7 +442,7 @@ class BackupController extends Controller
             $file = $request->file('media_file');
             
             // MODIFY HERE: Change destination folder if needed
-            $destinationFolder = storage_path('app' . DIRECTORY_SEPARATOR . 'public');
+            $destinationFolder = public_path('storage');
 
             // Create destination folder if it doesn't exist
             if (!file_exists($destinationFolder)) {
@@ -446,70 +506,148 @@ class BackupController extends Controller
             $mediaCount = 0;
 
             // Step 1: Import JSON data
-            $jsonFile = $tempDir . DIRECTORY_SEPARATOR . 'bills_data.json';
+            $dbJsonFile = $tempDir . DIRECTORY_SEPARATOR . 'database_data.json';
+            $oldJsonFile = $tempDir . DIRECTORY_SEPARATOR . 'bills_data.json';
             
-            if (file_exists($jsonFile)) {
-                $jsonContent = file_get_contents($jsonFile);
+            if (file_exists($dbJsonFile)) {
+                $jsonContent = file_get_contents($dbJsonFile);
+                $databaseData = json_decode($jsonContent, true);
+
+                if (json_last_error() === JSON_ERROR_NONE && is_array($databaseData)) {
+                    DB::beginTransaction();
+                    Schema::disableForeignKeyConstraints();
+
+                    try {
+                        foreach ($databaseData as $table => $rows) {
+                            if (!Schema::hasTable($table)) {
+                                continue;
+                            }
+
+                            foreach ($rows as $row) {
+                                if (isset($row['id'])) {
+                                    try {
+                                        DB::table($table)->insert($row);
+                                        if ($table === 'bills') {
+                                            $importedCount++;
+                                        }
+                                    } catch (\Exception $e) {
+                                        // Catch duplicate primary key errors (code 23000 or duplicate key / 1062)
+                                        if ($e->getCode() == 23000 || strpos($e->getMessage(), '1062') !== false || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                                            DB::table($table)->where('id', $row['id'])->update($row);
+                                            if ($table === 'bills') {
+                                                $updatedCount++;
+                                            }
+                                        } else {
+                                            throw $e;
+                                        }
+                                    }
+                                } else {
+                                    DB::table($table)->insert($row);
+                                }
+                            }
+                        }
+                        DB::commit();
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        throw $e;
+                    } finally {
+                        Schema::enableForeignKeyConstraints();
+                    }
+                }
+            } elseif (file_exists($oldJsonFile)) {
+                $jsonContent = file_get_contents($oldJsonFile);
                 $data = json_decode($jsonContent, true);
 
                 if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
                     DB::beginTransaction();
+                    Schema::disableForeignKeyConstraints();
 
-                    foreach ($data as $record) {
-                        try {
-                            $existing = Bill::withTrashed()->find($record['id']);
-                            
-                            $billData = [
-                                'bill_code' => $record['bill_code'] ?? null,
-                                'date' => $record['date'] ?? null,
-                                'amount' => $record['amount'] ?? 0,
-                                'description' => $record['description'] ?? null,
-                                'payment_details' => $record['payment_details'] ?? null,
-                                'customer_info' => $record['customer_info'] ?? null,
-                                'courier_policy_id' => $record['courier_policy_id'] ?? null,
-                                'company_id' => $record['company_id'] ?? null,
-                                'sst_details' => $record['sst_details'] ?? null,
-                                'policy_snapshot' => $record['policy_snapshot'] ?? null,
-                                'media_attachment' => $record['media_attachment'] ?? null,
-                            ];
-
-                            if ($existing) {
-                                $existing->update($billData);
-                                
-                                // Handle soft-delete state
-                                if (isset($record['deleted_at'])) {
-                                    if ($record['deleted_at'] === null && $existing->trashed()) {
-                                        // Should not be deleted, but is - restore it
-                                        $existing->restore();
-                                    } elseif ($record['deleted_at'] !== null && !$existing->trashed()) {
-                                        // Should be deleted, but isn't - soft delete it
-                                        $existing->deleted_at = $record['deleted_at'];
-                                        $existing->save();
-                                    } elseif ($record['deleted_at'] !== null && $existing->trashed()) {
-                                        // Already deleted, just update the deleted_at timestamp
-                                        $existing->deleted_at = $record['deleted_at'];
-                                        $existing->save();
+                    try {
+                        foreach ($data as $record) {
+                            try {
+                                // Recreate missing company if referenced
+                                if (!empty($record['company_id'])) {
+                                    $companyExists = DB::table('companies')->where('id', $record['company_id'])->exists();
+                                    if (!$companyExists) {
+                                        DB::table('companies')->insert([
+                                            'id' => $record['company_id'],
+                                            'name' => $record['company_name'] ?? 'Restored Company ' . $record['company_id'],
+                                            'created_at' => now(),
+                                            'updated_at' => now(),
+                                        ]);
                                     }
                                 }
-                                
-                                $updatedCount++;
-                            } else {
-                                $bill = new Bill($billData);
-                                $bill->id = $record['id'];
-                                $bill->created_at = $record['created_at'] ?? now();
-                                $bill->updated_at = $record['updated_at'] ?? now();
-                                $bill->deleted_at = $record['deleted_at'] ?? null;
-                                $bill->save();
-                                
-                                $importedCount++;
+
+                                // Recreate missing courier policy if referenced
+                                if (!empty($record['courier_policy_id'])) {
+                                    $policyExists = DB::table('courier_policies')->where('id', $record['courier_policy_id'])->exists();
+                                    if (!$policyExists) {
+                                        DB::table('courier_policies')->insert([
+                                            'id' => $record['courier_policy_id'],
+                                            'name' => $record['courier_policy_name'] ?? 'Restored Policy ' . $record['courier_policy_id'],
+                                            'company_id' => $record['company_id'] ?? null,
+                                            'created_at' => now(),
+                                            'updated_at' => now(),
+                                        ]);
+                                    }
+                                }
+
+                                $existing = Bill::withTrashed()->find($record['id']);
+                            
+                                $billData = [
+                                    'bill_code' => $record['bill_code'] ?? null,
+                                    'date' => $record['date'] ?? null,
+                                    'amount' => $record['amount'] ?? 0,
+                                    'description' => $record['description'] ?? null,
+                                    'payment_details' => $record['payment_details'] ?? null,
+                                    'customer_info' => $record['customer_info'] ?? null,
+                                    'courier_policy_id' => $record['courier_policy_id'] ?? null,
+                                    'company_id' => $record['company_id'] ?? null,
+                                    'sst_details' => $record['sst_details'] ?? null,
+                                    'policy_snapshot' => $record['policy_snapshot'] ?? null,
+                                    'media_attachment' => $record['media_attachment'] ?? null,
+                                ];
+
+                                if ($existing) {
+                                    $existing->update($billData);
+                                    
+                                    // Handle soft-delete state
+                                    if (isset($record['deleted_at'])) {
+                                        if ($record['deleted_at'] === null && $existing->trashed()) {
+                                            $existing->restore();
+                                        } elseif ($record['deleted_at'] !== null && !$existing->trashed()) {
+                                            $existing->deleted_at = $record['deleted_at'];
+                                            $existing->save();
+                                        } elseif ($record['deleted_at'] !== null && $existing->trashed()) {
+                                            $existing->deleted_at = $record['deleted_at'];
+                                            $existing->save();
+                                        }
+                                    }
+                                    
+                                    $updatedCount++;
+                                } else {
+                                    $bill = new Bill($billData);
+                                    $bill->id = $record['id'];
+                                    $bill->created_at = $record['created_at'] ?? now();
+                                    $bill->updated_at = $record['updated_at'] ?? now();
+                                    $bill->deleted_at = $record['deleted_at'] ?? null;
+                                    $bill->save();
+                                    
+                                    $importedCount++;
+                                }
+
+                            } catch (\Exception $e) {
+                                Log::warning("Failed to import bill record: " . $e->getMessage());
                             }
-
-                        } catch (\Exception $e) {
-                            Log::warning("Failed to import bill record: " . $e->getMessage());
                         }
-                    }
 
-                    DB::commit();
+                        DB::commit();
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        throw $e;
+                    } finally {
+                        Schema::enableForeignKeyConstraints();
+                    }
                 }
             }
 
@@ -517,7 +655,7 @@ class BackupController extends Controller
             $publicDir = $tempDir . DIRECTORY_SEPARATOR . 'public';
             
             if (file_exists($publicDir)) {
-                $destinationFolder = storage_path('app' . DIRECTORY_SEPARATOR . 'public');
+                $destinationFolder = public_path('storage');
                 
                 // Backup existing media if requested
                 if ($request->has('backup_existing')) {
@@ -655,7 +793,7 @@ class BackupController extends Controller
             $target = $request->target;
             $pathMap = [
                 'backups' => storage_path('app' . DIRECTORY_SEPARATOR . 'backups'),
-                'media' => storage_path('app' . DIRECTORY_SEPARATOR . 'public'),
+                'media' => public_path('storage'),
                 'logs' => storage_path('logs'),
             ];
 

@@ -360,6 +360,16 @@ use Illuminate\Support\Str;
 
                   <div class="info-row">
                     <div class="info-label">
+                      <i class="bi bi-person-plus"></i>
+                      <span>Created By</span>
+                    </div>
+                    <div class="info-value">
+                      {{ $bill->creator ? $bill->creator->name : 'System / Unknown' }}
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-label">
                       <i class="bi bi-person-check"></i>
                       <span>Checked By</span>
                     </div>

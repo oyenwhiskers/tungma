@@ -17,19 +17,24 @@
         </div>
     </div>
     <div>
-        <a href="{{ route('checklists.index', ['date' => $date]) }}" class="btn btn-outline-secondary">
+        <a href="{{ route('checklists.print', ['bus_departures_id' => $bus_departures_id, 'date' => $date, 'type' => $type]) }}" target="_blank" class="btn btn-primary me-2">
+            <i class="bi bi-print"></i> Print Proof of Collection
+        </a>
+        <a href="{{ route('checklists.index', ['date' => $date, 'type' => $type]) }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Back
         </a>
     </div>
 </div>
 
     @php
-        $canEdit = !in_array(auth()->user()->role, ['admin', 'super_admin']);
+        $canEdit = true;
     @endphp
 
     <form action="{{ route('checklists.save') }}" method="POST">
         @csrf
         <input type="hidden" name="date" value="{{ $date }}">
+        <input type="hidden" name="bus_departures_id" value="{{ $bus_departures_id }}">
+        <input type="hidden" name="type" value="{{ $type }}">
 
         <div class="row">
             <div class="col-12">
@@ -96,7 +101,7 @@
                                             <td>
                                                 @if($bill->checked_by)
                                                     <span class="badge bg-success">
-                                                        <i class="bi bi-check-circle me-1"></i> {{ $bill->checked_by }}
+                                                        <i class="bi bi-check-circle me-1"></i> {{ $bill->checker->name ?? $bill->checked_by }}
                                                     </span>
                                                 @else
                                                     <span class="badge bg-secondary">Pending</span>

@@ -40,14 +40,15 @@
 
         body {
             font-family: 'Noto Sans SC', 'DejaVu Sans', 'Helvetica', 'Arial', sans-serif;
-            font-size: 7.5px;
+            font-size: 9px;
             color: #000;
         }
 
         .bill-container {
-            width: 97%;
-            margin: 0 auto;
-            height: 134mm;
+            width: 95%;
+            margin: 3% auto;
+            min-height: 125mm;
+            height: auto;
             border-top: 1.5px solid #000;
             border-right: 1.5px solid #000;
             border-bottom: 1.5px solid #000;
@@ -104,12 +105,12 @@
         }
 
         .company-name {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 900;
         }
 
         .sst-no {
-            font-size: 8px;
+            font-size: 9.5px;
             margin-top: 1px;
         }
 
@@ -118,7 +119,7 @@
             color: #fff;
             padding: 4px 14px;
             border-radius: 5px;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
             display: inline-block;
             margin-bottom: 2px;
@@ -136,6 +137,7 @@
             padding: 4px 8px;
             text-align: left;
             vertical-align: middle;
+            font-size: 10px;
         }
 
         .box {
@@ -161,19 +163,19 @@
             text-align: center;
             vertical-align: middle;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 11.5px;
             padding: 2px 3px;
             text-transform: uppercase;
         }
 
         .cs-no {
-            font-size: 12px;
+            font-size: 13px;
             color: #000;
         }
 
         .cs-val {
             color: #000;
-            font-size: 15px;
+            font-size: 17px;
         }
 
         .data-content {
@@ -181,7 +183,7 @@
         }
 
         .field-label {
-            font-size: 10px;
+            font-size: 9px;
             margin-bottom: 0;
         }
 
@@ -210,13 +212,13 @@
         }
 
         .total-amount {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             margin: 5px 0;
         }
 
         .description-item {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             margin-bottom: 5px;
             max-height: 45mm;
@@ -233,38 +235,25 @@
         .consignee-header {
             text-align: center;
             font-weight: bold;
-            font-size: 10px;
-            padding: 2px;
+            font-size: 12px;
+            padding: 4px 2px;
             border-bottom: 1px solid #000;
         }
 
         .consignee-top {
-            padding: 2px;
+            padding: 4px 2px;
         }
 
         .consignee-field {
             display: flex;
-            margin-bottom: 1px;
+            margin-top: 2px;
+            margin-bottom: 2px;
         }
 
         .consignee-label {
-            width: 45px;
-            font-size: 9px;
-            padding-left: 5px;
-        }
-
-        .consignee-bottom {
-            padding: 2px;
-        }
-
-        .consignee-sign {
-            display: flex;
-            align-items: flex-start;
-        }
-
-        .consignee-sign-label {
-            width: 45px;
-            font-size: 10px;
+            width: 55px;
+            font-size: 11px;
+            font-weight: bold;
             padding-left: 5px;
         }
 
@@ -272,8 +261,8 @@
         .black-footer {
             background: #000;
             color: #fff;
-            padding: 8px 12px;
-            font-size: 8px;
+            padding: 4px 12px;
+            font-size: 8.5px;
             display: flex;
             justify-content: space-between;
         }
@@ -284,9 +273,9 @@
         }
 
         .policy-disclaimer-section {
-            padding: 10px 15px;
+            padding: 4px 15px;
             font-size: 9px;
-            line-height: 1.4;
+            line-height: 1.2;
         }
 
         .policy-left {
@@ -309,13 +298,13 @@
             vertical-align: top;
             padding-left: 15px;
             font-size: 9px;
-            line-height: 1.4;
+            line-height: 1.2;
         }
 
         .copy-labels {
             text-align: center;
             padding: 5px;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
             word-spacing: 15px;
         }
@@ -323,7 +312,7 @@
         .copy-label {
             text-align: center;
             padding: 8px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             background: #000;
             color: #fff;
@@ -361,21 +350,13 @@
                 </td>
                 <td class="logo-section">
                     @php
-                        $logoPath = public_path('images/logo.png');
+                        $logoPath = public_path('images/logo-monotone.png');
+                        if (!file_exists($logoPath)) {
+                            $logoPath = public_path('images/logo.png');
+                        }
                         $logoBase64 = '';
                         if (file_exists($logoPath)) {
-                            $img = @imagecreatefrompng($logoPath);
-                            if ($img !== false) {
-                                imagealphablending($img, false);
-                                imagesavealpha($img, true);
-                                imagefilter($img, IMG_FILTER_GRAYSCALE);
-                                ob_start();
-                                imagepng($img);
-                                $logoBase64 = base64_encode(ob_get_clean());
-                                imagedestroy($img);
-                            } else {
-                                $logoBase64 = base64_encode(file_get_contents($logoPath));
-                            }
+                            $logoBase64 = base64_encode(file_get_contents($logoPath));
                         }
                     @endphp
                     <img src="data:image/png;base64,{{ $logoBase64 }}" style="width: 85px; margin-top: -10px; margin-bottom: 2px;">
@@ -432,24 +413,22 @@
             <tr>
                 <td class="data-content">
                     <div class="field-label">Sender Name:</div>
-                    <div class="field-value" style="margin-bottom: 5px;">{{ strtoupper($bill->sender_name ?? '') }}</div>
+                    <div class="field-value" style="margin-bottom: 2px;">{{ strtoupper($bill->sender_name ?? '') }}</div>
                     <div class="field-label">Contact No:</div>
                     <div class="field-value">{{ $bill->sender_phone ?? '' }}</div>
                 </td>
                 <td class="data-content">
                     <div class="field-label">Receiver Name:</div>
-                    <div class="field-value" style="margin-bottom: 5px;">{{ strtoupper($bill->receiver_name ?? '') }}</div>
+                    <div class="field-value" style="margin-bottom: 2px;">{{ strtoupper($bill->receiver_name ?? '') }}</div>
                     <div class="field-label">Contact No:</div>
                     <div class="field-value">{{ $bill->receiver_phone ?? '' }}</div>
                 </td>
-                <td class="data-content" style="text-align: center; vertical-align: middle;">
-                    <div class="field-label" style="font-size: 10px; font-weight: bold;">DATE: {{ $bill->date ? $bill->date->format('d/m/Y') : '16/12/2025' }}</div>
-                    <br>
-                    <div class="field-label" style="font-size: 10px; font-weight: bold;">TIME FROM SDK: {{ $bill->busDeparture->departure_time ?? '7:00 AM' }}</div>
-                    <br>
-                    <div style="font-size: 8px; font-weight: bold;">
-                        ESTIMATED TO ARRIVE IN 7 HOURS<br>
-                        <span style="font-weight: normal; font-size: 7px;">(BUSINESS HOUR: 7am - 8pm)</span>
+                <td class="data-content" style="text-align: center; vertical-align: middle; padding: 4px 2px;">
+                    <div style="font-size: 11px; font-weight: bold; margin-bottom: 2px;">DATE: {{ $bill->date ? $bill->date->format('d/m/Y') : '16/12/2025' }}</div>
+                    <div style="font-size: 11px; font-weight: bold; margin-bottom: 2px;">TIME FROM SDK: {{ $bill->busDeparture->departure_time ?? '7:00 AM' }}</div>
+                    <div style="font-size: 9px; font-weight: bold; line-height: 1.25;">
+                        ESTIMATED TO ARRIVE IN 7 HOURS
+                        <span style="font-weight: normal; font-size: 7.5px; display: block; margin-top: 1px;">(BUSINESS HOUR: 7.00am - 7.30pm)</span>
                     </div>
                 </td>
             </tr>
@@ -458,9 +437,9 @@
         <table>
             <tr>
                 <td colspan="2" style="padding: 0 15px 0 10px; width: 70%; vertical-align: top;">
-                    <div style="height: 38mm; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="min-height: 38mm; height: auto; overflow: visible; display: flex; flex-direction: column;">
                         <div style="flex-grow: 1;">
-                            <table style="width: 100%; border: none; font-size: 10px; margin-bottom: 2px; line-height: 1.1;">
+                            <table style="width: 100%; border: none; font-size: 11.5px; margin-bottom: 2px; line-height: 1.1;">
                         <tr>
                             <td style="border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; font-weight: bold; width: 10%;">Item</td>
                             <td style="border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; font-weight: bold; width: 30%;">Description</td>
@@ -482,7 +461,7 @@
                                 @endphp
                                 <tr>
                                     <td style="border: none; padding: 1px 0;">{{ $index + 1 }}</td>
-                                    <td style="border: none; padding: 1px 0;">{{ $item['product'] ?? '' }}</td>
+                                    <td style="border: none; padding: 1px 0; font-weight: bold;">{{ $item['product'] ?? '' }}</td>
                                     <td style="border: none; padding: 1px 0;">{{ $item['quantity'] ?? '' }}</td>
                                     <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($itemPrice, 2) }}</td>
                                     <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($itemTax, 2) }}</td>
@@ -492,7 +471,7 @@
                         @else
                             <tr>
                                 <td style="border: none; padding: 1px 0;">1</td>
-                                <td style="border: none; padding: 1px 0;">{{ $bill->description }}</td>
+                                <td style="border: none; padding: 1px 0; font-weight: bold;">{{ $bill->description }}</td>
                                 <td style="border: none; padding: 1px 0;">1</td>
                                 <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($total, 2) }}</td>
                                 <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($total * 0.06, 2) }}</td>
@@ -502,18 +481,18 @@
                     </table>
                         </div>
                         <div>
-                    <table style="width: 100%; border: none; font-size: 11px; font-weight: bold; margin-top: 2px;">
+                    <table style="width: 100%; border: none; font-size: 10.5px; font-weight: bold; margin-top: 1px; line-height: 1.1;">
                         <tr>
-                            <td style="border: none; border-top: 1px solid #000; padding: 2px 0 0 0;">Sub Total (excluding tax)</td>
-                            <td style="border: none; border-top: 1px solid #000; padding: 2px 0 0 0; text-align: right; font-size: 11px;">RM {{ number_format($total, 2) }}</td>
+                            <td style="border: none; border-top: 1px solid #000; padding: 1px 0 0 0;">Sub Total (excluding tax)</td>
+                            <td style="border: none; border-top: 1px solid #000; padding: 1px 0 0 0; text-align: right; font-size: 10.5px;">RM {{ number_format($total, 2) }}</td>
                         </tr>
                         <tr>
-                            <td style="border: none; padding: 2px 0 0 0;">Service Tax @ 6%</td>
-                            <td style="border: none; padding: 2px 0 0 0; text-align: right; font-size: 11px;">RM {{ number_format($total * 0.06, 2) }}</td>
+                            <td style="border: none; padding: 1px 0 0 0;">Service Tax @ 6%</td>
+                            <td style="border: none; padding: 1px 0 0 0; text-align: right; font-size: 10.5px;">RM {{ number_format($total * 0.06, 2) }}</td>
                         </tr>
                         <tr>
-                            <td style="border: none; padding: 2px 0 0 0; text-transform: uppercase;">Total (inclusive of tax)</td>
-                            <td style="border: none; padding: 2px 0 0 0; text-align: right; font-size: 12px;">RM {{ number_format($total * 1.06, 2) }}</td>
+                            <td style="border: none; padding: 1px 0 0 0; text-transform: uppercase;">Total (inclusive of tax)</td>
+                            <td style="border: none; padding: 1px 0 0 0; text-align: right; font-size: 12.5px;">RM {{ number_format($total * 1.06, 2) }}</td>
                         </tr>
                     </table>
                         </div>
@@ -521,24 +500,18 @@
                 </td>
                 <td class="consignee-section" style="vertical-align: top;">
                     <div class="consignee-header">CONSIGNEE</div>
-                    <div class="consignee-top">
+                    <div class="consignee-top" style="padding: 2px 4px;">
                         <div class="consignee-field">
-                            <div class="consignee-label">NAME:</div>
-                            <div style="border-bottom: 1px solid #000; flex: 1; min-height: 10px;"></div>
+                            <div class="consignee-label">Name:</div>
+                            <div style="border-bottom: 1px solid #000; flex: 1; min-height: 10px; margin-right: 5px;"></div>
                         </div>
                         <div class="consignee-field">
-                            <div class="consignee-label">I/C:</div>
-                            <div style="border-bottom: 1px solid #000; flex: 1; min-height: 10px;"></div>
+                            <div class="consignee-label">H/P No.:</div>
+                            <div style="border-bottom: 1px solid #000; flex: 1; min-height: 10px; margin-right: 5px;"></div>
                         </div>
                         <div class="consignee-field">
-                            <div class="consignee-label">DATE:</div>
-                            <div style="border-bottom: 1px solid #000; flex: 1; min-height: 10px;"></div>
-                        </div>
-                    </div>
-                    <div class="consignee-bottom">
-                        <div class="consignee-sign">
-                            <div class="consignee-sign-label">SIGN:</div>
-                            <div style="border-bottom: 1px solid #000; flex: 1; min-height: 10px;"></div>
+                            <div class="consignee-label">Date:</div>
+                            <div style="border-bottom: 1px solid #000; flex: 1; min-height: 10px; margin-right: 5px;"></div>
                         </div>
                     </div>
                 </td>
