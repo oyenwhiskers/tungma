@@ -31,6 +31,9 @@
   <div class="tm-card-body p-0">
     <form method="POST" id="export-form" action="{{ route('e-invoice.export-tax-entity') }}">
       @csrf
+      <input type="hidden" name="month" value="{{ request('month') }}">
+      <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+      <input type="hidden" name="end_date" value="{{ request('end_date') }}">
       
       @if(session('error'))
           <div class="alert alert-danger m-3">{{ session('error') }}</div>
@@ -45,7 +48,7 @@
               </th>
               <th width="20%">Customer Name</th>
               <th width="20%">TIN Number</th>
-              <th width="15%">Identity Type</th>
+              <th width="15%">Customer Type</th>
               <th width="15%">Identity No</th>
               <th width="26%">Address</th>
             </tr>
@@ -66,7 +69,7 @@
                 <span class="fw-bold text-primary">{{ $debtor->tin_number ?? 'N/A' }}</span>
               </td>
               <td>
-                <span class="badge bg-light text-dark border px-2 py-1 fs-6">{{ $debtor->identity_type ?? 'MyKAD' }}</span>
+                <span class="badge bg-light text-dark border px-2 py-1 fs-6">{{ $debtor->customer_type ?? 'Individual' }}</span>
               </td>
               <td>
                 {{ $debtor->customer_ic ?: $debtor->business_reg_number }}

@@ -38,6 +38,33 @@
     </form>
 </div>
 
+@if(session('error'))
+    <div class="alert alert-danger mb-4">
+        {{ session('error') }}
+    </div>
+@endif
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, var(--tm-primary), #d32f2f); color: white; border-radius: 12px; overflow: hidden;">
+            <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <h4 class="mb-1 text-white d-flex align-items-center"><i class="bi bi-calendar-check me-2" style="font-size: 1.4rem;"></i> Main Proof Checklist (Daily)</h4>
+                    <p class="mb-0 text-white-50 small">View or print all bills for {{ \Carbon\Carbon::parse($date)->format('d M Y') }} sorted by running number (bill code) to keep them continuous.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('checklists.showByDate', ['date' => $date, 'type' => $type]) }}" class="btn btn-light fw-bold text-danger px-3">
+                        <i class="bi bi-eye me-1"></i> View Main Checklist
+                    </a>
+                    <a href="{{ route('checklists.printByDate', ['date' => $date, 'type' => $type]) }}" target="_blank" class="btn btn-outline-light fw-bold px-3">
+                        <i class="bi bi-print me-1"></i> Print Proof of Collection
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <div class="row">
         <div class="col-12">
             <div class="tm-card">

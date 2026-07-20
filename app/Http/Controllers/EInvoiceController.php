@@ -26,6 +26,23 @@ class EInvoiceController extends Controller
             $query->where('company_id', $user->company_id);
         }
 
+        // Monthly filter
+        if ($request->filled('month')) {
+            $monthParts = explode('-', $request->month);
+            if (count($monthParts) === 2) {
+                $query->whereYear('date', $monthParts[0])
+                      ->whereMonth('date', $monthParts[1]);
+            }
+        }
+
+        // Date range filter
+        if ($request->filled('start_date')) {
+            $query->where('date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->where('date', '<=', $request->end_date);
+        }
+
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
@@ -36,6 +53,19 @@ class EInvoiceController extends Controller
                            ->orWhere('customer_name', 'like', "%{$search}%");
                   });
             });
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            if ($request->status === 'pending') {
+                $query->whereHas('eCustomer', function ($q) {
+                    $q->where('is_exported', false);
+                });
+            } elseif ($request->status === 'done') {
+                $query->whereHas('eCustomer', function ($q) {
+                    $q->where('is_exported', true);
+                });
+            }
         }
 
         // Sorting functionality
@@ -71,6 +101,29 @@ class EInvoiceController extends Controller
             });
         }
 
+        // Apply month filter
+        if ($request->filled('month')) {
+            $monthParts = explode('-', $request->month);
+            if (count($monthParts) === 2) {
+                $query->whereHas('bill', function ($q) use ($monthParts) {
+                    $q->whereYear('date', $monthParts[0])
+                      ->whereMonth('date', $monthParts[1]);
+                });
+            }
+        }
+
+        // Apply date range filter
+        if ($request->filled('start_date')) {
+            $query->whereHas('bill', function ($q) use ($request) {
+                $q->where('date', '>=', $request->start_date);
+            });
+        }
+        if ($request->filled('end_date')) {
+            $query->whereHas('bill', function ($q) use ($request) {
+                $q->where('date', '<=', $request->end_date);
+            });
+        }
+
         // Apply date filter
         if ($request->filled('date')) {
             $query->whereDate('created_at', $request->date);
@@ -83,9 +136,6 @@ class EInvoiceController extends Controller
             } elseif ($request->status === 'downloaded') {
                 $query->where('is_exported', true);
             }
-        } else {
-            // default to pending if not specified
-            $query->where('is_exported', false);
         }
 
         // Get requests matching filters
@@ -138,5 +188,150 @@ class EInvoiceController extends Controller
         $eCustomer->update(['is_exported' => !$eCustomer->is_exported]);
         
         return redirect()->back()->with('success', 'Status updated successfully.');
+    }
+
+    /**
+     * Export the requests list as a CSV.
+     */
+    public function exportCsv(Request $request)
+    {
+        $user = auth()->user();
+
+        $query = Bill::whereHas('eCustomer')
+            ->with(['eCustomer', 'company']);
+
+        // Apply company filter for admin
+        if ($user->role === 'admin') {
+            $query->where('company_id', $user->company_id);
+        }
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('bill_code', 'like', "%{$search}%")
+                  ->orWhereHas('eCustomer', function ($subQ) use ($search) {
+                      $subQ->where('tin_number', 'like', "%{$search}%")
+                           ->orWhere('customer_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Monthly filter
+        if ($request->filled('month')) {
+            $monthParts = explode('-', $request->month);
+            if (count($monthParts) === 2) {
+                $query->whereYear('date', $monthParts[0])
+                      ->whereMonth('date', $monthParts[1]);
+            }
+        }
+
+        // Date range filter
+        if ($request->filled('start_date')) {
+            $query->where('date', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->where('date', '<=', $request->end_date);
+        }
+
+        $bills = $query->latest('date')->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="E-Invoice_Requests_' . now()->format('Ymd') . '.csv"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        $callback = function () use ($bills) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Bill Code', 'Date', 'Customer Name', 'TIN Number', 'Identity Type', 'Identity No', 'Status', 'Amount (RM)']);
+
+            foreach ($bills as $bill) {
+                fputcsv($file, [
+                    $bill->bill_code,
+                    $bill->date->format('Y-m-d'),
+                    $bill->eCustomer->customer_name ?? 'N/A',
+                    $bill->eCustomer->tin_number ?? 'N/A',
+                    $bill->eCustomer->identity_type ?? 'MyKAD',
+                    '="' . ($bill->eCustomer->customer_ic ?: $bill->eCustomer->business_reg_number) . '"',
+                    $bill->eCustomer->is_exported ? 'Done' : 'Pending',
+                    number_format($bill->amount, 2, '.', '')
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Perform bulk action (mark as Done or Pending) on selected or all filtered requests.
+     */
+    public function bulkAction(Request $request)
+    {
+        $action = $request->input('action');
+        $scope = $request->input('scope');
+        
+        if (!in_array($action, ['mark_done', 'mark_pending'])) {
+            return redirect()->back()->with('error', 'Invalid action.');
+        }
+
+        $isExportedVal = ($action === 'mark_done');
+
+        if ($scope === 'selected') {
+            $ids = $request->input('ids', []);
+            if (!empty($ids)) {
+                ECustomer::whereIn('id', $ids)->update(['is_exported' => $isExportedVal]);
+            }
+        } elseif ($scope === 'all') {
+            $user = auth()->user();
+            $query = ECustomer::query();
+
+            // Apply company filter
+            if ($user->role === 'admin') {
+                $query->whereHas('bill', function ($q) use ($user) {
+                    $q->where('company_id', $user->company_id);
+                });
+            }
+
+            // Apply search filter
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->whereHas('bill', function ($q) use ($search) {
+                    $q->where('bill_code', 'like', "%{$search}%");
+                })->orWhere('tin_number', 'like', "%{$search}%")
+                  ->orWhere('customer_name', 'like', "%{$search}%");
+            }
+
+            // Apply monthly filter
+            if ($request->filled('month')) {
+                $monthParts = explode('-', $request->month);
+                if (count($monthParts) === 2) {
+                    $query->whereHas('bill', function ($q) use ($monthParts) {
+                        $q->whereYear('date', $monthParts[0])
+                          ->whereMonth('date', $monthParts[1]);
+                    });
+                }
+            }
+
+            // Apply date range filter
+            if ($request->filled('start_date')) {
+                $query->whereHas('bill', function ($q) use ($request) {
+                    $q->where('date', '>=', $request->start_date);
+                });
+            }
+            if ($request->filled('end_date')) {
+                $query->whereHas('bill', function ($q) use ($request) {
+                    $q->where('date', '<=', $request->end_date);
+                });
+            }
+
+            $query->update(['is_exported' => $isExportedVal]);
+        }
+
+        return redirect()->back()->with('success', 'Bulk action completed successfully.');
     }
 }

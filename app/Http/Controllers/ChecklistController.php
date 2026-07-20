@@ -247,5 +247,144 @@ class ChecklistController extends Controller
 
         return $pdf->stream('poc-checklist-' . $date . '.pdf');
     }
+
+    /**
+     * Display the main proof checklist for a given date.
+     */
+    public function showByDate(Request $request)
+    {
+        $user = auth()->user();
+        $dateParam = $request->query('date', now()->toDateString());
+        $date = Carbon::parse($dateParam)->toDateString();
+        $type = $request->query('type', 'all');
+
+        // Start basic query (for all departures on this date)
+        $query = Bill::whereDate('date', $date)
+            ->with(['busDeparture', 'fromCompany', 'toCompany', 'checker'])
+            ->orderBy('bill_code', 'asc'); // Sorted by running number/bill code to keep them continuous!
+
+        // Filter by company visibility and type
+        if ($user->role !== 'super_admin') {
+            if ($type === 'ongoing') {
+                $query->where('from_company_id', $user->company_id);
+            } elseif ($type === 'ingoing') {
+                $query->where('to_company_id', $user->company_id);
+            } else {
+                $query->where(function ($q) use ($user) {
+                    $q->where('from_company_id', $user->company_id)
+                        ->orWhere('to_company_id', $user->company_id);
+                });
+            }
+        }
+
+        $bills = $query->get();
+
+        return view('checklists.show_by_date', [
+            'date' => $date,
+            'bills' => $bills,
+            'type' => $type
+        ]);
+    }
+
+    /**
+     * Save the main proof checklist - mark selected bills as checked/verified.
+     */
+    public function saveByDate(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'bill_ids' => 'nullable|array',
+            'bill_ids.*' => 'exists:bills,id'
+        ]);
+
+        $userId = auth()->user()->id;
+        $billIds = $request->input('bill_ids', []);
+        $date = Carbon::parse($request->input('date'))->toDateString();
+
+        $user = auth()->user();
+
+        // Get all bills in this checklist context (for the entire date)
+        $allBillsQuery = Bill::whereDate('date', $date);
+
+        // Filter by company visibility
+        if ($user->role !== 'super_admin') {
+            $allBillsQuery->where(function($q) use ($user) {
+                $q->where('from_company_id', $user->company_id)
+                  ->orWhere('to_company_id', $user->company_id);
+            });
+        }
+
+        $allBills = $allBillsQuery->get();
+
+        foreach ($allBills as $bill) {
+            if (in_array($bill->id, $billIds)) {
+                $bill->update(['checked_by' => $userId]);
+            } else {
+                $bill->update(['checked_by' => null]);
+            }
+        }
+
+        return redirect()
+            ->route('checklists.showByDate', [
+                'date' => $request->input('date'),
+                'type' => $request->input('type', 'all')
+            ])
+            ->with('status', 'Main Proof Checklist saved successfully!');
+    }
+
+    /**
+     * Print Proof of Collection (POC) Checklist for the entire date.
+     */
+    public function printByDate(Request $request)
+    {
+        $user = auth()->user();
+        $date = $request->query('date', now()->toDateString());
+        $type = $request->query('type', 'all');
+
+        $query = Bill::whereDate('date', $date)
+            ->with(['busDeparture', 'fromCompany', 'toCompany', 'checker', 'company'])
+            ->orderBy('bill_code', 'asc'); // Sorted by running number/bill code to keep them continuous!
+
+        if ($user->role !== 'super_admin') {
+            if ($type === 'ongoing') {
+                $query->where('from_company_id', $user->company_id);
+            } elseif ($type === 'ingoing') {
+                $query->where('to_company_id', $user->company_id);
+            } else {
+                $query->where(function ($q) use ($user) {
+                    $q->where('from_company_id', $user->company_id)
+                        ->orWhere('to_company_id', $user->company_id);
+                });
+            }
+        }
+
+        $bills = $query->get();
+
+        if ($bills->isEmpty()) {
+            return back()->with('error', 'No bills found for this date.');
+        }
+
+        // Determine terminal name
+        $terminal = 'ALL';
+        if ($user->role !== 'super_admin' && $user->company) {
+            $terminal = $user->company->based_in;
+        } else {
+            $firstBill = $bills->first();
+            if ($type === 'ongoing') {
+                $terminal = $firstBill->fromCompany->based_in ?? 'ALL';
+            } else {
+                $terminal = $firstBill->toCompany->based_in ?? 'ALL';
+            }
+        }
+
+        $firstBill = $bills->first();
+        $fromTerminal = $firstBill->fromCompany->based_in ?? 'ALL';
+        $toTerminal = $firstBill->toCompany->based_in ?? 'ALL';
+
+        $pdf = \PDF::loadView('checklists.print', compact('bills', 'date', 'type', 'terminal', 'fromTerminal', 'toTerminal') + ['isPdf' => true])
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('main-poc-checklist-' . $date . '.pdf');
+    }
 }
 

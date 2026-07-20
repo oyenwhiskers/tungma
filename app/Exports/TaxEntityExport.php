@@ -8,7 +8,12 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
-class TaxEntityExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
+
+class TaxEntityExport extends DefaultValueBinder implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithCustomValueBinder
 {
     protected $eCustomers;
 
@@ -62,10 +67,18 @@ class TaxEntityExport implements FromCollection, WithHeadings, WithMapping, Shou
      */
     public function map($eCustomer): array
     {
-        // Fallbacks for TaxClassification based on IdentityType or just using '1'
-        // According to template: MyKAD = 1, etc. But if the data has customer_type we would ideally map that.
-        // I will use some sensible defaults for classification if there's no direct map.
-        $taxClass = '1';
+        // Dynamically map TaxClassification and IdentityType based on customer_type
+        $customerType = strtolower($eCustomer->customer_type ?? '');
+        if ($customerType === 'business' || $customerType === 'corporate') {
+            $taxClass = '1';
+            $identityType = '';
+        } elseif ($customerType === 'government') {
+            $taxClass = '2';
+            $identityType = '';
+        } else {
+            $taxClass = '0';
+            $identityType = $eCustomer->identity_type ?? 'MyKAD';
+        }
 
         $address = $eCustomer->address;
         if(is_array($address) || (substr($address, 0, 1) === '[' || substr($address, 0, 1) === '{')) {
@@ -79,7 +92,7 @@ class TaxEntityExport implements FromCollection, WithHeadings, WithMapping, Shou
             $eCustomer->tin_number ?? '',
             $eCustomer->customer_ic ?: $eCustomer->business_reg_number,
             $eCustomer->customer_name ?? '',
-            $eCustomer->identity_type ?? 'MyKAD',
+            $identityType,
             $taxClass,
             '', // GSTRegisterNo
             $eCustomer->sst_reg_number ?? '',
@@ -97,5 +110,18 @@ class TaxEntityExport implements FromCollection, WithHeadings, WithMapping, Shou
             $eCustomer->country_code ?? 'MYS',
             $eCustomer->state_code ?? ''
         ];
+    }
+
+    /**
+     * Bind cell values explicitly as strings for TIN and IdentityNo columns.
+     */
+    public function bindValue(Cell $cell, $value)
+    {
+        if ($cell->getColumn() === 'A' || $cell->getColumn() === 'B') {
+            $cell->setValueExplicit($value, DataType::TYPE_STRING);
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
     }
 }

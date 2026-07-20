@@ -70,6 +70,17 @@ class eFormController extends Controller
             'country_code' => 'nullable|string|size:3',
         ]);
 
+        $bill = \App\Models\Bill::find($validated['bill_id']);
+        if ($bill) {
+            $createdDate = $bill->created_at ?: $bill->date;
+            if ($createdDate && \Carbon\Carbon::parse($createdDate)->addDays(5)->isPast()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'E-Invoice request has expired. E-Invoice can only be requested within 5 days of bill creation.'
+                ], 422);
+            }
+        }
+
         $data = collect($validated)->except('msic_code')->toArray();
 
         // Handle State Code mapping

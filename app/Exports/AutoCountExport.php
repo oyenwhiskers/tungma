@@ -10,12 +10,14 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class AutoCountExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
 {
-    protected $date;
+    protected $startDate;
+    protected $endDate;
     protected $companyId;
 
-    public function __construct($date, $companyId = null)
+    public function __construct($startDate, $endDate, $companyId = null)
     {
-        $this->date = $date;
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
         $this->companyId = $companyId;
     }
 
@@ -25,7 +27,7 @@ class AutoCountExport implements FromCollection, WithHeadings, WithMapping, Shou
     public function collection()
     {
         $query = Bill::with(['company', 'cashSale'])
-            ->whereDate('date', $this->date);
+            ->whereBetween('date', [$this->startDate, $this->endDate]);
 
         if ($this->companyId && $this->companyId !== 'all') {
             $query->where('company_id', $this->companyId);
@@ -45,6 +47,8 @@ class AutoCountExport implements FromCollection, WithHeadings, WithMapping, Shou
             'CompanyName',
             'DebtorCode',
             'DetailDescription',
+            'InclusiveTax',
+            'taxcode',
             'AccNo',
             'SubTotal'
         ];
@@ -91,9 +95,11 @@ class AutoCountExport implements FromCollection, WithHeadings, WithMapping, Shou
         return [
             $bill->bill_code,
             $bill->date->format('Y-m-d'),
-            $bill->sender_name ?? optional($bill->company)->name ?? 'N/A',
+            !empty($bill->sender_name) ? $bill->sender_name : 'Cash Sales',
             $debtorCode,
             $descriptionString,
+            'TRUE',
+            'SV-6',
             '', // AccNo empty as requested
             number_format($bill->amount, 2, '.', '')
         ];

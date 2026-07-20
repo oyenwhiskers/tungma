@@ -139,9 +139,15 @@
         <input type="hidden" id="export_company_id" value="{{ auth()->user()->company_id }}">
         @endif
 
-        <div class="mb-3">
-          <label for="export_date" class="form-label font-weight-bold">Select Date</label>
-          <input type="date" id="export_date" class="form-control" value="{{ date('Y-m-d') }}">
+        <div class="row">
+          <div class="col-6 mb-3">
+            <label for="export_start_date" class="form-label font-weight-bold">Start Date</label>
+            <input type="date" id="export_start_date" class="form-control" value="{{ date('Y-m-d') }}">
+          </div>
+          <div class="col-6 mb-3">
+            <label for="export_end_date" class="form-label font-weight-bold">End Date</label>
+            <input type="date" id="export_end_date" class="form-control" value="{{ date('Y-m-d') }}">
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -157,10 +163,11 @@
 @push('scripts')
 <script>
 document.getElementById('btn-download-autocount').addEventListener('click', function() {
-    const date = document.getElementById('export_date').value;
+    const startDate = document.getElementById('export_start_date').value;
+    const endDate = document.getElementById('export_end_date').value;
     const companyId = document.getElementById('export_company_id') ? document.getElementById('export_company_id').value : '';
-    if (!date) {
-        alert('Please select a date first');
+    if (!startDate || !endDate) {
+        alert('Please select both start and end dates');
         return;
     }
 
@@ -170,7 +177,7 @@ document.getElementById('btn-download-autocount').addEventListener('click', func
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
 
     // Redirect to download
-    const exportUrl = `{{ route('bills.export-autocount') }}?date=${date}&company_id=${companyId}`;
+    const exportUrl = `{{ route('bills.export-autocount') }}?start_date=${startDate}&end_date=${endDate}&company_id=${companyId}`;
     window.location.href = exportUrl;
 
     // Reset button after a short delay

@@ -513,6 +513,10 @@
                         class="{{ request()->routeIs('checklists.*') ? 'active' : '' }}">
                         <i class="bi bi-list-check"></i> Checklists
                     </a>
+                    <a href="{{ route('transit-sheets.index') }}"
+                        class="{{ request()->routeIs('transit-sheets.*') ? 'active' : '' }}">
+                        <i class="bi bi-file-earmark-ruled"></i> Transit Sheets
+                    </a>
 
                     @if(auth()->check() && auth()->user()->role === 'admin')
                         <a href="{{ route('bus-departures.index') }}"

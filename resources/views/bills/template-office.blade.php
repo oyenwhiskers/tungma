@@ -445,8 +445,8 @@
                             <td style="border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; font-weight: bold; width: 30%;">Description</td>
                             <td style="border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; font-weight: bold; width: 10%;">Qty</td>
                             <td style="border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; font-weight: bold; text-align: right; width: 15%;">U/price</td>
-                            <td style="border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; font-weight: bold; text-align: right; width: 15%;">Tax</td>
-                            <td style="border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; font-weight: bold; text-align: right; width: 20%;">Total</td>
+                            <td style="border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; font-weight: bold; text-align: right; width: 15%;">Total Tax</td>
+                            <td style="border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; font-weight: bold; text-align: right; width: 20%;">Total (RM)</td>
                         </tr>
                         @php
                             $descArr = json_decode($bill->description, true);
@@ -455,44 +455,54 @@
                         @if(is_array($descArr))
                             @foreach($descArr as $index => $item)
                                 @php 
-                                    $itemPrice = $item['price'] ?? 0;
-                                    $itemTotal = ($item['quantity'] ?? 0) * $itemPrice;
-                                    $itemTax = $itemTotal * 0.06;
+                                    $itemPriceIncl = $item['price'] ?? 0;
+                                    $itemTotalIncl = ($item['quantity'] ?? 0) * $itemPriceIncl;
+                                    $itemTotalExcl = round($itemTotalIncl / 1.06, 2);
+                                    $itemTax = $itemTotalIncl - $itemTotalExcl;
+                                    $itemPriceExcl = round($itemPriceIncl / 1.06, 2);
                                 @endphp
                                 <tr>
                                     <td style="border: none; padding: 1px 0;">{{ $index + 1 }}</td>
                                     <td style="border: none; padding: 1px 0; font-weight: bold;">{{ $item['product'] ?? '' }}</td>
                                     <td style="border: none; padding: 1px 0;">{{ $item['quantity'] ?? '' }}</td>
-                                    <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($itemPrice, 2) }}</td>
+                                    <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($itemPriceIncl, 2) }}</td>
                                     <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($itemTax, 2) }}</td>
-                                    <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($itemTotal, 2) }}</td>
+                                    <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($itemTotalIncl, 2) }}</td>
                                 </tr>
                             @endforeach
                         @else
+                            @php
+                                $excludingTax = round($total / 1.06, 2);
+                                $taxAmount = $total - $excludingTax;
+                            @endphp
                             <tr>
                                 <td style="border: none; padding: 1px 0;">1</td>
                                 <td style="border: none; padding: 1px 0; font-weight: bold;">{{ $bill->description }}</td>
                                 <td style="border: none; padding: 1px 0;">1</td>
                                 <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($total, 2) }}</td>
-                                <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($total * 0.06, 2) }}</td>
+                                <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($taxAmount, 2) }}</td>
                                 <td style="border: none; padding: 1px 0; text-align: right;">{{ number_format($total, 2) }}</td>
                             </tr>
                         @endif
                     </table>
                         </div>
-                        <div>
-                    <table style="width: 100%; border: none; font-size: 10.5px; font-weight: bold; margin-top: 1px; line-height: 1.1;">
+                        <div style="text-align: right;">
+                    <table align="right" style="margin-left: auto; margin-right: 0; width: auto; border-collapse: separate; border-spacing: 0 3px; font-size: 10.5px; font-weight: bold; margin-top: 1px; line-height: 1.1;">
+                        @php
+                            $excludingTax = round($total / 1.06, 2);
+                            $taxAmount = $total - $excludingTax;
+                        @endphp
                         <tr>
-                            <td style="border: none; border-top: 1px solid #000; padding: 1px 0 0 0;">Sub Total (excluding tax)</td>
-                            <td style="border: none; border-top: 1px solid #000; padding: 1px 0 0 0; text-align: right; font-size: 10.5px;">RM {{ number_format($total, 2) }}</td>
+                            <td style="border: none; text-align: right; padding: 2px 8px 2px 0; vertical-align: middle; white-space: nowrap;">Sub Total (RM)</td>
+                            <td style="border: 1px solid #000; text-align: right; padding: 2px 8px; width: 85px; vertical-align: middle;">{{ number_format($excludingTax, 2) }}</td>
                         </tr>
                         <tr>
-                            <td style="border: none; padding: 1px 0 0 0;">Service Tax @ 6%</td>
-                            <td style="border: none; padding: 1px 0 0 0; text-align: right; font-size: 10.5px;">RM {{ number_format($total * 0.06, 2) }}</td>
+                            <td style="border: none; text-align: right; padding: 2px 8px 2px 0; vertical-align: middle; white-space: nowrap;">Inclusive Service Tax @ 6% on (RM {{ number_format($excludingTax, 2) }})</td>
+                            <td style="border: 1px solid #000; text-align: right; padding: 2px 8px; width: 85px; vertical-align: middle;">{{ number_format($taxAmount, 2) }}</td>
                         </tr>
                         <tr>
-                            <td style="border: none; padding: 1px 0 0 0; text-transform: uppercase;">Total (inclusive of tax)</td>
-                            <td style="border: none; padding: 1px 0 0 0; text-align: right; font-size: 12.5px;">RM {{ number_format($total * 1.06, 2) }}</td>
+                            <td style="border: none; text-align: right; padding: 2px 8px 2px 0; vertical-align: middle; white-space: nowrap;">Final Total (RM)</td>
+                            <td style="border: 1px solid #000; text-align: right; padding: 2px 8px; width: 85px; vertical-align: middle;">{{ number_format($total, 2) }}</td>
                         </tr>
                     </table>
                         </div>

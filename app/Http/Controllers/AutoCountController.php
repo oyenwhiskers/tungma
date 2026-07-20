@@ -18,11 +18,13 @@ class AutoCountController extends Controller
     public function export(Request $request)
     {
         $request->validate([
-            'date' => 'required|date',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
             'company_id' => 'nullable'
         ]);
 
-        $date = $request->date;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
         $companyId = $request->company_id;
 
         // If user is not super_admin, force company_id to their own company
@@ -30,9 +32,10 @@ class AutoCountController extends Controller
             $companyId = auth()->user()->company_id;
         }
 
-        $formattedDate = Carbon::parse($date)->format('Y-m-d');
-        $fileName = "autocount_export_{$formattedDate}.xlsx";
+        $formattedStart = Carbon::parse($startDate)->format('Y-m-d');
+        $formattedEnd = Carbon::parse($endDate)->format('Y-m-d');
+        $fileName = "autocount_export_{$formattedStart}_to_{$formattedEnd}.xlsx";
 
-        return Excel::download(new AutoCountExport($date, $companyId), $fileName);
+        return Excel::download(new AutoCountExport($startDate, $endDate, $companyId), $fileName);
     }
 }

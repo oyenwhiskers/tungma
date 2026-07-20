@@ -100,6 +100,8 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
     Route::post('/e-invoice-requests/{id}/toggle-status', [App\Http\Controllers\EInvoiceController::class, 'toggleStatus'])->name('e-invoice.toggle-status');
     Route::get('/e-invoice-requests/export-preview', [App\Http\Controllers\EInvoiceController::class, 'exportPreview'])->name('e-invoice.export-preview');
     Route::post('/e-invoice-requests/export-tax-entity', [App\Http\Controllers\EInvoiceController::class, 'exportTaxEntity'])->name('e-invoice.export-tax-entity');
+    Route::post('/e-invoice-requests/bulk-action', [App\Http\Controllers\EInvoiceController::class, 'bulkAction'])->name('e-invoice.bulk-action');
+    Route::get('/e-invoice-requests/export-csv', [App\Http\Controllers\EInvoiceController::class, 'exportCsv'])->name('e-invoice.export-csv');
 
     // Deleted lists with restore
     Route::get('/deleted/bills', [App\Http\Controllers\BillController::class, 'deleted'])->name('bills.deleted');
@@ -114,6 +116,9 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
 
     // Checklists (Super Admin & Admin can view)
     Route::get('/checklists', [App\Http\Controllers\ChecklistController::class, 'index'])->name('checklists.index');
+    Route::get('/checklists/date/show', [App\Http\Controllers\ChecklistController::class, 'showByDate'])->name('checklists.showByDate');
+    Route::get('/checklists/date/print', [App\Http\Controllers\ChecklistController::class, 'printByDate'])->name('checklists.printByDate');
+    Route::post('/checklists/date/save', [App\Http\Controllers\ChecklistController::class, 'saveByDate'])->name('checklists.saveByDate');
     Route::get('/checklists/{bus_departures_id}', [App\Http\Controllers\ChecklistController::class, 'show'])->name('checklists.show');
     Route::get('/checklists/{bus_departures_id}/print', [App\Http\Controllers\ChecklistController::class, 'print'])->name('checklists.print');
     Route::post('/checklists/save', [App\Http\Controllers\ChecklistController::class, 'save'])->name('checklists.save');
@@ -134,6 +139,10 @@ Route::middleware(['web', 'auth', 'role.access'])->group(function () {
 
     // AutoCount Export
     Route::get('/export-autocount', [AutoCountController::class, 'export'])->name('bills.export-autocount');
+
+    // Transit Sheets
+    Route::get('/transit-sheets', [App\Http\Controllers\TransitSheetController::class, 'index'])->name('transit-sheets.index');
+    Route::get('/transit-sheets/pdf', [App\Http\Controllers\TransitSheetController::class, 'pdf'])->name('transit-sheets.pdf');
 });
 
 // Super Admin only routes
