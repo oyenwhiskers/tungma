@@ -70,10 +70,19 @@ class eFormController extends Controller
             'country_code' => 'nullable|string|size:3',
         ]);
 
+        // Prevent duplicate submission
+        $existing = \App\Models\ECustomer::where('bill_id', $validated['bill_id'])->first();
+        if ($existing) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An E-Invoice request has already been submitted for this bill.'
+            ], 422);
+        }
+
         $bill = \App\Models\Bill::find($validated['bill_id']);
         if ($bill) {
-            $createdDate = $bill->created_at ?: $bill->date;
-            if ($createdDate && \Carbon\Carbon::parse($createdDate)->addDays(5)->isPast()) {
+            $billDate = $bill->date;
+            if ($billDate && \Carbon\Carbon::parse($billDate)->addDays(5)->endOfDay()->isPast()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'E-Invoice request has expired. E-Invoice can only be requested within 5 days of bill creation.'
@@ -143,6 +152,18 @@ class eFormController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Saved successfully'
+        ], 200);
+    }
+
+    /**
+     * Check if bill has already submitted eForm
+     */
+    public function checkStatus($bill_id)
+    {
+        $existing = \App\Models\ECustomer::where('bill_id', $bill_id)->first();
+        return response()->json([
+            'submitted' => (bool)$existing,
+            'message' => $existing ? 'An E-Invoice request has already been submitted for this bill.' : 'No submission found.'
         ], 200);
     }
 }

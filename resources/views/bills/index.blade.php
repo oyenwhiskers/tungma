@@ -209,6 +209,7 @@ document.getElementById('btn-download-autocount').addEventListener('click', func
                         <option value="mark_collected">Mark as Collected</option>
                         <option value="mark_uncollected">Mark as Uncollected</option>
                         <option value="delete">Delete Selected</option>
+                        <option value="export_autocount">Export AutoCount (Selected Only)</option>
                     </select>
                     <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Apply this action to selected bills?');">
                         Apply
@@ -311,13 +312,101 @@ document.getElementById('btn-download-autocount').addEventListener('click', func
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const STORAGE_KEY = 'selected_bill_ids';
         const checkAll = document.getElementById('checkAll');
-        if(checkAll) {
+        const rowChecks = document.querySelectorAll('.row-check');
+        const bulkForm = document.getElementById('bulk-action-form');
+
+        function getSelectedIds() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveSelectedIds(ids) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+        }
+
+        // Restore checkboxes from localStorage on page load
+        const selectedIds = getSelectedIds();
+        rowChecks.forEach(cb => {
+            if (selectedIds.includes(cb.value)) {
+                cb.checked = true;
+            }
+        });
+
+        function updateCheckAllState() {
+            if (!checkAll) return;
+            const pageChecks = document.querySelectorAll('.row-check');
+            const allChecked = pageChecks.length > 0 && Array.from(pageChecks).every(cb => cb.checked);
+            const someChecked = Array.from(pageChecks).some(cb => cb.checked);
+            checkAll.checked = allChecked;
+            checkAll.indeterminate = someChecked && !allChecked;
+        }
+
+        rowChecks.forEach(cb => {
+            cb.addEventListener('change', function() {
+                let ids = getSelectedIds();
+                if (this.checked) {
+                    if (!ids.includes(this.value)) ids.push(this.value);
+                } else {
+                    ids = ids.filter(id => id !== this.value);
+                }
+                saveSelectedIds(ids);
+                updateCheckAllState();
+            });
+        });
+
+        if (checkAll) {
             checkAll.addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.row-check');
-                checkboxes.forEach(cb => cb.checked = this.checked);
+                let ids = getSelectedIds();
+                document.querySelectorAll('.row-check').forEach(cb => {
+                    cb.checked = this.checked;
+                    if (this.checked) {
+                        if (!ids.includes(cb.value)) ids.push(cb.value);
+                    } else {
+                        ids = ids.filter(id => id !== cb.value);
+                    }
+                });
+                saveSelectedIds(ids);
             });
         }
+
+        // Inject hidden inputs for all selected IDs (across pages) before form submit
+        if (bulkForm) {
+            bulkForm.addEventListener('submit', function() {
+                bulkForm.querySelectorAll('.injected-bill-id').forEach(el => el.remove());
+                const ids = getSelectedIds();
+                const currentPageValues = Array.from(rowChecks).map(cb => cb.value);
+                ids.filter(id => !currentPageValues.includes(id)).forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'bill_ids[]';
+                    input.value = id;
+                    input.className = 'injected-bill-id';
+                    bulkForm.appendChild(input);
+                });
+                localStorage.removeItem(STORAGE_KEY);
+            });
+        }
+
+        updateCheckAllState();
+
+        // Clear selections when navigating away from bills list (bill code, edit, etc.)
+        // But NOT on pagination links — those should keep selections
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            // Pagination links keep selections
+            const href = link.getAttribute('href') || '';
+            if (href.includes('page=')) return;
+
+            // Any other link navigates away from bills list — clear selections
+            localStorage.removeItem(STORAGE_KEY);
+        });
     });
 </script>
 @endpush

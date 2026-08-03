@@ -13,12 +13,14 @@ class AutoCountExport implements FromCollection, WithHeadings, WithMapping, Shou
     protected $startDate;
     protected $endDate;
     protected $companyId;
+    protected $billIds;
 
-    public function __construct($startDate, $endDate, $companyId = null)
+    public function __construct($startDate = null, $endDate = null, $companyId = null, $billIds = null)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->companyId = $companyId;
+        $this->billIds = $billIds;
     }
 
     /**
@@ -26,11 +28,15 @@ class AutoCountExport implements FromCollection, WithHeadings, WithMapping, Shou
      */
     public function collection()
     {
-        $query = Bill::with(['company', 'cashSale'])
-            ->whereBetween('date', [$this->startDate, $this->endDate]);
+        $query = Bill::with(['company', 'cashSale']);
 
-        if ($this->companyId && $this->companyId !== 'all') {
-            $query->where('company_id', $this->companyId);
+        if ($this->billIds && is_array($this->billIds)) {
+            $query->whereIn('id', $this->billIds);
+        } else {
+            $query->whereBetween('date', [$this->startDate, $this->endDate]);
+            if ($this->companyId && $this->companyId !== 'all') {
+                $query->where('company_id', $this->companyId);
+            }
         }
 
         return $query->get();

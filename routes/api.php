@@ -66,4 +66,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // eForm routes
 Route::post('/submit-eform', [eFormController::class, 'store']);
+Route::get('/check-eform/{bill_id}', [eFormController::class, 'checkStatus']);
 Route::get('/msic/search', [MsicController::class, 'search']);

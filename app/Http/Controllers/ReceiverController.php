@@ -46,7 +46,7 @@ class ReceiverController extends Controller
                 'required',
                 'string',
                 'max:255',
-                \Illuminate\Validation\Rule::unique('receivers')->where(function ($query) use ($companyId, $request) {
+                \Illuminate\Validation\Rule::unique('receivers')->withoutTrashed()->where(function ($query) use ($companyId, $request) {
                     return $query->where('company_id', $companyId)
                                  ->where('contact_number', $request->contact_number);
                 })
@@ -92,7 +92,7 @@ class ReceiverController extends Controller
                 'required',
                 'string',
                 'max:255',
-                \Illuminate\Validation\Rule::unique('receivers')->ignore($receiver->id)->where(function ($query) use ($companyId, $request) {
+                \Illuminate\Validation\Rule::unique('receivers')->withoutTrashed()->ignore($receiver->id)->where(function ($query) use ($companyId, $request) {
                     return $query->where('company_id', $companyId)
                                  ->where('contact_number', $request->contact_number);
                 })

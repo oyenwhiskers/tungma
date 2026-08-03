@@ -17,6 +17,14 @@ class AutoCountController extends Controller
      */
     public function export(Request $request)
     {
+        $billIds = session('export_bill_ids');
+
+        if ($billIds && is_array($billIds) && count($billIds) > 0) {
+            $fileName = "autocount_export_selected_" . count($billIds) . "_bills.xlsx";
+            session()->forget('export_bill_ids');
+            return Excel::download(new AutoCountExport(null, null, null, $billIds), $fileName);
+        }
+
         $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -27,7 +35,6 @@ class AutoCountController extends Controller
         $endDate = $request->end_date;
         $companyId = $request->company_id;
 
-        // If user is not super_admin, force company_id to their own company
         if (auth()->user()->role !== 'super_admin') {
             $companyId = auth()->user()->company_id;
         }

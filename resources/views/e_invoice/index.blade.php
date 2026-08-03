@@ -50,6 +50,15 @@
             <input type="month" name="month" class="form-control" value="{{ request('month') }}">
           </div>
 
+          <div class="mb-3">
+            <label class="form-label font-weight-bold">Status</label>
+            <select name="status" class="form-select">
+                <option value="pending" selected>Pending</option>
+                <option value="downloaded">Done</option>
+                <option value="">All</option>
+            </select>
+          </div>
+
           <div class="text-center my-2 text-muted small">— OR Custom Date Range —</div>
 
           <div class="row">

@@ -153,7 +153,7 @@ class BillController extends Controller
         $request->validate([
             'bill_ids' => 'required|array',
             'bill_ids.*' => 'exists:bills,id',
-            'bulk_action' => 'required|string|in:mark_paid,mark_unpaid,mark_collected,mark_uncollected,delete'
+            'bulk_action' => 'required|string|in:mark_paid,mark_unpaid,mark_collected,mark_uncollected,delete,export_autocount'
         ]);
 
         $user = auth()->user();
@@ -189,6 +189,9 @@ class BillController extends Controller
             // Must retrieve to trigger soft deletes properly or mass delete
             $query->delete();
             $message = "$count bills deleted successfully.";
+        } elseif ($action === 'export_autocount') {
+            $scopedIds = $query->pluck('id')->toArray();
+            return redirect()->route('bills.export-autocount')->with('export_bill_ids', $scopedIds);
         }
 
         return redirect()->route('bills.index')->with('success', $message);

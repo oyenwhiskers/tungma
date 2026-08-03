@@ -105,6 +105,7 @@ class BackupController extends Controller
                 'cash_sales',
                 'cash_sale_details',
                 'bills',
+                'e_customer_msic_code',
                 'activity_logs',
             ];
 

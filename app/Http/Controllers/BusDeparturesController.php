@@ -42,7 +42,7 @@ class BusDeparturesController extends Controller
         $data = $request->validate([
             'departure_time' => [
                 'required',
-                \Illuminate\Validation\Rule::unique('bus_departures')->where(function ($query) use ($companyId) {
+                \Illuminate\Validation\Rule::unique('bus_departures')->withoutTrashed()->where(function ($query) use ($companyId) {
                     return $query->where('company_id', $companyId);
                 })
             ],
@@ -56,7 +56,17 @@ class BusDeparturesController extends Controller
         }
 
         try {
-            BusDepartures::create($data);
+            $trashed = BusDepartures::onlyTrashed()
+                ->where('company_id', $data['company_id'])
+                ->where('departure_time', $data['departure_time'])
+                ->first();
+
+            if ($trashed) {
+                $trashed->restore();
+                $trashed->update($data);
+            } else {
+                BusDepartures::create($data);
+            }
         } catch (\Exception $e) {
             return redirect()->back()->withInput()->with('error', 'Failed to create bus departure. ' . $e->getMessage());
         }
@@ -84,7 +94,7 @@ class BusDeparturesController extends Controller
         $data = $request->validate([
             'departure_time' => [
                 'required',
-                \Illuminate\Validation\Rule::unique('bus_departures')->ignore($busDeparture->id)->where(function ($query) use ($companyId) {
+                \Illuminate\Validation\Rule::unique('bus_departures')->withoutTrashed()->ignore($busDeparture->id)->where(function ($query) use ($companyId) {
                     return $query->where('company_id', $companyId);
                 })
             ],

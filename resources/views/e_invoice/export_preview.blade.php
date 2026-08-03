@@ -34,6 +34,7 @@
       <input type="hidden" name="month" value="{{ request('month') }}">
       <input type="hidden" name="start_date" value="{{ request('start_date') }}">
       <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+      <input type="hidden" name="status" value="{{ request('status') }}">
       
       @if(session('error'))
           <div class="alert alert-danger m-3">{{ session('error') }}</div>

@@ -37,7 +37,7 @@ class CourierPolicyController extends Controller
                 'required',
                 'string',
                 'max:255',
-                \Illuminate\Validation\Rule::unique('courier_policies')->where(function ($query) use ($request) {
+                \Illuminate\Validation\Rule::unique('courier_policies')->withoutTrashed()->where(function ($query) use ($request) {
                     return $query->where('company_id', $request->company_id);
                 })
             ],
