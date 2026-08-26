@@ -176,7 +176,7 @@
             $pageLeftCod = 0;
             foreach ($page['left'] as $b) {
                 $m = strtolower($b->payment_details['method'] ?? '');
-                if (in_array($m, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr']))
+                if (in_array($m, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr', 'bank_transfer', 'bank', 'bank transfer']))
                     $pageLeftCash += $b->amount;
                 elseif ($m === 'cod')
                     $pageLeftCod += $b->amount;
@@ -186,7 +186,7 @@
             $pageRightCod = 0;
             foreach ($page['right'] as $b) {
                 $m = strtolower($b->payment_details['method'] ?? '');
-                if (in_array($m, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr']))
+                if (in_array($m, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr', 'bank_transfer', 'bank', 'bank transfer']))
                     $pageRightCash += $b->amount;
                 elseif ($m === 'cod')
                     $pageRightCod += $b->amount;
@@ -216,7 +216,7 @@
                                     <td>{{ $bill->date ? $bill->date->format('j/n/y') : '' }}</td>
                                     <td>{{ $bill->bill_code }}</td>
                                     <td class="amount-col">
-                                        {{ in_array($method, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr']) ? $dispAmount : '' }}
+                                        {{ in_array($method, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr', 'bank_transfer', 'bank', 'bank transfer']) ? $dispAmount : '' }}
                                     </td>
                                     <td class="amount-col">{{ $method === 'cod' ? $dispAmount : '' }}</td>
                                 </tr>
@@ -272,7 +272,7 @@
                                     <td>{{ $bill->date ? $bill->date->format('j/n/y') : '' }}</td>
                                     <td>{{ $bill->bill_code }}</td>
                                     <td class="amount-col">
-                                        {{ in_array($method, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr']) ? $dispAmount : '' }}
+                                        {{ in_array($method, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr', 'bank_transfer', 'bank', 'bank transfer']) ? $dispAmount : '' }}
                                     </td>
                                     <td class="amount-col">{{ $method === 'cod' ? $dispAmount : '' }}</td>
                                 </tr>

@@ -94,7 +94,7 @@ class TransitSheetController extends Controller
 
         foreach ($bills as $bill) {
             $method = strtolower($bill->payment_details['method'] ?? '');
-            if (in_array($method, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr'])) {
+            if (in_array($method, ['cash', 'qr', 'a/c', 'ewallet', 'e-wallet', 'e_wallet', 'e-wallet/qr', 'ewallet/qr', 'e_wallet_qr', 'bank_transfer', 'bank', 'bank transfer'])) {
                 $totalCash += $bill->amount;
             } elseif ($method === 'cod') {
                 $totalCod += $bill->amount;
