@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\CreateBackupJob;
+use App\Jobs\RestoreBackupJob;
 use App\Models\Bill;
+use App\Services\BackupProgressManager;
 use App\Services\BackupService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Schema;
-use ZipArchive;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class BackupController extends Controller
 {
-    protected $backupService;
+    protected BackupService $backupService;
+    protected BackupProgressManager $progressManager;
 
-    public function __construct(BackupService $backupService)
+    public function __construct(BackupService $backupService, BackupProgressManager $progressManager)
     {
         $this->backupService = $backupService;
+        $this->progressManager = $progressManager;
     }
 
     /**
@@ -26,722 +29,273 @@ class BackupController extends Controller
      */
     public function index()
     {
-        // Ensure backup directory exists
         $this->ensureBackupDirectory();
-        
-        // Get list of existing backups
+
+        // List of backups
         $backups = $this->backupService->listBackups();
-        
+
         // Calculate storage metrics
         $metrics = [
             'backups' => $this->getDirSize(storage_path('app' . DIRECTORY_SEPARATOR . 'backups')),
             'media' => $this->getDirSize(public_path('storage')),
             'logs' => $this->getDirSize(storage_path('logs')),
         ];
-        
-        return view('backup.index', compact('backups', 'metrics'));
+
+        // Fetch latest active or recent job
+        $activeJob = $this->progressManager->getLatest();
+
+        // Server PHP settings for upload limits
+        $serverLimits = [
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+            'memory_limit' => ini_get('memory_limit'),
+            'max_execution_time' => ini_get('max_execution_time') . 's',
+        ];
+
+        $confirmPhrase = config('backup.restore_confirmation_phrase', 'RESTORE');
+
+        return view('backup.index', compact('backups', 'metrics', 'activeJob', 'serverLimits', 'confirmPhrase'));
     }
 
     /**
-     * Calculate directory size
+     * Dispatch queued backup job
      */
-    protected function getDirSize($path)
-    {
-        $size = 0;
-        if (!is_dir($path)) return 0;
-        
-        try {
-            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS)) as $file) {
-                if ($file->isFile()) {
-                    $size += $file->getSize();
-                }
-            }
-        } catch (\Exception $e) {
-            Log::warning('Failed to calculate directory size: ' . $e->getMessage());
-        }
-        
-        return $size;
-    }
-
-    /**
-     * Ensure backup directory exists
-     */
-    protected function ensureBackupDirectory()
-    {
-        $backupPath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups');
-        if (!file_exists($backupPath)) {
-            mkdir($backupPath, 0755, true);
-        }
-    }
-
-    /**
-     * Export everything (data + media) in one ZIP
-     */
-    public function exportAll()
+    public function backupNow(Request $request)
     {
         try {
-            $timestamp = date('Y-m-d_His');
-            $zipFilename = 'complete_backup_' . $timestamp . '.zip';
-            $backupDir = storage_path('app' . DIRECTORY_SEPARATOR . 'backups');
-            $zipPath = $backupDir . DIRECTORY_SEPARATOR . $zipFilename;
+            $this->ensureBackupDirectory();
 
-            // Ensure backup directory exists
-            if (!file_exists($backupDir)) {
-                mkdir($backupDir, 0755, true);
-            }
+            $jobId = 'backup_' . date('Ymd_His') . '_' . substr(md5(uniqid('', true)), 0, 6);
 
-            // Step 1: Export all database tables
-            $tables = [
-                'users',
-                'companies',
-                'courier_policies',
-                'bus_departures',
-                'customers',
-                'receivers',
-                'debtors',
-                'e_customers',
-                'msic_codes',
-                'tax_entities',
-                'cash_sales',
-                'cash_sale_details',
-                'bills',
-                'e_customer_msic_code',
-                'activity_logs',
-            ];
+            $this->progressManager->init($jobId, 'backup', 'Creating Full System Backup');
 
-            $databaseData = [];
-            foreach ($tables as $table) {
-                if (Schema::hasTable($table)) {
-                    $databaseData[$table] = DB::table($table)->get()->map(function ($row) {
-                        return (array) $row;
-                    })->toArray();
-                }
-            }
+            CreateBackupJob::dispatch($jobId)->onQueue(config('backup.queue.queue', 'default'));
 
-            $jsonData = json_encode($databaseData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            $this->tryKickstartQueueWorker();
 
-            // Step 2: Backwards compatibility - Generate old bills_data.json
-            $bills = Bill::with(['company', 'courierPolicy'])
-                ->withTrashed()
-                ->get();
+            return response()->json([
+                'success' => true,
+                'job_id' => $jobId,
+                'message' => 'Backup job has been queued in background.',
+            ]);
 
-            $exportData = $bills->map(function ($bill) {
-                return [
-                    'id' => $bill->id,
-                    'bill_code' => $bill->bill_code,
-                    'date' => $bill->date?->format('Y-m-d'),
-                    'amount' => $bill->amount,
-                    'description' => $bill->description,
-                    'payment_details' => $bill->payment_details,
-                    'customer_info' => $bill->customer_info,
-                    'courier_policy_id' => $bill->courier_policy_id,
-                    'company_id' => $bill->company_id,
-                    'sst_details' => $bill->sst_details,
-                    'policy_snapshot' => $bill->policy_snapshot,
-                    'media_attachment' => $bill->media_attachment,
-                    'created_at' => $bill->created_at?->toDateTimeString(),
-                    'updated_at' => $bill->updated_at?->toDateTimeString(),
-                    'deleted_at' => $bill->deleted_at?->toDateTimeString(),
-                    'company_name' => $bill->company?->name,
-                    'courier_policy_name' => $bill->courierPolicy?->name,
-                ];
-            });
-
-            $billsJsonData = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-            // Step 3: Create ZIP with JSONs and media
-            $zip = new ZipArchive();
-            
-            if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-                throw new \Exception('Failed to create ZIP file');
-            }
-
-            // Add JSON files to ZIP
-            $zip->addFromString('database_data.json', $jsonData);
-            $zip->addFromString('bills_data.json', $billsJsonData);
-
-            // Add all media files from public/storage/
-            $mediaFolder = public_path('storage');
-            
-            if (file_exists($mediaFolder)) {
-                $mediaFiles = $this->backupService->getFilesRecursive($mediaFolder);
-                
-                foreach ($mediaFiles as $file) {
-                    $relativePath = 'public' . DIRECTORY_SEPARATOR . str_replace($mediaFolder . DIRECTORY_SEPARATOR, '', $file);
-                    $zip->addFile($file, $relativePath);
-                }
-            }
-
-            $zip->close();
-
-            return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(false);
-
-        } catch (\Exception $e) {
-            Log::error('Complete backup failed: ' . $e->getMessage());
-            return back()->with('error', 'Failed to create complete backup: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Failed to dispatch backup job: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to start backup: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
     /**
-     * Export bills data to JSON
-     * Exports selected model data with relationships
+     * Dispatch queued restore job
      */
-    public function exportData()
+    public function restoreNow(Request $request)
     {
-        try {
-            // Fetch bills with relationships
-            // MODIFY HERE: Add/remove relationships as needed
-            $bills = Bill::with(['company', 'courierPolicy'])
-                ->withTrashed() // Include soft-deleted records
-                ->get();
+        $expectedPhrase = config('backup.restore_confirmation_phrase', 'RESTORE');
 
-            // Convert to array and prepare for JSON export
-            $exportData = $bills->map(function ($bill) {
-                return [
-                    'id' => $bill->id,
-                    'bill_code' => $bill->bill_code,
-                    'date' => $bill->date?->format('Y-m-d'),
-                    'amount' => $bill->amount,
-                    'description' => $bill->description,
-                    'payment_details' => $bill->payment_details,
-                    'customer_info' => $bill->customer_info,
-                    'courier_policy_id' => $bill->courier_policy_id,
-                    'company_id' => $bill->company_id,
-                    'sst_details' => $bill->sst_details,
-                    'policy_snapshot' => $bill->policy_snapshot,
-                    'media_attachment' => $bill->media_attachment,
-                    'created_at' => $bill->created_at?->toDateTimeString(),
-                    'updated_at' => $bill->updated_at?->toDateTimeString(),
-                    'deleted_at' => $bill->deleted_at?->toDateTimeString(),
-                    // MODIFY HERE: Add relationship data if needed
-                    'company_name' => $bill->company?->name,
-                    'courier_policy_name' => $bill->courierPolicy?->name,
-                ];
-            });
-
-            $jsonData = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-            $filename = 'bills_backup_' . date('Y-m-d_His') . '.json';
-
-            // Ensure backup directory exists
-            $backupDir = storage_path('app' . DIRECTORY_SEPARATOR . 'backups');
-            if (!file_exists($backupDir)) {
-                mkdir($backupDir, 0755, true);
-            }
-
-            // Store backup in storage/app/backups
-            $filepath = $backupDir . DIRECTORY_SEPARATOR . $filename;
-            file_put_contents($filepath, $jsonData);
-
-            return response()->download(
-                $filepath,
-                $filename,
-                ['Content-Type' => 'application/json']
-            )->deleteFileAfterSend(false); // Keep file for records
-
-        } catch (\Exception $e) {
-            Log::error('Data export failed: ' . $e->getMessage());
-            return back()->with('error', 'Failed to export data: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Export media files as ZIP
-     * Zips the storage/app/bills/ folder
-     */
-    public function exportMedia()
-    {
-        try {
-            // MODIFY HERE: Change folder path if needed
-            $sourceFolder = public_path('storage');
-            $zipFilename = 'public_media_' . date('Y-m-d_His') . '.zip';
-            $backupDir = storage_path('app' . DIRECTORY_SEPARATOR . 'backups');
-            $zipPath = $backupDir . DIRECTORY_SEPARATOR . $zipFilename;
-
-            // Ensure backup directory exists
-            if (!file_exists($backupDir)) {
-                mkdir($backupDir, 0755, true);
-            }
-
-            // Check if source folder exists
-            if (!file_exists($sourceFolder)) {
-                return back()->with('warning', 'Media folder does not exist. No media to backup.');
-            }
-
-            $zip = new ZipArchive();
-
-            if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-                throw new \Exception('Failed to create ZIP file');
-            }
-
-            // Add files to ZIP
-            $files = $this->backupService->getFilesRecursive($sourceFolder);
-
-            foreach ($files as $file) {
-                $relativePath = str_replace($sourceFolder . DIRECTORY_SEPARATOR, '', $file);
-                $zip->addFile($file, $relativePath);
-            }
-
-            $fileCount = $zip->numFiles;
-            $zip->close();
-
-            if ($fileCount === 0) {
-                unlink($zipPath);
-                return back()->with('warning', 'No media files found to backup.');
-            }
-
-            return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(false);
-
-        } catch (\Exception $e) {
-            Log::error('Media export failed: ' . $e->getMessage());
-            return back()->with('error', 'Failed to export media: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Import bills data from JSON
-     * Restores data from uploaded JSON file
-     */
-    public function importData(Request $request)
-    {
+        // Validation
         $request->validate([
-            'data_file' => 'required|file|mimes:json,txt|max:51200', // 50MB max
+            'confirm_phrase' => 'required|string',
+            'restore_file' => 'nullable|file|mimes:zip|max:1048576', // up to 1GB if server permits
+            'existing_backup' => 'nullable|string',
         ]);
 
-        try {
-            $file = $request->file('data_file');
-            $jsonContent = file_get_contents($file->getRealPath());
-            $data = json_decode($jsonContent, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception('Invalid JSON file: ' . json_last_error_msg());
-            }
-
-            if (!is_array($data)) {
-                throw new \Exception('JSON file must contain an array of records');
-            }
-
-            $importedCount = 0;
-            $updatedCount = 0;
-            $skippedCount = 0;
-
-            DB::beginTransaction();
-            Schema::disableForeignKeyConstraints();
-
-            foreach ($data as $record) {
-                try {
-                    // Recreate missing company if referenced
-                    if (!empty($record['company_id'])) {
-                        $companyExists = DB::table('companies')->where('id', $record['company_id'])->exists();
-                        if (!$companyExists) {
-                            DB::table('companies')->insert([
-                                'id' => $record['company_id'],
-                                'name' => $record['company_name'] ?? 'Restored Company ' . $record['company_id'],
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-                        }
-                    }
-
-                    // Recreate missing courier policy if referenced
-                    if (!empty($record['courier_policy_id'])) {
-                        $policyExists = DB::table('courier_policies')->where('id', $record['courier_policy_id'])->exists();
-                        if (!$policyExists) {
-                            DB::table('courier_policies')->insert([
-                                'id' => $record['courier_policy_id'],
-                                'name' => $record['courier_policy_name'] ?? 'Restored Policy ' . $record['courier_policy_id'],
-                                'company_id' => $record['company_id'] ?? null,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-                        }
-                    }
-
-                    // Check if bill exists by ID or bill_code
-                    $existing = Bill::withTrashed()->find($record['id']);
-
-                    // MODIFY HERE: Adjust field mapping as needed
-                    $billData = [
-                        'bill_code' => $record['bill_code'] ?? null,
-                        'date' => $record['date'] ?? null,
-                        'amount' => $record['amount'] ?? 0,
-                        'description' => $record['description'] ?? null,
-                        'payment_details' => $record['payment_details'] ?? null,
-                        'customer_info' => $record['customer_info'] ?? null,
-                        'courier_policy_id' => $record['courier_policy_id'] ?? null,
-                        'company_id' => $record['company_id'] ?? null,
-                        'sst_details' => $record['sst_details'] ?? null,
-                        'policy_snapshot' => $record['policy_snapshot'] ?? null,
-                        'media_attachment' => $record['media_attachment'] ?? null,
-                    ];
-
-                    if ($existing) {
-                        // Update existing record
-                        $existing->update($billData);
-                        
-                        // Handle soft-delete state
-                        if (isset($record['deleted_at'])) {
-                            if ($record['deleted_at'] === null && $existing->trashed()) {
-                                // Should not be deleted, but is - restore it
-                                $existing->restore();
-                            } elseif ($record['deleted_at'] !== null && !$existing->trashed()) {
-                                // Should be deleted, but isn't - soft delete it
-                                $existing->deleted_at = $record['deleted_at'];
-                                $existing->save();
-                            } elseif ($record['deleted_at'] !== null && $existing->trashed()) {
-                                // Already deleted, just update the deleted_at timestamp
-                                $existing->deleted_at = $record['deleted_at'];
-                                $existing->save();
-                            }
-                        }
-                        
-                        $updatedCount++;
-                    } else {
-                        // Create new record with original ID
-                        $bill = new Bill($billData);
-                        $bill->id = $record['id'];
-                        $bill->created_at = $record['created_at'] ?? now();
-                        $bill->updated_at = $record['updated_at'] ?? now();
-                        $bill->deleted_at = $record['deleted_at'] ?? null;
-                        $bill->save();
-                        
-                        $importedCount++;
-                    }
-
-                } catch (\Exception $e) {
-                    Log::warning("Failed to import bill record: " . $e->getMessage(), ['record' => $record]);
-                    $skippedCount++;
-                }
-            }
-
-            DB::commit();
-
-            $message = "Data import completed. Created: {$importedCount}, Updated: {$updatedCount}, Skipped: {$skippedCount}";
-
-            return back()->with('success', $message);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Data import failed: ' . $e->getMessage());
-            return back()->with('error', 'Failed to import data: ' . $e->getMessage());
-        } finally {
-            Schema::enableForeignKeyConstraints();
+        if (trim($request->confirm_phrase) !== $expectedPhrase) {
+            return response()->json([
+                'success' => false,
+                'message' => "Confirmation phrase does not match. Please type \"{$expectedPhrase}\" to confirm.",
+            ], 422);
         }
-    }
-
-    /**
-     * Import media files from ZIP
-     * Extracts uploaded ZIP into storage/app/bills/
-     */
-    public function importMedia(Request $request)
-    {
-        $request->validate([
-            'media_file' => 'required|file|mimes:zip|max:512000', // 500MB max
-        ]);
 
         try {
-            $file = $request->file('media_file');
-            
-            // MODIFY HERE: Change destination folder if needed
-            $destinationFolder = public_path('storage');
+            $this->ensureBackupDirectory();
+            $zipPath = null;
+            $isUploadedTemp = false;
 
-            // Create destination folder if it doesn't exist
-            if (!file_exists($destinationFolder)) {
-                mkdir($destinationFolder, 0755, true);
-            }
+            if ($request->filled('uploaded_temp_filename')) {
+                // File assembled via Chunked Uploader
+                $safeFilename = basename($request->uploaded_temp_filename);
+                $zipPath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $safeFilename);
 
-            $zip = new ZipArchive();
-
-            if ($zip->open($file->getRealPath()) !== true) {
-                throw new \Exception('Failed to open ZIP file');
-            }
-
-            // Optional: Backup existing media before extraction
-            if ($request->has('backup_existing')) {
-                $this->backupService->backupExistingMedia($destinationFolder);
-            }
-
-            // Extract files
-            $zip->extractTo($destinationFolder);
-            $extractedCount = $zip->numFiles;
-            $zip->close();
-
-            return back()->with('success', "Media import completed. Extracted {$extractedCount} files.");
-
-        } catch (\Exception $e) {
-            Log::error('Media import failed: ' . $e->getMessage());
-            return back()->with('error', 'Failed to import media: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Import everything (data + media) from one ZIP
-     */
-    public function importAll(Request $request)
-    {
-        $request->validate([
-            'complete_file' => 'required|file|mimes:zip|max:512000', // 500MB max
-        ]);
-
-        try {
-            $file = $request->file('complete_file');
-            $tempDir = storage_path('app' . DIRECTORY_SEPARATOR . 'temp_restore_' . time());
-            
-            // Create temp directory
-            if (!file_exists($tempDir)) {
-                mkdir($tempDir, 0755, true);
-            }
-
-            // Extract ZIP to temp directory
-            $zip = new ZipArchive();
-            
-            if ($zip->open($file->getRealPath()) !== true) {
-                throw new \Exception('Failed to open ZIP file');
-            }
-
-            $zip->extractTo($tempDir);
-            $zip->close();
-
-            $importedCount = 0;
-            $updatedCount = 0;
-            $mediaCount = 0;
-
-            // Step 1: Import JSON data
-            $dbJsonFile = $tempDir . DIRECTORY_SEPARATOR . 'database_data.json';
-            $oldJsonFile = $tempDir . DIRECTORY_SEPARATOR . 'bills_data.json';
-            
-            if (file_exists($dbJsonFile)) {
-                $jsonContent = file_get_contents($dbJsonFile);
-                $databaseData = json_decode($jsonContent, true);
-
-                if (json_last_error() === JSON_ERROR_NONE && is_array($databaseData)) {
-                    DB::beginTransaction();
-                    Schema::disableForeignKeyConstraints();
-
-                    try {
-                        foreach ($databaseData as $table => $rows) {
-                            if (!Schema::hasTable($table)) {
-                                continue;
-                            }
-
-                            foreach ($rows as $row) {
-                                if (isset($row['id'])) {
-                                    try {
-                                        DB::table($table)->insert($row);
-                                        if ($table === 'bills') {
-                                            $importedCount++;
-                                        }
-                                    } catch (\Exception $e) {
-                                        // Catch duplicate primary key errors (code 23000 or duplicate key / 1062)
-                                        if ($e->getCode() == 23000 || strpos($e->getMessage(), '1062') !== false || strpos($e->getMessage(), 'Duplicate entry') !== false) {
-                                            DB::table($table)->where('id', $row['id'])->update($row);
-                                            if ($table === 'bills') {
-                                                $updatedCount++;
-                                            }
-                                        } else {
-                                            throw $e;
-                                        }
-                                    }
-                                } else {
-                                    DB::table($table)->insert($row);
-                                }
-                            }
-                        }
-                        DB::commit();
-                    } catch (\Exception $e) {
-                        DB::rollBack();
-                        throw $e;
-                    } finally {
-                        Schema::enableForeignKeyConstraints();
-                    }
+                if (!file_exists($zipPath)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Assembled backup file was not found on server.',
+                    ], 404);
                 }
-            } elseif (file_exists($oldJsonFile)) {
-                $jsonContent = file_get_contents($oldJsonFile);
-                $data = json_decode($jsonContent, true);
+                $isUploadedTemp = true;
+            } elseif ($request->hasFile('restore_file')) {
+                // Direct file upload fallback
+                $file = $request->file('restore_file');
+                $tempFilename = 'upload_restore_' . date('Ymd_His') . '_' . uniqid() . '.zip';
+                $destination = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $tempFilename);
 
-                if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
-                    DB::beginTransaction();
-                    Schema::disableForeignKeyConstraints();
+                $file->move(dirname($destination), basename($destination));
+                $zipPath = $destination;
+                $isUploadedTemp = true;
+            } elseif ($request->filled('existing_backup')) {
+                $safeFilename = basename($request->existing_backup);
+                $zipPath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $safeFilename);
 
-                    try {
-                        foreach ($data as $record) {
-                            try {
-                                // Recreate missing company if referenced
-                                if (!empty($record['company_id'])) {
-                                    $companyExists = DB::table('companies')->where('id', $record['company_id'])->exists();
-                                    if (!$companyExists) {
-                                        DB::table('companies')->insert([
-                                            'id' => $record['company_id'],
-                                            'name' => $record['company_name'] ?? 'Restored Company ' . $record['company_id'],
-                                            'created_at' => now(),
-                                            'updated_at' => now(),
-                                        ]);
-                                    }
-                                }
-
-                                // Recreate missing courier policy if referenced
-                                if (!empty($record['courier_policy_id'])) {
-                                    $policyExists = DB::table('courier_policies')->where('id', $record['courier_policy_id'])->exists();
-                                    if (!$policyExists) {
-                                        DB::table('courier_policies')->insert([
-                                            'id' => $record['courier_policy_id'],
-                                            'name' => $record['courier_policy_name'] ?? 'Restored Policy ' . $record['courier_policy_id'],
-                                            'company_id' => $record['company_id'] ?? null,
-                                            'created_at' => now(),
-                                            'updated_at' => now(),
-                                        ]);
-                                    }
-                                }
-
-                                $existing = Bill::withTrashed()->find($record['id']);
-                            
-                                $billData = [
-                                    'bill_code' => $record['bill_code'] ?? null,
-                                    'date' => $record['date'] ?? null,
-                                    'amount' => $record['amount'] ?? 0,
-                                    'description' => $record['description'] ?? null,
-                                    'payment_details' => $record['payment_details'] ?? null,
-                                    'customer_info' => $record['customer_info'] ?? null,
-                                    'courier_policy_id' => $record['courier_policy_id'] ?? null,
-                                    'company_id' => $record['company_id'] ?? null,
-                                    'sst_details' => $record['sst_details'] ?? null,
-                                    'policy_snapshot' => $record['policy_snapshot'] ?? null,
-                                    'media_attachment' => $record['media_attachment'] ?? null,
-                                ];
-
-                                if ($existing) {
-                                    $existing->update($billData);
-                                    
-                                    // Handle soft-delete state
-                                    if (isset($record['deleted_at'])) {
-                                        if ($record['deleted_at'] === null && $existing->trashed()) {
-                                            $existing->restore();
-                                        } elseif ($record['deleted_at'] !== null && !$existing->trashed()) {
-                                            $existing->deleted_at = $record['deleted_at'];
-                                            $existing->save();
-                                        } elseif ($record['deleted_at'] !== null && $existing->trashed()) {
-                                            $existing->deleted_at = $record['deleted_at'];
-                                            $existing->save();
-                                        }
-                                    }
-                                    
-                                    $updatedCount++;
-                                } else {
-                                    $bill = new Bill($billData);
-                                    $bill->id = $record['id'];
-                                    $bill->created_at = $record['created_at'] ?? now();
-                                    $bill->updated_at = $record['updated_at'] ?? now();
-                                    $bill->deleted_at = $record['deleted_at'] ?? null;
-                                    $bill->save();
-                                    
-                                    $importedCount++;
-                                }
-
-                            } catch (\Exception $e) {
-                                Log::warning("Failed to import bill record: " . $e->getMessage());
-                            }
-                        }
-
-                        DB::commit();
-                    } catch (\Exception $e) {
-                        DB::rollBack();
-                        throw $e;
-                    } finally {
-                        Schema::enableForeignKeyConstraints();
-                    }
+                if (!file_exists($zipPath)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Selected existing backup file was not found on server.',
+                    ], 404);
                 }
-            }
-
-            // Step 2: Restore media files
-            $publicDir = $tempDir . DIRECTORY_SEPARATOR . 'public';
-            
-            if (file_exists($publicDir)) {
-                $destinationFolder = public_path('storage');
-                
-                // Backup existing media if requested
-                if ($request->has('backup_existing')) {
-                    $this->backupService->backupExistingMedia($destinationFolder);
-                }
-
-                // Copy files from temp to storage/app/public
-                $this->recursiveCopy($publicDir, $destinationFolder);
-                
-                // Count media files
-                $mediaFiles = $this->backupService->getFilesRecursive($publicDir);
-                $mediaCount = count($mediaFiles);
-            }
-
-            // Clean up temp directory
-            $this->deleteDirectory($tempDir);
-
-            $message = "Complete restore successful! Data: {$importedCount} created, {$updatedCount} updated. Media: {$mediaCount} files restored.";
-            
-            return back()->with('success', $message);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Complete restore failed: ' . $e->getMessage());
-            
-            // Clean up temp directory on error
-            if (isset($tempDir) && file_exists($tempDir)) {
-                $this->deleteDirectory($tempDir);
-            }
-            
-            return back()->with('error', 'Failed to restore backup: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Recursively copy directory
-     */
-    protected function recursiveCopy($source, $destination)
-    {
-        if (!file_exists($destination)) {
-            mkdir($destination, 0755, true);
-        }
-
-        $dir = opendir($source);
-        
-        while (($file = readdir($dir)) !== false) {
-            if ($file === '.' || $file === '..') {
-                continue;
-            }
-
-            $sourcePath = $source . DIRECTORY_SEPARATOR . $file;
-            $destPath = $destination . DIRECTORY_SEPARATOR . $file;
-
-            if (is_dir($sourcePath)) {
-                $this->recursiveCopy($sourcePath, $destPath);
             } else {
-                copy($sourcePath, $destPath);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please upload a backup ZIP file or choose an existing backup.',
+                ], 422);
             }
-        }
 
-        closedir($dir);
+            $jobId = 'restore_' . date('Ymd_His') . '_' . substr(md5(uniqid('', true)), 0, 6);
+
+            $this->progressManager->init($jobId, 'restore', 'Restoring Full System Backup');
+
+            RestoreBackupJob::dispatch($jobId, $zipPath, $isUploadedTemp)->onQueue(config('backup.queue.queue', 'default'));
+
+            $this->tryKickstartQueueWorker();
+
+            return response()->json([
+                'success' => true,
+                'job_id' => $jobId,
+                'message' => 'Restore job has been queued in background.',
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('Failed to dispatch restore job: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to start restore: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
-     * Recursively delete directory
+     * Poll status of a backup or restore job
      */
-    protected function deleteDirectory($dir)
+    public function jobStatus(string $jobId)
     {
-        if (!file_exists($dir)) {
-            return;
+        $state = $this->progressManager->get($jobId);
+
+        if (!$state) {
+            return response()->json([
+                'status' => 'not_found',
+                'message' => 'Job status not found.',
+            ], 404);
         }
 
-        $files = array_diff(scandir($dir), ['.', '..']);
-        
-        foreach ($files as $file) {
-            $path = $dir . DIRECTORY_SEPARATOR . $file;
-            
-            if (is_dir($path)) {
-                $this->deleteDirectory($path);
-            } else {
-                unlink($path);
+        return response()->json($state);
+    }
+
+    /**
+     * Handle chunked file uploads (for large 10GB-20GB+ ZIP files)
+     */
+    public function uploadChunk(Request $request)
+    {
+        $request->validate([
+            'file_id' => 'required|string',
+            'chunk_index' => 'required|integer',
+            'total_chunks' => 'required|integer',
+            'filename' => 'required|string',
+            'chunk' => 'required|file',
+        ]);
+
+        try {
+            $fileId = preg_replace('/[^a-zA-Z0-9_-]/', '', $request->file_id);
+            $chunkIndex = (int) $request->chunk_index;
+            $totalChunks = (int) $request->total_chunks;
+
+            $chunksDir = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . 'chunks' . DIRECTORY_SEPARATOR . $fileId);
+            if (!file_exists($chunksDir)) {
+                @mkdir($chunksDir, 0755, true);
             }
+
+            // Save chunk to temp chunks directory
+            $chunkFile = $request->file('chunk');
+            $chunkFileName = 'chunk_' . str_pad($chunkIndex, 6, '0', STR_PAD_LEFT);
+            $chunkFile->move($chunksDir, $chunkFileName);
+
+            // Check if this was the last chunk
+            if ($chunkIndex === $totalChunks - 1) {
+                // Verify all chunks exist
+                $allExist = true;
+                for ($i = 0; $i < $totalChunks; $i++) {
+                    $part = $chunksDir . DIRECTORY_SEPARATOR . 'chunk_' . str_pad($i, 6, '0', STR_PAD_LEFT);
+                    if (!file_exists($part)) {
+                        $allExist = false;
+                        break;
+                    }
+                }
+
+                if ($allExist) {
+                    // Stream-assemble chunks into final file in storage/app/backups
+                    $finalFilename = 'upload_restore_' . date('Ymd_His') . '_' . $fileId . '.zip';
+                    $finalPath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $finalFilename);
+
+                    $out = fopen($finalPath, 'wb');
+                    if (!$out) {
+                        throw new \Exception('Failed to create assembled archive file on server.');
+                    }
+
+                    for ($i = 0; $i < $totalChunks; $i++) {
+                        $part = $chunksDir . DIRECTORY_SEPARATOR . 'chunk_' . str_pad($i, 6, '0', STR_PAD_LEFT);
+                        $in = fopen($part, 'rb');
+                        while (!feof($in)) {
+                            fwrite($out, fread($in, 65536));
+                        }
+                        fclose($in);
+                        @unlink($part); // Immediately free disk space
+                    }
+                    fclose($out);
+                    @rmdir($chunksDir);
+
+                    return response()->json([
+                        'success' => true,
+                        'completed' => true,
+                        'file_id' => $fileId,
+                        'assembled_filename' => $finalFilename,
+                        'size' => filesize($finalPath),
+                        'message' => 'Archive assembled successfully on server.',
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'completed' => false,
+                'chunk_index' => $chunkIndex,
+                'total_chunks' => $totalChunks,
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('Chunked upload failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Chunk upload error: ' . $e->getMessage(),
+            ], 500);
         }
-        
-        rmdir($dir);
+    }
+
+    /**
+     * Download a completed backup archive
+     */
+    public function downloadBackup(string $filename)
+    {
+        $safeFilename = basename($filename);
+        $filePath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $safeFilename);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'Backup file not found.');
+        }
+
+        return response()->download($filePath, $safeFilename, [
+            'Content-Type' => 'application/zip',
+        ]);
     }
 
     /**
@@ -750,11 +304,11 @@ class BackupController extends Controller
     public function deleteBackup(Request $request)
     {
         $request->validate([
-            'filename' => 'required|string'
+            'filename' => 'required|string',
         ]);
 
         try {
-            $filename = basename($request->filename); // Security: prevent directory traversal
+            $filename = basename($request->filename);
             $filePath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups' . DIRECTORY_SEPARATOR . $filename);
 
             if (file_exists($filePath)) {
@@ -764,7 +318,7 @@ class BackupController extends Controller
 
             return back()->with('error', 'Backup file not found.');
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Backup deletion failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to delete backup: ' . $e->getMessage());
         }
@@ -777,7 +331,7 @@ class BackupController extends Controller
     {
         $request->validate([
             'target' => 'required|in:backups,media,logs',
-            'password' => 'required|string'
+            'password' => 'required|string',
         ]);
 
         // Verify Super Admin password
@@ -806,7 +360,7 @@ class BackupController extends Controller
 
             $deletedCount = 0;
             $files = glob($path . DIRECTORY_SEPARATOR . '*');
-            
+
             foreach ($files as $file) {
                 if (is_file($file)) {
                     unlink($file);
@@ -825,7 +379,7 @@ class BackupController extends Controller
 
             return back()->with('success', "Cleared {$labels[$target]}. Deleted {$deletedCount} items.");
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Storage clear failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to clear storage: ' . $e->getMessage());
         }
@@ -844,28 +398,24 @@ class BackupController extends Controller
         // Build query with filters
         $query = Bill::with(['company', 'creator', 'checker']);
 
-        // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('bill_code', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('customer_info->name', 'like', "%{$search}%")
-                  ->orWhere('customer_info->phone', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('customer_info->name', 'like', "%{$search}%")
+                    ->orWhere('customer_info->phone', 'like', "%{$search}%");
             });
         }
 
-        // Filter by company
         if ($request->filled('company_id')) {
             $query->where('company_id', $request->company_id);
         }
 
-        // Filter by date
         if ($request->filled('date')) {
             $query->whereDate('date', $request->date);
         }
 
-        // Filter by payment status
         if ($request->filled('payment_status')) {
             if ($request->payment_status === 'paid') {
                 $query->where('is_paid', true);
@@ -888,10 +438,9 @@ class BackupController extends Controller
         $request->validate([
             'bill_ids' => 'required|array',
             'bill_ids.*' => 'required|integer|exists:bills,id',
-            'password' => 'required|string'
+            'password' => 'required|string',
         ]);
 
-        // Verify Super Admin password
         $user = auth()->user();
         if (!$user || $user->role !== 'super_admin') {
             return back()->with('error', 'Unauthorized access.');
@@ -909,10 +458,117 @@ class BackupController extends Controller
 
             return back()->with('success', "Successfully deleted {$deletedCount} bill(s).");
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Delete selected bills failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to delete bills: ' . $e->getMessage());
         }
     }
-}
 
+    /**
+     * Trigger queue processing on-demand (fallback if cron is delayed or for local dev)
+     */
+    public function processQueue(Request $request)
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('queue:work', [
+                '--stop-when-empty' => true,
+                '--tries' => 1,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Queue processed successfully.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Queue worker error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Try non-blocking background queue work invocation (supports both Windows & Linux)
+     */
+    protected function tryKickstartQueueWorker(): void
+    {
+        try {
+            $phpBinary = PHP_BINARY ?: 'php';
+            $artisan = base_path('artisan');
+
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Windows background process
+                $cmd = sprintf('start /B "" %s %s queue:work --stop-when-empty', escapeshellarg($phpBinary), escapeshellarg($artisan));
+                if (function_exists('popen') && function_exists('pclose')) {
+                    @pclose(@popen($cmd, 'r'));
+                }
+            } else {
+                // Linux / cPanel Unix background process
+                if (function_exists('exec')) {
+                    $disabled = array_map('trim', explode(',', (string) ini_get('disable_functions')));
+                    if (!in_array('exec', $disabled, true)) {
+                        $cmd = sprintf('nohup %s %s queue:work --stop-when-empty > /dev/null 2>&1 &', escapeshellarg($phpBinary), escapeshellarg($artisan));
+                        @exec($cmd);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Silently ignore; cPanel cron will pick it up
+        }
+    }
+
+    /**
+     * Calculate directory size
+     */
+    protected function getDirSize(string $path): int
+    {
+        $size = 0;
+        if (!is_dir($path)) {
+            return 0;
+        }
+
+        try {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS)) as $file) {
+                if ($file->isFile()) {
+                    $size += $file->getSize();
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to calculate directory size: ' . $e->getMessage());
+        }
+
+        return $size;
+    }
+
+    /**
+     * Ensure backup directory exists
+     */
+    protected function ensureBackupDirectory(): void
+    {
+        $backupPath = storage_path('app' . DIRECTORY_SEPARATOR . 'backups');
+        if (!file_exists($backupPath)) {
+            @mkdir($backupPath, 0755, true);
+        }
+    }
+
+    /**
+     * Recursively delete directory
+     */
+    protected function deleteDirectory(string $dir): void
+    {
+        if (!file_exists($dir)) {
+            return;
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            if (is_dir($path)) {
+                $this->deleteDirectory($path);
+            } else {
+                @unlink($path);
+            }
+        }
+        @rmdir($dir);
+    }
+}

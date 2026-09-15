@@ -178,12 +178,12 @@ Route::middleware(['web', 'auth', 'super.admin'])->group(function () {
 
     // Backup & Restore Management (Super Admin)
     Route::get('/backup', [App\Http\Controllers\BackupController::class, 'index'])->name('backup.index');
-    Route::post('/backup/export-all', [App\Http\Controllers\BackupController::class, 'exportAll'])->name('backup.export.all');
-    Route::post('/backup/import-all', [App\Http\Controllers\BackupController::class, 'importAll'])->name('backup.import.all');
-    Route::post('/backup/export-data', [App\Http\Controllers\BackupController::class, 'exportData'])->name('backup.export.data');
-    Route::post('/backup/export-media', [App\Http\Controllers\BackupController::class, 'exportMedia'])->name('backup.export.media');
-    Route::post('/backup/import-data', [App\Http\Controllers\BackupController::class, 'importData'])->name('backup.import.data');
-    Route::post('/backup/import-media', [App\Http\Controllers\BackupController::class, 'importMedia'])->name('backup.import.media');
+    Route::post('/backup/run', [App\Http\Controllers\BackupController::class, 'backupNow'])->name('backup.run');
+    Route::post('/backup/restore-run', [App\Http\Controllers\BackupController::class, 'restoreNow'])->name('backup.restore.run');
+    Route::post('/backup/upload-chunk', [App\Http\Controllers\BackupController::class, 'uploadChunk'])->name('backup.upload.chunk');
+    Route::get('/backup/status/{jobId}', [App\Http\Controllers\BackupController::class, 'jobStatus'])->name('backup.status');
+    Route::post('/backup/process-queue', [App\Http\Controllers\BackupController::class, 'processQueue'])->name('backup.process.queue');
+    Route::get('/backup/download/{filename}', [App\Http\Controllers\BackupController::class, 'downloadBackup'])->name('backup.download');
     Route::delete('/backup/delete', [App\Http\Controllers\BackupController::class, 'deleteBackup'])->name('backup.delete');
     Route::post('/backup/clear-storage', [App\Http\Controllers\BackupController::class, 'clearStorage'])->name('backup.clear.storage');
     Route::get('/backup/delete-bills', [App\Http\Controllers\BackupController::class, 'deleteBills'])->name('backup.delete.bills');

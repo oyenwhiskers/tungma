@@ -48,7 +48,7 @@ class BackupService
             return [];
         }
 
-        $files = scandir($backupPath, SCANDIR_SORT_DESCENDING);
+        $files = scandir($backupPath);
         $backups = [];
 
         foreach ($files as $file) {
@@ -56,18 +56,36 @@ class BackupService
                 continue;
             }
 
+            // Exclude progress tracking files, temp uploads, and internal state
+            if (str_starts_with($file, 'progress_') ||
+                str_starts_with($file, 'latest_job') ||
+                str_starts_with($file, 'temp_') ||
+                str_starts_with($file, 'upload_restore_')) {
+                continue;
+            }
+
+            // Only consider .zip archives and legacy bills_backup json files
+            if (!str_ends_with($file, '.zip') && !str_ends_with($file, '.json')) {
+                continue;
+            }
+
             $filePath = $backupPath . DIRECTORY_SEPARATOR . $file;
 
             if (is_file($filePath)) {
+                $mtime = filemtime($filePath);
                 $backups[] = [
                     'filename' => $file,
                     'size' => filesize($filePath),
                     'size_human' => $this->formatBytes(filesize($filePath)),
-                    'date' => date('Y-m-d H:i:s', filemtime($filePath)),
+                    'date' => date('Y-m-d H:i:s', $mtime),
+                    'mtime' => $mtime,
                     'type' => $this->getBackupType($file),
                 ];
             }
         }
+
+        // Sort by modification time descending (newest first)
+        usort($backups, fn($a, $b) => $b['mtime'] <=> $a['mtime']);
 
         return $backups;
     }
